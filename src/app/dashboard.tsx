@@ -1,5 +1,5 @@
 import { Redirect, router } from "expo-router";
-import { Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AuthSubmitButton } from "@/components/auth-submit-button";
@@ -20,7 +20,11 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-ink-900">
-      <View className="flex-1 px-6 pb-10 pt-8">
+      <ScrollView
+        bounces={false}
+        contentContainerClassName="px-6 pb-10 pt-8"
+        showsVerticalScrollIndicator={false}
+      >
         <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">
           Authenticated dashboard
         </Text>
@@ -46,9 +50,25 @@ export default function DashboardScreen() {
               will persist users, sessions, accounts, and verification records.
             </Text>
           </DashboardCard>
+
+          <DashboardCard eyebrow="Security" title="Change your password">
+            <Text className="text-base leading-6 text-ink-100">
+              Update your password from the authenticated session using Better Auth&apos;s
+              change-password flow.
+            </Text>
+            <View className="mt-4">
+              <AuthSubmitButton
+                isPending={false}
+                label="Open password settings"
+                onPress={() => {
+                  router.push("/change-password" as never);
+                }}
+              />
+            </View>
+          </DashboardCard>
         </View>
 
-        <View className="mt-auto">
+        <View className="mt-8">
           <AuthSubmitButton
             isPending={false}
             label="Sign out"
@@ -63,7 +83,7 @@ export default function DashboardScreen() {
             }}
           />
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
