@@ -31,6 +31,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
+    onPasswordReset: async ({ user }) => {
+      console.log(`Password for user ${user.email} has been reset.`);
+    },
   },
   plugins: [expo()],
 });

@@ -6,6 +6,7 @@ import { Alert, Text, View } from "react-native";
 import { z } from "zod";
 
 import { AuthInput } from "@/components/auth-input";
+import { AuthPasswordInput } from "@/components/auth-password-input";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { authClient } from "@/lib/auth-client";
 
@@ -123,19 +124,22 @@ function SignInForm() {
         control={form.control}
         name="password"
         render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-          <AuthInput
-            autoCapitalize="none"
-            autoCorrect={false}
+          <AuthPasswordInput
             error={error?.message}
             label="Password"
             onBlur={onBlur}
             onChangeText={onChange}
             placeholder="At least 8 characters"
-            secureTextEntry
             value={value}
           />
         )}
       />
+
+      <Text className="mb-4 mt-1 text-right text-sm text-ink-600">
+        <Link href={"/forgot-password" as never} className="font-semibold text-coral-500">
+          Forgot password?
+        </Link>
+      </Text>
 
       <AuthSubmitButton
         isPending={isPending}
@@ -231,15 +235,12 @@ function SignUpForm() {
         control={form.control}
         name="password"
         render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-          <AuthInput
-            autoCapitalize="none"
-            autoCorrect={false}
+          <AuthPasswordInput
             error={error?.message}
             label="Password"
             onBlur={onBlur}
             onChangeText={onChange}
             placeholder="At least 8 characters"
-            secureTextEntry
             value={value}
           />
         )}

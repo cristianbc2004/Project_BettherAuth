@@ -1,8 +1,9 @@
 import type { PropsWithChildren } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Easing,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -18,6 +19,7 @@ type AuthShellProps = PropsWithChildren<{
 }>;
 
 export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps) {
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const headerOpacity = useRef(new Animated.Value(0)).current;
   const headerTranslate = useRef(new Animated.Value(18)).current;
   const cardOpacity = useRef(new Animated.Value(0)).current;
@@ -57,6 +59,24 @@ export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps
     ]).start();
   }, [cardOpacity, cardTranslate, headerOpacity, headerTranslate]);
 
+  useEffect(() => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSubscription = Keyboard.addListener(showEvent, () => {
+      setKeyboardVisible(true);
+    });
+
+    const hideSubscription = Keyboard.addListener(hideEvent, () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
   return (
     <SafeAreaView className="flex-1 bg-sand">
       <View className="absolute inset-0">
@@ -67,29 +87,32 @@ export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps
 
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView
           bounces={false}
-          contentContainerClassName="flex-grow px-6 pb-10 pt-6"
+          contentContainerClassName={`${keyboardVisible ? "px-6 pb-6 pt-4" : "flex-grow px-6 pb-10 pt-6"}`}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Animated.View
-            className="mt-8"
-            style={{
-              opacity: headerOpacity,
-              transform: [{ translateY: headerTranslate }],
-            }}
-          >
-            <Text className="text-sm font-semibold uppercase tracking-[3px] text-ink-700">
-              {eyebrow}
-            </Text>
-            <Text className="mt-4 text-5xl font-black leading-[56px] text-ink-900">{title}</Text>
-            <Text className="mt-4 max-w-[320px] text-base leading-6 text-ink-700">{subtitle}</Text>
-          </Animated.View>
+          {!keyboardVisible ? (
+            <Animated.View
+              className="mt-8"
+              style={{
+                opacity: headerOpacity,
+                transform: [{ translateY: headerTranslate }],
+              }}
+            >
+              <Text className="text-sm font-semibold uppercase tracking-[3px] text-ink-700">
+                {eyebrow}
+              </Text>
+              <Text className="mt-4 text-5xl font-black leading-[56px] text-ink-900">{title}</Text>
+              <Text className="mt-4 max-w-[320px] text-base leading-6 text-ink-700">{subtitle}</Text>
+            </Animated.View>
+          ) : null}
 
           <Animated.View
-            className="mt-10 rounded-[36px] border border-white/70 bg-white/90 p-6 shadow-panel"
+            className={`${keyboardVisible ? "mt-4" : "mt-10"} rounded-[36px] border border-white/70 bg-white/90 p-6 shadow-panel`}
             style={{
               opacity: cardOpacity,
               transform: [{ translateY: cardTranslate }],
