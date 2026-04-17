@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { router, useLocalSearchParams } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Text, View } from "react-native";
 import { z } from "zod";
 
@@ -9,24 +10,29 @@ import { AuthPasswordInput } from "@/components/auth-password-input";
 import { AuthShell } from "@/components/auth-shell";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { appConfig } from "@/lib/app-config";
+import { buildLanguageHeaders, useLanguage } from "@/lib/locale";
 
-const resetPasswordSchema = z
-  .object({
-    newPassword: z.string().min(8, "Password must be at least 8 characters."),
-    confirmPassword: z.string().min(8, "Confirm your new password."),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match.",
-    path: ["confirmPassword"],
-  });
-
-type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
+type ResetPasswordValues = {
+  newPassword: string;
+  confirmPassword: string;
+};
 
 export default function ResetPasswordScreen() {
+  const { t } = useTranslation();
   const params = useLocalSearchParams<{ email?: string }>();
   const email = typeof params.email === "string" ? params.email : "";
   const [isPending, setIsPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const { locale } = useLanguage();
+  const resetPasswordSchema = z
+    .object({
+      newPassword: z.string().min(8, t("resetPassword.passwordMin")),
+      confirmPassword: z.string().min(8, t("resetPassword.confirmNewPassword")),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: t("resetPassword.passwordsDoNotMatch"),
+      path: ["confirmPassword"],
+    });
   const form = useForm<ResetPasswordValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
@@ -38,9 +44,9 @@ export default function ResetPasswordScreen() {
   const handleSubmit = form.handleSubmit(async (values) => {
     try {
       if (!email) {
-        const message = "Missing email. Go back and enter the account email first.";
+        const message = t("resetPassword.missingEmail");
         setServerError(message);
-        Alert.alert("Reset failed", message);
+        Alert.alert(t("resetPassword.resetFailed"), message);
         return;
       }
 
@@ -50,6 +56,7 @@ export default function ResetPasswordScreen() {
       const response = await fetch(`${appConfig.authApiUrl}/api/password/reset-direct`, {
         method: "POST",
         headers: {
+          ...buildLanguageHeaders(locale),
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -61,18 +68,18 @@ export default function ResetPasswordScreen() {
       const data = (await response.json()) as { success?: boolean; error?: string };
 
       if (!response.ok) {
-        const message = data.error ?? "Could not reset your password.";
+        const message = data.error ?? t("resetPassword.resetError");
         setServerError(message);
-        Alert.alert("Reset failed", message);
+        Alert.alert(t("resetPassword.resetFailed"), message);
         return;
       }
 
-      Alert.alert("Password updated", "Your password has been reset successfully.");
+      Alert.alert(t("resetPassword.updateSuccessTitle"), t("resetPassword.updateSuccessMessage"));
       router.replace("/sign-in");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Network error. Please try again.";
+      const message = error instanceof Error ? error.message : t("authForm.networkError");
       setServerError(message);
-      Alert.alert("Reset failed", message);
+      Alert.alert(t("resetPassword.resetFailed"), message);
     } finally {
       setIsPending(false);
     }
@@ -80,13 +87,13 @@ export default function ResetPasswordScreen() {
 
   return (
     <AuthShell
-      eyebrow="Choose a new password"
-      subtitle={`Set a fresh password for ${email || "the selected account"}.`}
-      title="Reset password."
+      eyebrow={t("authShell.resetPassword.eyebrow")}
+      subtitle={t("authShell.resetPassword.subtitle", { email: email || t("authForm.email") })}
+      title={t("authShell.resetPassword.title")}
     >
-      <Text className="text-2xl font-black text-ink-900">Create a new password</Text>
+      <Text className="text-2xl font-black text-ink-900">{t("resetPassword.createNewPassword")}</Text>
       <Text className="mt-2 text-base leading-6 text-ink-600">
-        Use at least 8 characters and make it different from your previous password.
+        {t("resetPassword.description")}
       </Text>
 
       <View className="mt-6">
@@ -96,10 +103,10 @@ export default function ResetPasswordScreen() {
           render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
             <AuthPasswordInput
               error={error?.message}
-              label="New password"
+              label={t("authForm.newPassword")}
               onBlur={onBlur}
               onChangeText={onChange}
-              placeholder="At least 8 characters"
+              placeholder={t("changePassword.newPasswordPlaceholder")}
               value={value}
             />
           )}
@@ -111,10 +118,10 @@ export default function ResetPasswordScreen() {
           render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
             <AuthPasswordInput
               error={error?.message}
-              label="Confirm new password"
+              label={t("changePassword.confirmNewPassword")}
               onBlur={onBlur}
               onChangeText={onChange}
-              placeholder="Repeat the new password"
+              placeholder={t("resetPassword.repeatPasswordPlaceholder")}
               value={value}
             />
           )}
@@ -125,7 +132,7 @@ export default function ResetPasswordScreen() {
 
       <AuthSubmitButton
         isPending={isPending}
-        label="Update password"
+        label={t("resetPassword.updatePassword")}
         onPress={() => {
           void handleSubmit();
         }}

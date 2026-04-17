@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Text, View } from "react-native";
 import { z } from "zod";
 
@@ -9,15 +10,20 @@ import { AuthInput } from "@/components/auth-input";
 import { AuthShell } from "@/components/auth-shell";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { appConfig } from "@/lib/app-config";
-const forgotPasswordSchema = z.object({
-  email: z.email("Enter a valid email address."),
-});
+import { buildLanguageHeaders, useLanguage } from "@/lib/locale";
 
-type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
+type ForgotPasswordValues = {
+  email: string;
+};
 
 export default function ForgotPasswordScreen() {
+  const { t } = useTranslation();
   const [isPending, setIsPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const { locale } = useLanguage();
+  const forgotPasswordSchema = z.object({
+    email: z.email(t("authForm.invalidEmail")),
+  });
   const form = useForm<ForgotPasswordValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
@@ -33,21 +39,23 @@ export default function ForgotPasswordScreen() {
       const checkEmailUrl = new URL("/api/password/check-email", appConfig.authApiUrl);
       checkEmailUrl.searchParams.set("email", values.email);
 
-      const response = await fetch(checkEmailUrl.toString());
+      const response = await fetch(checkEmailUrl.toString(), {
+        headers: buildLanguageHeaders(locale),
+      });
 
       const data = (await response.json()) as { exists?: boolean; error?: string };
 
       if (!response.ok) {
-        const message = data.error ?? "Could not check the email.";
+        const message = data.error ?? t("forgotPassword.checkEmailError");
         setServerError(message);
-        Alert.alert("Reset failed", message);
+        Alert.alert(t("forgotPassword.resetFailed"), message);
         return;
       }
 
       if (!data.exists) {
-        const message = "That email does not exist in the database.";
+        const message = t("forgotPassword.emailDoesNotExist");
         setServerError(message);
-        Alert.alert("Email not found", message);
+        Alert.alert(t("forgotPassword.emailNotFound"), message);
         return;
       }
 
@@ -58,9 +66,9 @@ export default function ForgotPasswordScreen() {
         },
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Network error. Please try again.";
+      const message = error instanceof Error ? error.message : t("authForm.networkError");
       setServerError(message);
-      Alert.alert("Reset failed", message);
+      Alert.alert(t("forgotPassword.resetFailed"), message);
     } finally {
       setIsPending(false);
     }
@@ -68,13 +76,13 @@ export default function ForgotPasswordScreen() {
 
   return (
     <AuthShell
-      eyebrow="Password reset"
-      subtitle="Enter your email. If it exists in the database, we will take you to the password change screen."
-      title="Forgot your password?"
+      eyebrow={t("authShell.forgotPassword.eyebrow")}
+      subtitle={t("authShell.forgotPassword.subtitle")}
+      title={t("authShell.forgotPassword.title")}
     >
-      <Text className="text-2xl font-black text-ink-900">Recover access</Text>
+      <Text className="text-2xl font-black text-ink-900">{t("forgotPassword.recoverAccess")}</Text>
       <Text className="mt-2 text-base leading-6 text-ink-600">
-        For this lab flow, we first confirm the email exists and then let you choose a new password.
+        {t("forgotPassword.recoverDescription")}
       </Text>
 
       <View className="mt-6">
@@ -87,10 +95,10 @@ export default function ForgotPasswordScreen() {
               autoCorrect={false}
               error={error?.message}
               keyboardType="email-address"
-              label="Email"
+              label={t("authForm.email")}
               onBlur={onBlur}
               onChangeText={onChange}
-              placeholder="you@example.com"
+              placeholder={t("authForm.emailPlaceholder")}
               value={value}
             />
           )}
@@ -101,16 +109,16 @@ export default function ForgotPasswordScreen() {
 
       <AuthSubmitButton
         isPending={isPending}
-        label="Continue"
+        label={t("forgotPassword.continue")}
         onPress={() => {
           void handleSubmit();
         }}
       />
 
       <Text className="mt-6 text-center text-sm text-ink-600">
-        Remembered it?{" "}
+        {t("forgotPassword.remembered")}
         <Link href="/sign-in" className="font-bold text-coral-500">
-          Sign in
+          {t("authForm.signIn")}
         </Link>
       </Text>
     </AuthShell>

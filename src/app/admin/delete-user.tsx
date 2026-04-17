@@ -1,5 +1,6 @@
 import { Redirect, router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -8,6 +9,7 @@ import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { DashboardCard } from "@/components/dashboard-card";
 import { LoadingScreen } from "@/components/loading-screen";
 import { authClient } from "@/lib/auth-client";
+import { buildAuthFetchOptions, useLanguage } from "@/lib/locale";
 
 type AdminUser = {
   id: string;
@@ -19,6 +21,8 @@ type AdminUser = {
 
 export default function DeleteUserScreen() {
   const { data: session, isPending } = authClient.useSession();
+  const { locale } = useLanguage();
+  const { t } = useTranslation();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [search, setSearch] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -56,12 +60,13 @@ export default function DeleteUserScreen() {
       query: {
         limit: 100,
       },
+      ...buildAuthFetchOptions(locale),
     });
 
     setIsLoadingUsers(false);
 
     if (result.error) {
-      setErrorMessage(result.error.message ?? "Could not load the user list.");
+      setErrorMessage(result.error.message ?? t("admin.loadUsersError"));
       return;
     }
 
@@ -73,7 +78,7 @@ export default function DeleteUserScreen() {
     if (session?.user && isAdmin) {
       void loadUsers();
     }
-  }, [isAdmin, session?.user]);
+  }, [isAdmin, locale, session?.user]);
 
   if (isPending) {
     return <LoadingScreen />;
@@ -94,16 +99,17 @@ export default function DeleteUserScreen() {
 
     const result = await authClient.admin.removeUser({
       userId,
+      ...buildAuthFetchOptions(locale),
     });
 
     setDeletingUserId(null);
 
     if (result.error) {
-      setErrorMessage(result.error.message ?? "Could not remove the user.");
+      setErrorMessage(result.error.message ?? t("admin.removeError"));
       return;
     }
 
-    setMessage("User removed successfully.");
+    setMessage(t("admin.removeSuccess"));
     setUsers((currentUsers) => currentUsers.filter((user) => user.id !== userId));
   };
 
@@ -116,32 +122,32 @@ export default function DeleteUserScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Pressable className="mb-6 self-start" onPress={() => router.back()}>
-          <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">Back</Text>
+          <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">{t("common.back")}</Text>
         </Pressable>
 
         <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">
-          Admin delete
+          {t("admin.deletePageEyebrow")}
         </Text>
-        <Text className="mt-4 text-5xl font-black leading-[56px] text-white">Delete users.</Text>
+        <Text className="mt-4 text-5xl font-black leading-[56px] text-white">{t("admin.deletePageTitle")}</Text>
         <Text className="mt-4 max-w-[340px] text-base leading-6 text-ink-100">
-          Search for a user and remove the account. The current admin account cannot delete itself.
+          {t("admin.deletePageSubtitle")}
         </Text>
 
         <View className="mt-10 gap-4">
-          <DashboardCard eyebrow="Danger zone" title="Remove a user">
+          <DashboardCard eyebrow={t("admin.dangerEyebrow")} title={t("admin.dangerTitle")}>
             <AuthInput
               autoCapitalize="none"
               autoCorrect={false}
-              label="Search"
+              label={t("admin.search")}
               onChangeText={setSearch}
-              placeholder="Search by name, email, or role"
+              placeholder={t("admin.searchPlaceholder")}
               value={search}
             />
 
             <View className="mb-4">
               <AuthSubmitButton
                 isPending={isLoadingUsers}
-                label="Refresh users"
+                label={t("admin.refreshUsers")}
                 onPress={() => {
                   void loadUsers();
                 }}
@@ -158,13 +164,13 @@ export default function DeleteUserScreen() {
                       <Text className="text-lg font-bold text-white">{user.name}</Text>
                       <Text className="mt-1 text-base text-ink-100">{user.email}</Text>
                       <Text className="mt-2 text-sm font-semibold uppercase tracking-[2px] text-coral-300">
-                        Role: {user.role ?? "user"}
+                        {t("common.roleLabel", { role: user.role ?? "user" })}
                       </Text>
 
                       <View className="mt-4">
                         <AuthSubmitButton
                           isPending={deletingUserId === user.id}
-                          label={isCurrentUser ? "You cannot remove yourself" : "Remove user"}
+                          label={isCurrentUser ? t("admin.cannotRemoveSelf") : t("admin.removeUser")}
                           onPress={() => {
                             if (!isCurrentUser) {
                               void handleDeleteUser(user.id);
@@ -177,7 +183,7 @@ export default function DeleteUserScreen() {
                 })
               ) : (
                 <Text className="text-base leading-6 text-ink-100">
-                  No users matched the current search.
+                  {t("admin.noUsersFound")}
                 </Text>
               )}
             </View>

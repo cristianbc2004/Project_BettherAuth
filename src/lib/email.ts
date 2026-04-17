@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
 
+import { appConfig } from "@/lib/app-config";
+
 const smtpHost = process.env.SMTP_HOST;
 const smtpPort = Number(process.env.SMTP_PORT ?? "587");
 const smtpUser = process.env.SMTP_USER;
@@ -21,41 +23,46 @@ const transporter =
       })
     : null;
 
-type SendPasswordResetEmailParams = {
+type SendVerificationEmailParams = {
   email: string;
   name?: string | null;
+  token: string;
   url: string;
 };
 
-export async function sendPasswordResetEmail({
+export async function sendVerificationEmail({
   email,
   name,
+  token,
   url,
-}: SendPasswordResetEmailParams) {
+}: SendVerificationEmailParams) {
   if (!transporter || !smtpFrom) {
-    console.log(`[RESET-PASSWORD] ${email} -> ${url}`);
+    console.log(`[EMAIL-VERIFICATION] ${email} -> ${url}`);
     throw new Error(
-      "Reset password email is not configured. Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM to .env.",
+      "Email verification is not configured. Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM to .env.",
     );
   }
+
+  const verificationUrl = `${appConfig.emailVerificationAppUrl}?token=${encodeURIComponent(token)}`;
 
   await transporter.sendMail({
     from: smtpFrom,
     to: email,
-    subject: "Reset your password",
-    text: `Hello ${name ?? ""}, use this link to reset your password: ${url}`,
+    subject: "Verify your email address",
+    text: `Hello ${name ?? ""}, use this link to verify your email: ${url}\n\nIf your device supports the app deep link, you can also open: ${verificationUrl}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-        <h2>Reset your password</h2>
+        <h2>Verify your email address</h2>
         <p>Hello ${name ?? "there"},</p>
-        <p>Click the button below to choose a new password.</p>
+        <p>Click the button below to confirm your email address.</p>
         <p>
           <a href="${url}" style="display:inline-block;padding:12px 18px;background:#283734;color:#ffffff;text-decoration:none;border-radius:8px;">
-            Reset password
+            Verify email
           </a>
         </p>
-        <p>If the button does not work, open this link:</p>
+        <p>If the button does not work, open this verification link:</p>
         <p>${url}</p>
+        <p style="font-size:12px;color:#666;">App deep link: ${verificationUrl}</p>
       </div>
     `,
   });

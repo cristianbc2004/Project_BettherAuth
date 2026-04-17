@@ -1,4 +1,5 @@
 import { Redirect, router } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -6,10 +7,13 @@ import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { DashboardCard } from "@/components/dashboard-card";
 import { LoadingScreen } from "@/components/loading-screen";
 import { authClient } from "@/lib/auth-client";
+import { buildAuthFetchOptions, useLanguage } from "@/lib/locale";
 
 
 export default function DashboardScreen() {
   const { data: session, isPending } = authClient.useSession();
+  const { locale } = useLanguage();
+  const { t } = useTranslation();
   const role = (session?.user as { role?: string } | undefined)?.role ?? "user";
   const isAdmin = role
     .split(",")
@@ -32,43 +36,37 @@ export default function DashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">
-          Authenticated dashboard
+          {t("dashboard.eyebrow")}
         </Text>
         <Text className="mt-4 text-5xl font-black leading-[56px] text-white">
-          Hello, {session.user.name.split(" ")[0]}.
+          {t("dashboard.greeting", { name: session.user.name.split(" ")[0] })}
         </Text>
         <Text className="mt-4 max-w-[320px] text-base leading-6 text-ink-100">
-          Your Expo Router screens, Better Auth API route, and Prisma-backed Neon database are ready to
-          connect.
+          {t("dashboard.subtitle")}
         </Text>
 
         <View className="mt-10 gap-4">
-          <DashboardCard eyebrow="Profile" title={session.user.email}>
+          <DashboardCard eyebrow={t("dashboard.profileTitle")} title={session.user.email}>
             <Text className="text-base leading-6 text-ink-100">
-              Signed in as {session.user.name}. This session is stored securely through the Expo Better
-              Auth client plugin.
+              {t("dashboard.profileDescription", { name: session.user.name })}
             </Text>
             <Text className="mt-3 text-sm font-semibold uppercase tracking-[2px] text-coral-300">
-              Role: {role}
+              {t("common.roleLabel", { role })}
             </Text>
           </DashboardCard>
 
-          <DashboardCard eyebrow="Backend" title="Prisma + Neon">
-            <Text className="text-base leading-6 text-ink-100">
-              Run a Prisma migration after you add your Neon connection string, then the same auth flow
-              will persist users, sessions, accounts, and verification records.
-            </Text>
+          <DashboardCard eyebrow={t("dashboard.backendEyebrow")} title={t("dashboard.backendTitle")}>
+            <Text className="text-base leading-6 text-ink-100">{t("dashboard.backendDescription")}</Text>
           </DashboardCard>
 
-          <DashboardCard eyebrow="Security" title="Change your password">
+          <DashboardCard eyebrow={t("dashboard.securityEyebrow")} title={t("dashboard.changePasswordTitle")}>
             <Text className="text-base leading-6 text-ink-100">
-              Update your password from the authenticated session using Better Auth&apos;s
-              change-password flow.
+              {t("dashboard.changePasswordDescription")}
             </Text>
             <View className="mt-4">
               <AuthSubmitButton
                 isPending={false}
-                label="Open password settings"
+                label={t("dashboard.openPasswordSettings")}
                 onPress={() => {
                   router.push("/change-password" as never);
                 }}
@@ -76,14 +74,12 @@ export default function DashboardScreen() {
             </View>
           </DashboardCard>
 
-          <DashboardCard eyebrow="Security" title="Two-factor authentication">
-            <Text className="text-base leading-6 text-ink-100">
-              Manage your authenticator app setup, verify codes, and disable 2FA if you need to.
-            </Text>
+          <DashboardCard eyebrow={t("dashboard.securityEyebrow")} title={t("dashboard.twoFactorTitle")}>
+            <Text className="text-base leading-6 text-ink-100">{t("dashboard.twoFactorDescription")}</Text>
             <View className="mt-4">
               <AuthSubmitButton
                 isPending={false}
-                label="Open 2FA settings"
+                label={t("dashboard.openTwoFactor")}
                 onPress={() => {
                   router.push("/two-factor" as never);
                 }}
@@ -92,14 +88,12 @@ export default function DashboardScreen() {
           </DashboardCard>
 
           {isAdmin ? (
-            <DashboardCard eyebrow="Admin" title="User management">
-              <Text className="text-base leading-6 text-ink-100">
-                Open the admin panel to create users, remove users, and review the current user list.
-              </Text>
+            <DashboardCard eyebrow={t("dashboard.adminEyebrow")} title={t("dashboard.adminTitle")}>
+              <Text className="text-base leading-6 text-ink-100">{t("dashboard.adminDescription")}</Text>
               <View className="mt-4">
                 <AuthSubmitButton
                   isPending={false}
-                  label="Open admin panel"
+                  label={t("dashboard.openAdmin")}
                   onPress={() => {
                     router.push("/admin" as never);
                   }}
@@ -112,10 +106,12 @@ export default function DashboardScreen() {
         <View className="mt-8">
           <AuthSubmitButton
             isPending={false}
-            label="Sign out"
+            label={t("dashboard.signOut")}
             onPress={() => {
               void authClient.signOut({
+                ...buildAuthFetchOptions(locale),
                 fetchOptions: {
+                  headers: buildAuthFetchOptions(locale).fetchOptions.headers,
                   onSuccess: () => {
                     router.replace("/sign-in");
                   },

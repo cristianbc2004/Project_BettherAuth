@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 type AuthPasswordInputProps = {
   error?: string;
@@ -19,6 +20,7 @@ export function AuthPasswordInput({
   value,
 }: AuthPasswordInputProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <View className="mb-4">
@@ -42,7 +44,7 @@ export function AuthPasswordInput({
           }}
         >
           <Text className="text-sm font-semibold text-coral-500">
-            {isVisible ? "Ocultar" : "Mostrar"}
+            {isVisible ? t("common.hide") : t("common.show")}
           </Text>
         </Pressable>
       </View>

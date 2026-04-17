@@ -1,16 +1,20 @@
 import { router } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Pressable, Text, View } from "react-native";
 
 import { AuthInput } from "@/components/auth-input";
 import { AuthShell } from "@/components/auth-shell";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { authClient } from "@/lib/auth-client";
+import { buildAuthFetchOptions, useLanguage } from "@/lib/locale";
 
 export default function TwoFactorVerifyScreen() {
+  const { t } = useTranslation();
   const [code, setCode] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const { locale } = useLanguage();
 
   const handleVerifyTotp = async () => {
     try {
@@ -20,20 +24,21 @@ export default function TwoFactorVerifyScreen() {
       const response = await authClient.twoFactor.verifyTotp({
         code,
         trustDevice: true,
+        ...buildAuthFetchOptions(locale),
       });
 
       if (response.error) {
-        const message = response.error.message ?? "The authenticator code is not valid.";
+        const message = response.error.message ?? t("twoFactorVerify.invalidAuthenticatorCode");
         setServerError(message);
-        Alert.alert("Verification failed", message);
+        Alert.alert(t("twoFactorVerify.verificationFailed"), message);
         return;
       }
 
       router.replace("/dashboard");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Network error. Please try again.";
+      const message = error instanceof Error ? error.message : t("twoFactorVerify.networkError");
       setServerError(message);
-      Alert.alert("Verification failed", message);
+      Alert.alert(t("twoFactorVerify.verificationFailed"), message);
     } finally {
       setIsPending(false);
     }
@@ -47,20 +52,21 @@ export default function TwoFactorVerifyScreen() {
       const response = await authClient.twoFactor.verifyBackupCode({
         code,
         trustDevice: true,
+        ...buildAuthFetchOptions(locale),
       });
 
       if (response.error) {
-        const message = response.error.message ?? "The backup code is not valid.";
+        const message = response.error.message ?? t("twoFactorVerify.invalidBackupCode");
         setServerError(message);
-        Alert.alert("Verification failed", message);
+        Alert.alert(t("twoFactorVerify.verificationFailed"), message);
         return;
       }
 
       router.replace("/dashboard");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Network error. Please try again.";
+      const message = error instanceof Error ? error.message : t("twoFactorVerify.networkError");
       setServerError(message);
-      Alert.alert("Verification failed", message);
+      Alert.alert(t("twoFactorVerify.verificationFailed"), message);
     } finally {
       setIsPending(false);
     }
@@ -68,17 +74,17 @@ export default function TwoFactorVerifyScreen() {
 
   return (
     <AuthShell
-      eyebrow="Two-factor sign in"
-      subtitle="Enter the 6-digit code from your authenticator app, or use a backup code if you need recovery access."
-      title="Verify it&apos;s you."
+      eyebrow={t("authShell.twoFactorVerify.eyebrow")}
+      subtitle={t("authShell.twoFactorVerify.subtitle")}
+      title={t("authShell.twoFactorVerify.title")}
     >
       <AuthInput
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="default"
-        label="Authenticator or backup code"
+        label={t("twoFactorVerify.codeLabel")}
         onChangeText={setCode}
-        placeholder="123456"
+        placeholder={t("twoFactor.sixDigitCodePlaceholder")}
         value={code}
       />
 
@@ -86,7 +92,7 @@ export default function TwoFactorVerifyScreen() {
 
       <AuthSubmitButton
         isPending={isPending}
-        label="Verify authenticator code"
+        label={t("twoFactorVerify.verifyAuthenticator")}
         onPress={() => {
           void handleVerifyTotp();
         }}
@@ -95,7 +101,7 @@ export default function TwoFactorVerifyScreen() {
       <View className="mt-3">
         <AuthSubmitButton
           isPending={isPending}
-          label="Use backup code"
+          label={t("twoFactorVerify.useBackupCode")}
           onPress={() => {
             void handleVerifyBackupCode();
           }}
@@ -108,7 +114,7 @@ export default function TwoFactorVerifyScreen() {
           router.replace("/sign-in");
         }}
       >
-        <Text className="text-center text-sm font-semibold text-coral-500">Back to sign in</Text>
+        <Text className="text-center text-sm font-semibold text-coral-500">{t("twoFactorVerify.backToSignIn")}</Text>
       </Pressable>
     </AuthShell>
   );
