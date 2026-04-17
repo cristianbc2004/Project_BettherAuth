@@ -12,27 +12,31 @@ model User {
   email            String     @unique
   emailVerified    Boolean    @default(false)
   image            String?
-  twoFactorEnabled Boolean    @default(false)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
-  sessions         Session[]
+  twoFactorEnabled Boolean    @default(false)
+  role             String     @default("user")
+  banned           Boolean    @default(false)
+  banReason        String?
+  banExpires       DateTime?
   accounts         Account[]
+  sessions         Session[]
   twoFactor        TwoFactor?
 
   @@map("users")
 }
 
 model Session {
-  id             String    @id @default(cuid())
-  token          String    @unique
+  id             String   @id @default(cuid())
+  token          String   @unique
   expiresAt      DateTime
   ipAddress      String?
   userAgent      String?
   impersonatedBy String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   userId         String
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("sessions")

@@ -7,8 +7,14 @@ import { DashboardCard } from "@/components/dashboard-card";
 import { LoadingScreen } from "@/components/loading-screen";
 import { authClient } from "@/lib/auth-client";
 
+
 export default function DashboardScreen() {
   const { data: session, isPending } = authClient.useSession();
+  const role = (session?.user as { role?: string } | undefined)?.role ?? "user";
+  const isAdmin = role
+    .split(",")
+    .map((entry) => entry.trim())
+    .includes("admin");
 
   if (isPending) {
     return <LoadingScreen />;
@@ -42,6 +48,9 @@ export default function DashboardScreen() {
               Signed in as {session.user.name}. This session is stored securely through the Expo Better
               Auth client plugin.
             </Text>
+            <Text className="mt-3 text-sm font-semibold uppercase tracking-[2px] text-coral-300">
+              Role: {role}
+            </Text>
           </DashboardCard>
 
           <DashboardCard eyebrow="Backend" title="Prisma + Neon">
@@ -69,19 +78,35 @@ export default function DashboardScreen() {
 
           <DashboardCard eyebrow="Security" title="Two-factor authentication">
             <Text className="text-base leading-6 text-ink-100">
-              Add an authenticator app as a second sign-in step and keep backup codes for account
-              recovery.
+              Manage your authenticator app setup, verify codes, and disable 2FA if you need to.
             </Text>
             <View className="mt-4">
               <AuthSubmitButton
                 isPending={false}
-                label="Manage 2FA"
+                label="Open 2FA settings"
                 onPress={() => {
                   router.push("/two-factor" as never);
                 }}
               />
             </View>
           </DashboardCard>
+
+          {isAdmin ? (
+            <DashboardCard eyebrow="Admin" title="User management">
+              <Text className="text-base leading-6 text-ink-100">
+                Open the admin panel to create users, remove users, and review the current user list.
+              </Text>
+              <View className="mt-4">
+                <AuthSubmitButton
+                  isPending={false}
+                  label="Open admin panel"
+                  onPress={() => {
+                    router.push("/admin" as never);
+                  }}
+                />
+              </View>
+            </DashboardCard>
+          ) : null}
         </View>
 
         <View className="mt-8">

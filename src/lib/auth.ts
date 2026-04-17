@@ -1,10 +1,11 @@
 import { expo } from "@better-auth/expo";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { betterAuth } from "better-auth";
-import { twoFactor } from "better-auth/plugins";
+import { twoFactor, admin } from "better-auth/plugins";
 
 import { appConfig } from "@/lib/app-config";
 import { prisma } from "@/lib/prisma";
+import { ac, adminRole, userRole } from "@/lib/permissions";
 
 const trustedOrigins = [
   appConfig.authServerUrl,
@@ -41,6 +42,14 @@ export const auth = betterAuth({
     expo(),
     twoFactor({
       issuer: "Better Auth Dashboard",
+    }),
+    admin({
+      ac,
+      roles: {
+        admin: adminRole,
+        user: userRole,
+      },
+      adminRoles: ["admin"],
     }),
   ],
 });
