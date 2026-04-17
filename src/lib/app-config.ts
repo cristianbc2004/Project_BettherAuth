@@ -5,6 +5,13 @@ export const appConfig = {
   appScheme: process.env.EXPO_PUBLIC_APP_SCHEME ?? "better-auth-dashboard",
   authApiUrl: stripAuthPath(process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8081"),
   authServerUrl: process.env.BETTER_AUTH_URL ?? "http://localhost:8081",
+  resendTestRecipient: process.env.EXPO_PUBLIC_RESEND_TEST_EMAIL?.trim().toLowerCase() ?? "",
+  emailVerificationAppUrl:
+    process.env.EXPO_PUBLIC_EMAIL_VERIFICATION_APP_URL ??
+    `${process.env.EXPO_PUBLIC_APP_SCHEME ?? "better-auth-dashboard"}://verify-email`,
+  emailVerificationSuccessUrl:
+    process.env.EXPO_PUBLIC_EMAIL_VERIFICATION_URL ??
+    `${process.env.EXPO_PUBLIC_APP_SCHEME ?? "better-auth-dashboard"}://dashboard`,
   resetPasswordUrl:
     process.env.EXPO_PUBLIC_RESET_PASSWORD_URL ??
     `${process.env.EXPO_PUBLIC_APP_SCHEME ?? "better-auth-dashboard"}://reset-password`,

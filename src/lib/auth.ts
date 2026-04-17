@@ -2,10 +2,12 @@ import { expo } from "@better-auth/expo";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { betterAuth } from "better-auth";
 import { twoFactor, admin } from "better-auth/plugins";
+import { i18n } from "@better-auth/i18n";
 
 import { appConfig } from "@/lib/app-config";
 import { prisma } from "@/lib/prisma";
 import { ac, adminRole, userRole } from "@/lib/permissions";
+import { sendVerificationEmail } from "@/lib/email";
 
 const trustedOrigins = [
   appConfig.authServerUrl,
@@ -33,13 +35,42 @@ export const auth = betterAuth({
   trustedOrigins,
   emailAndPassword: {
     enabled: true,
-    autoSignIn: true,
-    onPasswordReset: async ({ user }) => {
-      console.log(`Password for user ${user.email} has been reset.`);
+    autoSignIn: false,
+    requireEmailVerification: true,
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url, token }) => {
+      await sendVerificationEmail({
+        email: user.email,
+        name: user.name,
+        token,
+        url,
+      });
     },
   },
   plugins: [
     expo(),
+    i18n({
+      defaultLocale: "es",
+      detection: ["header"],
+      translations: {
+        es: {
+          USER_NOT_FOUND: "Usuario no encontrado.",
+          INVALID_EMAIL: "El correo electrónico no es válido.",
+          INVALID_EMAIL_OR_PASSWORD: "El correo o la contraseña no son válidos.",
+          INVALID_PASSWORD: "La contraseña no es válida.",
+          EMAIL_NOT_VERIFIED: "El correo electrónico no está verificado.",
+          SESSION_EXPIRED: "La sesión ha expirado.",
+          FAILED_TO_CREATE_USER: "No se pudo crear el usuario.",
+          FAILED_TO_CREATE_SESSION: "No se pudo crear la sesión.",
+          PASSWORD_TOO_SHORT: "La contraseña es demasiado corta.",
+          TOO_MANY_REQUESTS: "Demasiados intentos. Inténtalo de nuevo más tarde.",
+        },
+      },
+    }),
     twoFactor({
       issuer: "Better Auth Dashboard",
     }),

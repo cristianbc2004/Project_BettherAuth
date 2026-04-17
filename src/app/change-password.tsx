@@ -2,31 +2,37 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Text, View } from "react-native";
 import { z } from "zod";
 
-import { AuthInput } from "@/components/auth-input";
 import { AuthPasswordInput } from "@/components/auth-password-input";
 import { AuthShell } from "@/components/auth-shell";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { authClient } from "@/lib/auth-client";
+import { buildAuthFetchOptions, useLanguage } from "@/lib/locale";
 
-const changePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(8, "Current password must be at least 8 characters."),
-    newPassword: z.string().min(8, "New password must be at least 8 characters."),
-    confirmPassword: z.string().min(8, "Confirm your new password."),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match.",
-    path: ["confirmPassword"],
-  });
-
-type ChangePasswordValues = z.infer<typeof changePasswordSchema>;
+type ChangePasswordValues = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
 
 export default function ChangePasswordScreen() {
+  const { t } = useTranslation();
   const [isPending, setIsPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const { locale } = useLanguage();
+  const changePasswordSchema = z
+    .object({
+      currentPassword: z.string().min(8, t("changePassword.currentPasswordMin")),
+      newPassword: z.string().min(8, t("changePassword.newPasswordMin")),
+      confirmPassword: z.string().min(8, t("changePassword.confirmNewPassword")),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: t("changePassword.passwordsDoNotMatch"),
+      path: ["confirmPassword"],
+    });
   const form = useForm<ChangePasswordValues>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
@@ -45,21 +51,22 @@ export default function ChangePasswordScreen() {
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
         revokeOtherSessions: true,
+        ...buildAuthFetchOptions(locale),
       });
 
       if (response.error) {
-        const message = response.error.message ?? "Could not update your password.";
+        const message = response.error.message ?? t("changePassword.updateError");
         setServerError(message);
-        Alert.alert("Update failed", message);
+        Alert.alert(t("changePassword.updateFailed"), message);
         return;
       }
 
-      Alert.alert("Password updated", "Your password has been changed successfully.");
+      Alert.alert(t("changePassword.updateSuccessTitle"), t("changePassword.updateSuccessMessage"));
       router.replace("/dashboard");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Network error. Please try again.";
+      const message = error instanceof Error ? error.message : t("authForm.networkError");
       setServerError(message);
-      Alert.alert("Update failed", message);
+      Alert.alert(t("changePassword.updateFailed"), message);
     } finally {
       setIsPending(false);
     }
@@ -67,13 +74,13 @@ export default function ChangePasswordScreen() {
 
   return (
     <AuthShell
-      eyebrow="Account security"
-      subtitle="Update your password using your current one, as described in the Better Auth email/password guide."
-      title="Change password."
+      eyebrow={t("authShell.changePassword.eyebrow")}
+      subtitle={t("authShell.changePassword.subtitle")}
+      title={t("authShell.changePassword.title")}
     >
-      <Text className="text-2xl font-black text-ink-900">Keep your account secure</Text>
+      <Text className="text-2xl font-black text-ink-900">{t("changePassword.keepSecure")}</Text>
       <Text className="mt-2 text-base leading-6 text-ink-600">
-        Enter your current password, then choose a new one. Other sessions will be revoked.
+        {t("changePassword.description")}
       </Text>
 
       <View className="mt-6">
@@ -83,10 +90,10 @@ export default function ChangePasswordScreen() {
           render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
             <AuthPasswordInput
               error={error?.message}
-              label="Current password"
+              label={t("authForm.currentPassword")}
               onBlur={onBlur}
               onChangeText={onChange}
-              placeholder="Your current password"
+              placeholder={t("changePassword.currentPasswordPlaceholder")}
               value={value}
             />
           )}
@@ -98,10 +105,10 @@ export default function ChangePasswordScreen() {
           render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
             <AuthPasswordInput
               error={error?.message}
-              label="New password"
+              label={t("authForm.newPassword")}
               onBlur={onBlur}
               onChangeText={onChange}
-              placeholder="At least 8 characters"
+              placeholder={t("changePassword.newPasswordPlaceholder")}
               value={value}
             />
           )}
@@ -113,10 +120,10 @@ export default function ChangePasswordScreen() {
           render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
             <AuthPasswordInput
               error={error?.message}
-              label="Confirm new password"
+              label={t("changePassword.confirmNewPassword")}
               onBlur={onBlur}
               onChangeText={onChange}
-              placeholder="Repeat your new password"
+              placeholder={t("changePassword.confirmPasswordPlaceholder")}
               value={value}
             />
           )}
@@ -127,7 +134,7 @@ export default function ChangePasswordScreen() {
 
       <AuthSubmitButton
         isPending={isPending}
-        label="Update password"
+        label={t("changePassword.updatePassword")}
         onPress={() => {
           void handleSubmit();
         }}

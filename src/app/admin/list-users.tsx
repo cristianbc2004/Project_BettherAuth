@@ -1,5 +1,6 @@
 import { Redirect, router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -8,6 +9,7 @@ import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { DashboardCard } from "@/components/dashboard-card";
 import { LoadingScreen } from "@/components/loading-screen";
 import { authClient } from "@/lib/auth-client";
+import { buildAuthFetchOptions, useLanguage } from "@/lib/locale";
 
 type AdminUser = {
   id: string;
@@ -19,6 +21,8 @@ type AdminUser = {
 
 export default function ListUsersScreen() {
   const { data: session, isPending } = authClient.useSession();
+  const { locale } = useLanguage();
+  const { t } = useTranslation();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [search, setSearch] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -54,12 +58,13 @@ export default function ListUsersScreen() {
       query: {
         limit: 100,
       },
+      ...buildAuthFetchOptions(locale),
     });
 
     setIsLoadingUsers(false);
 
     if (result.error) {
-      setErrorMessage(result.error.message ?? "Could not load the user list.");
+      setErrorMessage(result.error.message ?? t("admin.loadUsersError"));
       return;
     }
 
@@ -71,7 +76,7 @@ export default function ListUsersScreen() {
     if (session?.user && isAdmin) {
       void loadUsers();
     }
-  }, [isAdmin, session?.user]);
+  }, [isAdmin, locale, session?.user]);
 
   if (isPending) {
     return <LoadingScreen />;
@@ -94,32 +99,32 @@ export default function ListUsersScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Pressable className="mb-6 self-start" onPress={() => router.back()}>
-          <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">Back</Text>
+          <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">{t("common.back")}</Text>
         </Pressable>
 
         <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">
-          Admin list
+          {t("admin.listEyebrow")}
         </Text>
-        <Text className="mt-4 text-5xl font-black leading-[56px] text-white">List users.</Text>
+        <Text className="mt-4 text-5xl font-black leading-[56px] text-white">{t("admin.listPageTitle")}</Text>
         <Text className="mt-4 max-w-[340px] text-base leading-6 text-ink-100">
-          Review the current accounts, roles, and status values stored in Better Auth.
+          {t("admin.listPageSubtitle")}
         </Text>
 
         <View className="mt-10 gap-4">
-          <DashboardCard eyebrow="Directory" title="Current users">
+          <DashboardCard eyebrow={t("admin.directoryEyebrow")} title={t("admin.listTitle")}>
             <AuthInput
               autoCapitalize="none"
               autoCorrect={false}
-              label="Search"
+              label={t("admin.search")}
               onChangeText={setSearch}
-              placeholder="Search by name, email, or role"
+              placeholder={t("admin.searchPlaceholder")}
               value={search}
             />
 
             <View className="mb-4">
               <AuthSubmitButton
                 isPending={isLoadingUsers}
-                label="Refresh users"
+                label={t("admin.refreshUsers")}
                 onPress={() => {
                   void loadUsers();
                 }}
@@ -133,16 +138,18 @@ export default function ListUsersScreen() {
                     <Text className="text-lg font-bold text-white">{user.name}</Text>
                     <Text className="mt-1 text-base text-ink-100">{user.email}</Text>
                     <Text className="mt-2 text-sm font-semibold uppercase tracking-[2px] text-coral-300">
-                      Role: {user.role ?? "user"}
+                      {t("common.roleLabel", { role: user.role ?? "user" })}
                     </Text>
                     <Text className="mt-1 text-sm text-ink-100">
-                      Status: {user.banned ? "Banned" : "Active"}
+                      {t("common.statusLabel", {
+                        status: user.banned ? t("common.banned") : t("common.active"),
+                      })}
                     </Text>
                   </View>
                 ))
               ) : (
                 <Text className="text-base leading-6 text-ink-100">
-                  No users matched the current search.
+                  {t("admin.noUsersFound")}
                 </Text>
               )}
             </View>

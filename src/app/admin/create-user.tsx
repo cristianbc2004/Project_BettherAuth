@@ -1,5 +1,6 @@
 import { Redirect, router } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -8,9 +9,12 @@ import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { DashboardCard } from "@/components/dashboard-card";
 import { LoadingScreen } from "@/components/loading-screen";
 import { authClient } from "@/lib/auth-client";
+import { buildAuthFetchOptions, useLanguage } from "@/lib/locale";
 
 export default function CreateUserScreen() {
   const { data: session, isPending } = authClient.useSession();
+  const { locale } = useLanguage();
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,12 +51,13 @@ export default function CreateUserScreen() {
       password,
       name,
       role,
+      ...buildAuthFetchOptions(locale),
     });
 
     setIsCreatingUser(false);
 
     if (result.error) {
-      setErrorMessage(result.error.message ?? "Could not create the user.");
+      setErrorMessage(result.error.message ?? t("admin.createError"));
       return;
     }
 
@@ -60,7 +65,7 @@ export default function CreateUserScreen() {
     setEmail("");
     setPassword("");
     setRole("user");
-    setMessage("User created successfully.");
+    setMessage(t("admin.createSuccess"));
   };
 
   return (
@@ -72,59 +77,59 @@ export default function CreateUserScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Pressable className="mb-6 self-start" onPress={() => router.back()}>
-          <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">Back</Text>
+          <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">{t("common.back")}</Text>
         </Pressable>
 
         <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">
-          Admin create
+          {t("admin.createPageEyebrow")}
         </Text>
-        <Text className="mt-4 text-5xl font-black leading-[56px] text-white">Create a user.</Text>
+        <Text className="mt-4 text-5xl font-black leading-[56px] text-white">{t("admin.createPageTitle")}</Text>
         <Text className="mt-4 max-w-[340px] text-base leading-6 text-ink-100">
-          Add a new account and choose whether it should be a regular user or an admin.
+          {t("admin.createPageSubtitle")}
         </Text>
 
         <View className="mt-10 gap-4">
-          <DashboardCard eyebrow="Form" title="New user details">
+          <DashboardCard eyebrow={t("admin.formEyebrow")} title={t("admin.formTitle")}>
             <AuthInput
               autoCapitalize="words"
               autoCorrect={false}
-              label="Name"
+              label={t("authForm.fullName")}
               onChangeText={setName}
-              placeholder="James Smith"
+              placeholder={t("authForm.namePlaceholder")}
               value={name}
             />
             <AuthInput
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="email-address"
-              label="Email"
+              label={t("authForm.email")}
               onChangeText={setEmail}
-              placeholder="user@example.com"
+              placeholder={t("authForm.emailPlaceholder")}
               value={email}
             />
             <AuthInput
               autoCapitalize="none"
               autoCorrect={false}
-              label="Password"
+              label={t("authForm.password")}
               onChangeText={setPassword}
-              placeholder="At least 8 characters"
+              placeholder={t("authForm.passwordPlaceholder")}
               secureTextEntry
               value={password}
             />
             <AuthInput
               autoCapitalize="none"
               autoCorrect={false}
-              label="Role"
+              label={t("admin.role")}
               onChangeText={(value) => {
                 setRole(value?.trim().toLowerCase() === "admin" ? "admin" : "user");
               }}
-              placeholder="user or admin"
+              placeholder={t("admin.rolePlaceholder")}
               value={role}
             />
 
             <AuthSubmitButton
               isPending={isCreatingUser}
-              label="Create user"
+              label={t("admin.createUser")}
               onPress={() => {
                 void handleCreateUser();
               }}
