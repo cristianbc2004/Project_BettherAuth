@@ -84,6 +84,15 @@ function SignInForm() {
         return;
       }
 
+      const signInData = response.data as
+        | { twoFactorRedirect?: boolean; twoFactorMethods?: string[] }
+        | undefined;
+
+      if (signInData?.twoFactorRedirect) {
+        router.replace("/two-factor-verify" as never);
+        return;
+      }
+
       router.replace("/dashboard");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Network error. Please try again.";

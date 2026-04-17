@@ -66,6 +66,22 @@ export default function DashboardScreen() {
               />
             </View>
           </DashboardCard>
+
+          <DashboardCard eyebrow="Security" title="Two-factor authentication">
+            <Text className="text-base leading-6 text-ink-100">
+              Add an authenticator app as a second sign-in step and keep backup codes for account
+              recovery.
+            </Text>
+            <View className="mt-4">
+              <AuthSubmitButton
+                isPending={false}
+                label="Manage 2FA"
+                onPress={() => {
+                  router.push("/two-factor" as never);
+                }}
+              />
+            </View>
+          </DashboardCard>
         </View>
 
         <View className="mt-8">
