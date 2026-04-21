@@ -3,11 +3,11 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Pressable, Text, View } from "react-native";
 
-import { AuthInput } from "@/components/auth-input";
-import { AuthShell } from "@/components/auth-shell";
-import { AuthSubmitButton } from "@/components/auth-submit-button";
-import { authClient } from "@/lib/auth-client";
-import { buildAuthFetchOptions, useLanguage } from "@/lib/locale";
+import { AuthInput } from "@/features/auth/components/auth-input";
+import { AuthShell } from "@/features/auth/components/auth-shell";
+import { authClient } from "@/features/auth/services/auth-client";
+import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
+import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
 export default function TwoFactorVerifyScreen() {
   const { t } = useTranslation();

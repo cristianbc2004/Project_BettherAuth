@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/shared/lib/i18n";
 
 export const supportedLocales = ["es", "en"] as const;
 export type AppLocale = (typeof supportedLocales)[number];

@@ -1,6 +1,6 @@
 import { hashPassword } from "better-auth/crypto";
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/shared/lib/prisma";
 
 export async function POST(request: Request) {
   try {

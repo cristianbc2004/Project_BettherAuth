@@ -1,11 +1,11 @@
 import "../../global.css";
-import "@/lib/i18n";
+import "@/shared/lib/i18n";
 
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
-import { LanguageToggle } from "@/components/language-toggle";
-import { LanguageProvider } from "@/lib/locale";
+import { LanguageToggle } from "@/shared/components/ui/language-toggle";
+import { LanguageProvider } from "@/shared/lib/locale";
 
 export default function RootLayout() {
   return (

@@ -1,5 +1,5 @@
-import { AuthForm } from "@/components/auth-form";
-import { AuthShell } from "@/components/auth-shell";
+import { AuthForm } from "@/features/auth/components/auth-form";
+import { AuthShell } from "@/features/auth/components/auth-shell";
 import { useTranslation } from "react-i18next";
 
 export default function SignInScreen() {

@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AuthInput } from "@/components/auth-input";
-import { AuthSubmitButton } from "@/components/auth-submit-button";
-import { DashboardCard } from "@/components/dashboard-card";
-import { LoadingScreen } from "@/components/loading-screen";
-import { authClient } from "@/lib/auth-client";
-import { buildAuthFetchOptions, useLanguage } from "@/lib/locale";
+import { AuthInput } from "@/features/auth/components/auth-input";
+import { authClient } from "@/features/auth/services/auth-client";
+import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
+import { DashboardCard } from "@/shared/components/ui/dashboard-card";
+import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
 type AdminUser = {
   id: string;

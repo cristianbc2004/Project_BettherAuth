@@ -1,7 +1,7 @@
 import { Redirect } from "expo-router";
 
-import { LoadingScreen } from "@/components/loading-screen";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/features/auth/services/auth-client";
+import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 
 export default function IndexScreen() {
   const { data: session, isPending } = authClient.useSession();
