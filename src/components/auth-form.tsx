@@ -85,7 +85,6 @@ function SignInForm() {
 
       const response = await authClient.signIn.email({
         ...values,
-        callbackURL: appConfig.emailVerificationSuccessUrl,
         ...buildAuthFetchOptions(locale),
       });
 
