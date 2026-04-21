@@ -4,10 +4,10 @@ import { betterAuth } from "better-auth";
 import { twoFactor, admin } from "better-auth/plugins";
 import { i18n } from "@better-auth/i18n";
 
-import { appConfig } from "@/lib/app-config";
-import { prisma } from "@/lib/prisma";
-import { ac, adminRole, userRole } from "@/lib/permissions";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendVerificationEmail } from "@/features/auth/services/email";
+import { ac, adminRole, userRole } from "@/features/auth/services/permissions";
+import { appConfig } from "@/shared/lib/app-config";
+import { prisma } from "@/shared/lib/prisma";
 
 const trustedOrigins = [
   appConfig.authServerUrl,

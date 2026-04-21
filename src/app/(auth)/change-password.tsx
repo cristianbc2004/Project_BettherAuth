@@ -6,17 +6,11 @@ import { useTranslation } from "react-i18next";
 import { Alert, Text, View } from "react-native";
 import { z } from "zod";
 
-import { AuthPasswordInput } from "@/components/auth-password-input";
-import { AuthShell } from "@/components/auth-shell";
-import { AuthSubmitButton } from "@/components/auth-submit-button";
-import { authClient } from "@/lib/auth-client";
-import { buildAuthFetchOptions, useLanguage } from "@/lib/locale";
-
-type ChangePasswordValues = {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-};
+import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
+import { authClient } from "@/features/auth/services/auth-client";
+import { AuthShell } from "@/features/auth/components/auth-shell";
+import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
+import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
 export default function ChangePasswordScreen() {
   const { t } = useTranslation();
@@ -33,7 +27,7 @@ export default function ChangePasswordScreen() {
       message: t("changePassword.passwordsDoNotMatch"),
       path: ["confirmPassword"],
     });
-  const form = useForm<ChangePasswordValues>({
+  const form = useForm<z.infer<typeof changePasswordSchema>>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
       currentPassword: "",

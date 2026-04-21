@@ -6,15 +6,11 @@ import { useTranslation } from "react-i18next";
 import { Alert, Text, View } from "react-native";
 import { z } from "zod";
 
-import { AuthInput } from "@/components/auth-input";
-import { AuthShell } from "@/components/auth-shell";
-import { AuthSubmitButton } from "@/components/auth-submit-button";
-import { appConfig } from "@/lib/app-config";
-import { buildLanguageHeaders, useLanguage } from "@/lib/locale";
-
-type ForgotPasswordValues = {
-  email: string;
-};
+import { AuthInput } from "@/features/auth/components/auth-input";
+import { AuthShell } from "@/features/auth/components/auth-shell";
+import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
+import { appConfig } from "@/shared/lib/app-config";
+import { buildLanguageHeaders, useLanguage } from "@/shared/lib/locale";
 
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
@@ -24,7 +20,7 @@ export default function ForgotPasswordScreen() {
   const forgotPasswordSchema = z.object({
     email: z.email(t("authForm.invalidEmail")),
   });
-  const form = useForm<ForgotPasswordValues>({
+  const form = useForm<z.infer<typeof forgotPasswordSchema>>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",

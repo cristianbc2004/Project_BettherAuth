@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AuthSubmitButton } from "@/components/auth-submit-button";
-import { DashboardCard } from "@/components/dashboard-card";
-import { LoadingScreen } from "@/components/loading-screen";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/features/auth/services/auth-client";
+import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
+import { DashboardCard } from "@/shared/components/ui/dashboard-card";
+import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 
 export default function AdminPanelScreen() {
   const { data: session, isPending } = authClient.useSession();

@@ -6,16 +6,11 @@ import { useTranslation } from "react-i18next";
 import { Alert, Text, View } from "react-native";
 import { z } from "zod";
 
-import { AuthPasswordInput } from "@/components/auth-password-input";
-import { AuthShell } from "@/components/auth-shell";
-import { AuthSubmitButton } from "@/components/auth-submit-button";
-import { appConfig } from "@/lib/app-config";
-import { buildLanguageHeaders, useLanguage } from "@/lib/locale";
-
-type ResetPasswordValues = {
-  newPassword: string;
-  confirmPassword: string;
-};
+import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
+import { AuthShell } from "@/features/auth/components/auth-shell";
+import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
+import { appConfig } from "@/shared/lib/app-config";
+import { buildLanguageHeaders, useLanguage } from "@/shared/lib/locale";
 
 export default function ResetPasswordScreen() {
   const { t } = useTranslation();
@@ -33,7 +28,7 @@ export default function ResetPasswordScreen() {
       message: t("resetPassword.passwordsDoNotMatch"),
       path: ["confirmPassword"],
     });
-  const form = useForm<ResetPasswordValues>({
+  const form = useForm<z.infer<typeof resetPasswordSchema>>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       newPassword: "",

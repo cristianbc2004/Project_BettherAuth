@@ -6,26 +6,17 @@ import { useTranslation } from "react-i18next";
 import { Alert, Text, View } from "react-native";
 import { z } from "zod";
 
-import { AuthInput } from "@/components/auth-input";
-import { AuthPasswordInput } from "@/components/auth-password-input";
-import { AuthSubmitButton } from "@/components/auth-submit-button";
-import { appConfig } from "@/lib/app-config";
-import { authClient } from "@/lib/auth-client";
-import { buildAuthFetchOptions, useLanguage } from "@/lib/locale";
+import { AuthInput } from "@/features/auth/components/auth-input";
+import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
+import { authClient } from "@/features/auth/services/auth-client";
+import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
+import { appConfig } from "@/shared/lib/app-config";
+import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
 type AuthMode = "signIn" | "signUp";
 
 type AuthFormProps = {
   mode: AuthMode;
-};
-
-type SignInValues = {
-  email: string;
-  password: string;
-};
-
-type SignUpValues = SignInValues & {
-  name: string;
 };
 
 function AuthFormFrame({
@@ -70,7 +61,7 @@ function SignInForm() {
     email: z.email(t("authForm.invalidEmail")),
     password: z.string().min(8, t("authForm.minPassword")),
   });
-  const form = useForm<SignInValues>({
+  const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",
@@ -183,7 +174,7 @@ function SignUpForm() {
       email: z.email(t("authForm.invalidEmail")),
       password: z.string().min(8, t("authForm.minPassword")),
     });
-  const form = useForm<SignUpValues>({
+  const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       name: "",

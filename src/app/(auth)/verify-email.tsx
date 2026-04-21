@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 
-import { LoadingScreen } from "@/components/loading-screen";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/features/auth/services/auth-client";
+import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 
 export default function VerifyEmailScreen() {
   const params = useLocalSearchParams<{ token?: string }>();

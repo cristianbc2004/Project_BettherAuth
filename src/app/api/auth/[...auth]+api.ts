@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/features/auth/services/auth";
 
 const handler = auth.handler;
 

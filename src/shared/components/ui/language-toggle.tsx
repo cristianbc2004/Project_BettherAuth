@@ -1,6 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 
-import { useLanguage } from "@/lib/locale";
+import { useLanguage } from "@/shared/lib/locale";
 
 export function LanguageToggle() {
   const { locale, setLocale } = useLanguage();

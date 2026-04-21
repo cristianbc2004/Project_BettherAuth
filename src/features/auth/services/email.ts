@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-import { appConfig } from "@/lib/app-config";
+import { appConfig } from "@/shared/lib/app-config";
 
 const smtpHost = process.env.SMTP_HOST;
 const smtpPort = Number(process.env.SMTP_PORT ?? "587");
