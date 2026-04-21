@@ -90,9 +90,6 @@
 ## Development Commands
 - Install dependencies with `bun install`.
 - Start the app with `bun run start`.
-- Run on Android with `bun run android`.
-- Run on iOS with `bun run ios`.
-- Run on web with `bun run web`.
 - Generate the Prisma client with `bun run db:generate`.
 - Create or apply a local Prisma migration with `bun run db:migrate`.
 - Open Prisma Studio with `bun run db:studio`.
