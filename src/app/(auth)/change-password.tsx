@@ -68,16 +68,19 @@ export default function ChangePasswordScreen() {
 
   return (
     <AuthShell
-      eyebrow={t("authShell.changePassword.eyebrow")}
-      subtitle={t("authShell.changePassword.subtitle")}
-      title={t("authShell.changePassword.title")}
+      eyebrow=""
+      subtitle="Update your password and keep your account protected with the same secure mobile flow."
+      title="Change Your Password."
     >
-      <Text className="text-2xl font-black text-ink-900">{t("changePassword.keepSecure")}</Text>
-      <Text className="mt-2 text-base leading-6 text-ink-600">
-        {t("changePassword.description")}
-      </Text>
+      <View className="px-4 pb-6 pt-6">
+        <Text className="text-sm font-medium" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
+          {t("changePassword.keepSecure")}
+        </Text>
+        <Text className="mt-2 text-[15px] leading-6" style={{ color: "rgba(255, 255, 255, 0.7)" }}>
+          {t("changePassword.description")}
+        </Text>
 
-      <View className="mt-6">
+        <View className="mt-6">
         <Controller
           control={form.control}
           name="currentPassword"
@@ -122,17 +125,22 @@ export default function ChangePasswordScreen() {
             />
           )}
         />
+        </View>
+
+        {serverError ? (
+          <View className="mb-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+            <Text className="text-sm text-red-300">{serverError}</Text>
+          </View>
+        ) : null}
+
+        <AuthSubmitButton
+          isPending={isPending}
+          label={t("changePassword.updatePassword")}
+          onPress={() => {
+            void handleSubmit();
+          }}
+        />
       </View>
-
-      {serverError ? <Text className="mb-2 text-sm text-red-500">{serverError}</Text> : null}
-
-      <AuthSubmitButton
-        isPending={isPending}
-        label={t("changePassword.updatePassword")}
-        onPress={() => {
-          void handleSubmit();
-        }}
-      />
     </AuthShell>
   );
 }

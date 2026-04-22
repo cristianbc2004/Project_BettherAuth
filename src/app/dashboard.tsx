@@ -1,5 +1,6 @@
 import { Redirect, router } from "expo-router";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, Easing, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -69,6 +70,35 @@ export default function DashboardScreen() {
     .split(",")
     .map((entry) => entry.trim())
     .includes("admin");
+  const sectionAnimations = useRef([
+    { opacity: new Animated.Value(0), translateY: new Animated.Value(18) },
+    { opacity: new Animated.Value(0), translateY: new Animated.Value(18) },
+    { opacity: new Animated.Value(0), translateY: new Animated.Value(18) },
+    { opacity: new Animated.Value(0), translateY: new Animated.Value(18) },
+    { opacity: new Animated.Value(0), translateY: new Animated.Value(18) },
+  ]).current;
+
+  useEffect(() => {
+    Animated.stagger(
+      130,
+      sectionAnimations.map((section) =>
+        Animated.parallel([
+          Animated.timing(section.opacity, {
+            toValue: 1,
+            duration: 480,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(section.translateY, {
+            toValue: 0,
+            duration: 480,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+        ]),
+      ),
+    ).start();
+  }, [sectionAnimations]);
 
   if (isPending) {
     return <LoadingScreen />;
@@ -113,61 +143,87 @@ export default function DashboardScreen() {
           </Pressable>
         </View>
 
-        <SectionLabel label="Profile" />
-        <Pressable
-          className="flex-row items-center rounded-[26px] border border-white/5 bg-[#6a34d3]/35 px-4 py-4"
-          onPress={() => {
-            router.push("/change-password" as never);
+        <Animated.View
+          style={{
+            opacity: sectionAnimations[0].opacity,
+            transform: [{ translateY: sectionAnimations[0].translateY }],
           }}
         >
-          <View className="mr-4 h-14 w-14 items-center justify-center rounded-full bg-[#4b258d]">
-            <Text className="text-lg font-bold text-white">{getInitials(session.user.name)}</Text>
-          </View>
+          <SectionLabel label="Profile" />
+          <Pressable
+            className="flex-row items-center rounded-[26px] border border-white/5 bg-[#6a34d3]/35 px-4 py-4"
+            onPress={() => {
+              router.push("/change-password" as never);
+            }}
+          >
+            <View className="mr-4 h-14 w-14 items-center justify-center rounded-full bg-[#4b258d]">
+              <Text className="text-lg font-bold text-white">{getInitials(session.user.name)}</Text>
+            </View>
 
-          <View className="flex-1">
-            <Text className="text-[16px] font-semibold text-white">{firstName}</Text>
-            <Text className="mt-1 text-sm text-white/65">{session.user.email}</Text>
-            <Text className="mt-2 text-[11px] uppercase tracking-[1.3px] text-white/55">{role}</Text>
-          </View>
+            <View className="flex-1">
+              <Text className="text-[16px] font-semibold text-white">{firstName}</Text>
+              <Text className="mt-1 text-sm text-white/65">{session.user.email}</Text>
+              <Text className="mt-2 text-[11px] uppercase tracking-[1.3px] text-white/55">{role}</Text>
+            </View>
 
-          <Text className="text-2xl text-white/70">{">"}</Text>
-        </Pressable>
+            <Text className="text-2xl text-white/70">{">"}</Text>
+          </Pressable>
+        </Animated.View>
 
-        <SectionLabel label="Authentication" />
-        <MenuRow
-          accent="#2a3144"
-          label="Change password"
-          onPress={() => {
-            router.push("/change-password" as never);
+        <Animated.View
+          style={{
+            opacity: sectionAnimations[1].opacity,
+            transform: [{ translateY: sectionAnimations[1].translateY }],
           }}
-        />
-        <MenuRow
-          accent="#313a4f"
-          label="Two-factor authentication"
-          onPress={() => {
-            router.push("/two-factor" as never);
-          }}
-        />
+        >
+          <SectionLabel label="Authentication" />
+          <MenuRow
+            accent="#2a3144"
+            label="Change password"
+            onPress={() => {
+              router.push("/change-password" as never);
+            }}
+          />
+          <MenuRow
+            accent="#313a4f"
+            label="Two-factor authentication"
+            onPress={() => {
+              router.push("/two-factor" as never);
+            }}
+          />
+        </Animated.View>
 
-        <SectionLabel label="App" />
-        <MenuRow
-          accent="#43325d"
-          label="Notifications"
-          onPress={() => {
-            router.push("/notifications" as never);
+        <Animated.View
+          style={{
+            opacity: sectionAnimations[2].opacity,
+            transform: [{ translateY: sectionAnimations[2].translateY }],
           }}
-        />
-        <MenuRow
-          accent="#313748"
-          detail={locale === "es" ? "Spanish" : "English"}
-          label="App language"
-          onPress={() => {
-            void setLocale(locale === "es" ? "en" : "es");
-          }}
-        />
+        >
+          <SectionLabel label="App" />
+          <MenuRow
+            accent="#43325d"
+            label="Notifications"
+            onPress={() => {
+              router.push("/notifications" as never);
+            }}
+          />
+          <MenuRow
+            accent="#313748"
+            detail={locale === "es" ? "Spanish" : "English"}
+            label="App language"
+            onPress={() => {
+              void setLocale(locale === "es" ? "en" : "es");
+            }}
+          />
+        </Animated.View>
 
         {isAdmin ? (
-          <>
+          <Animated.View
+            style={{
+              opacity: sectionAnimations[3].opacity,
+              transform: [{ translateY: sectionAnimations[3].translateY }],
+            }}
+          >
             <SectionLabel label="Admin" />
             <MenuRow
               accent="#41385c"
@@ -176,26 +232,33 @@ export default function DashboardScreen() {
                 router.push("/admin" as never);
               }}
             />
-          </>
+          </Animated.View>
         ) : null}
 
-        <SectionLabel label="Session" />
-        <MenuRow
-          accent="#232937"
-          label="Log out"
-          onPress={() => {
-            void authClient.signOut({
-              ...buildAuthFetchOptions(locale),
-              fetchOptions: {
-                headers: buildAuthFetchOptions(locale).fetchOptions.headers,
-                onSuccess: () => {
-                  router.replace("/sign-in");
-                },
-              },
-            });
+        <Animated.View
+          style={{
+            opacity: sectionAnimations[4].opacity,
+            transform: [{ translateY: sectionAnimations[4].translateY }],
           }}
-          tone="danger"
-        />
+        >
+          <SectionLabel label="Session" />
+          <MenuRow
+            accent="#232937"
+            label="Log out"
+            onPress={() => {
+              void authClient.signOut({
+                ...buildAuthFetchOptions(locale),
+                fetchOptions: {
+                  headers: buildAuthFetchOptions(locale).fetchOptions.headers,
+                  onSuccess: () => {
+                    router.replace("/sign-in");
+                  },
+                },
+              });
+            }}
+            tone="danger"
+          />
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
