@@ -1,13 +1,13 @@
-import { Redirect, router } from "expo-router";
+import { Redirect } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, View } from "react-native";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
+import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
+import { AuthShell } from "@/features/auth/components/auth-shell";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
-import { DashboardCard } from "@/shared/components/ui/dashboard-card";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
@@ -35,6 +35,33 @@ function extractSetupDetails(totpURI: string) {
       secret: "",
     };
   }
+}
+
+function MinimalSection({
+  children,
+  description,
+  title,
+}: {
+  children?: React.ReactNode;
+  description?: string;
+  title: string;
+}) {
+  return (
+    <View className="border-t border-white/6 px-4 py-5">
+      <Text className="text-base font-semibold text-white">{title}</Text>
+      {description ? <Text className="mt-2 text-[15px] leading-6 text-white/60">{description}</Text> : null}
+      {children ? <View className="mt-5">{children}</View> : null}
+    </View>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View className="mb-3 rounded-[20px] border border-white/6 bg-white/[0.04] px-4 py-4">
+      <Text className="text-xs font-medium uppercase tracking-[1.2px] text-white/45">{label}</Text>
+      <Text className="mt-2 text-[15px] text-white">{value || "-"}</Text>
+    </View>
+  );
 }
 
 export default function TwoFactorScreen() {
@@ -145,154 +172,100 @@ export default function TwoFactorScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-ink-900">
-      <ScrollView
-        bounces={false}
-        contentContainerClassName="px-6 pb-10 pt-8"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <Pressable
-          className="mb-6 self-start"
-          onPress={() => {
-            router.back();
-          }}
+    <AuthShell
+      eyebrow=""
+      subtitle={`Manage two-factor authentication for ${session.user.email} with the same minimal secure flow.`}
+      title="Two-Factor Authentication."
+    >
+      <View className="overflow-hidden rounded-[30px] border border-white/6 bg-[#0b1220]/40">
+        <MinimalSection
+          description={
+            twoFactorEnabled
+              ? t("twoFactor.statusEnabledDescription")
+              : t("twoFactor.statusDisabledDescription")
+          }
+          title={twoFactorEnabled ? t("twoFactor.statusEnabled") : t("twoFactor.statusDisabled")}
+        />
+
+        <MinimalSection
+          description={twoFactorEnabled ? undefined : t("twoFactor.statusDisabledDescription")}
+          title={t("twoFactor.setupTitle")}
         >
-          <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">
-            {t("common.back")}
-          </Text>
-        </Pressable>
+          <AuthPasswordInput
+            label={t("twoFactor.currentPassword")}
+            onChangeText={setPassword}
+            placeholder={t("twoFactor.currentPasswordPlaceholder")}
+            value={password}
+          />
 
-        <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">
-          {t("twoFactor.eyebrow")}
-        </Text>
-        <Text className="mt-4 text-5xl font-black leading-[56px] text-white">{t("twoFactor.title")}</Text>
-        <Text className="mt-4 max-w-[330px] text-base leading-6 text-ink-100">
-          {t("twoFactor.subtitle", { email: session.user.email })}
-        </Text>
+          <AuthSubmitButton
+            isPending={twoFactorEnabled ? isDisabling : isEnabling}
+            label={twoFactorEnabled ? t("twoFactor.disable2fa") : t("twoFactor.startSetup")}
+            onPress={() => {
+              if (twoFactorEnabled) {
+                void handleDisable();
+                return;
+              }
 
-        <View className="mt-10 gap-4">
-          <DashboardCard
-            eyebrow={t("twoFactor.statusEyebrow")}
-            title={twoFactorEnabled ? t("twoFactor.statusEnabled") : t("twoFactor.statusDisabled")}
-          >
-            <Text className="text-base leading-6 text-ink-100">
-              {twoFactorEnabled
-                ? t("twoFactor.statusEnabledDescription")
-                : t("twoFactor.statusDisabledDescription")}
-            </Text>
-          </DashboardCard>
+              void handleEnable();
+            }}
+          />
+        </MinimalSection>
 
-          <DashboardCard eyebrow={t("twoFactor.setupEyebrow")} title={t("twoFactor.setupTitle")}>
+        {setup ? (
+          <MinimalSection description={t("twoFactor.step1Description")} title={t("twoFactor.step1Title")}>
+            <InfoRow label={t("twoFactor.issuer")} value={setupDetails?.issuer || "-"} />
+            <InfoRow label={t("twoFactor.account")} value={setupDetails?.account || "-"} />
+            <InfoRow label={t("twoFactor.secret")} value={setupDetails?.secret || "-"} />
+          </MinimalSection>
+        ) : null}
+
+        {setup ? (
+          <MinimalSection title={t("twoFactor.step2Title")}>
             <AuthInput
               autoCapitalize="none"
               autoCorrect={false}
-              label={t("twoFactor.currentPassword")}
-              onChangeText={setPassword}
-              placeholder={t("twoFactor.currentPasswordPlaceholder")}
-              secureTextEntry
-              value={password}
+              keyboardType="number-pad"
+              label={t("twoFactor.sixDigitCode")}
+              onChangeText={setVerificationCode}
+              placeholder={t("twoFactor.sixDigitCodePlaceholder")}
+              value={verificationCode}
             />
 
-            {!twoFactorEnabled ? (
-              <AuthSubmitButton
-                isPending={isEnabling}
-                label={t("twoFactor.startSetup")}
-                onPress={() => {
-                  void handleEnable();
-                }}
-              />
-            ) : (
-              <AuthSubmitButton
-                isPending={isDisabling}
-                label={t("twoFactor.disable2fa")}
-                onPress={() => {
-                  void handleDisable();
-                }}
-              />
-            )}
-          </DashboardCard>
+            <AuthSubmitButton
+              isPending={isVerifying}
+              label={t("twoFactor.verifyEnable")}
+              onPress={() => {
+                void handleVerify();
+              }}
+            />
+          </MinimalSection>
+        ) : null}
 
-          {setup ? (
-            <DashboardCard eyebrow={t("twoFactor.step1Eyebrow")} title={t("twoFactor.step1Title")}>
-              <Text className="text-base leading-6 text-ink-100">
-                {t("twoFactor.step1Description")}
-              </Text>
-
-              <View className="mt-4 gap-3">
-                <View className="rounded-2xl bg-ink-800/80 p-4">
-                  <Text className="text-xs font-semibold uppercase tracking-[2px] text-coral-300">
-                    {t("twoFactor.issuer")}
-                  </Text>
-                  <Text className="mt-2 text-base text-white">{setupDetails?.issuer || "-"}</Text>
+        {setup?.backupCodes.length ? (
+          <MinimalSection description={t("twoFactor.recoveryDescription")} title={t("twoFactor.recoveryTitle")}>
+            <View className="gap-3">
+              {setup.backupCodes.map((backupCode) => (
+                <View className="rounded-[20px] border border-white/6 bg-white/[0.04] px-4 py-4" key={backupCode}>
+                  <Text className="text-[15px] font-medium text-white">{backupCode}</Text>
                 </View>
-
-                <View className="rounded-2xl bg-ink-800/80 p-4">
-                  <Text className="text-xs font-semibold uppercase tracking-[2px] text-coral-300">
-                    {t("twoFactor.account")}
-                  </Text>
-                  <Text className="mt-2 text-base text-white">{setupDetails?.account || "-"}</Text>
-                </View>
-
-                <View className="rounded-2xl bg-ink-800/80 p-4">
-                  <Text className="text-xs font-semibold uppercase tracking-[2px] text-coral-300">
-                    {t("twoFactor.secret")}
-                  </Text>
-                  <Text className="mt-2 text-base text-white">{setupDetails?.secret || "-"}</Text>
-                </View>
-              </View>
-            </DashboardCard>
-          ) : null}
-
-          {setup ? (
-            <DashboardCard eyebrow={t("twoFactor.step2Eyebrow")} title={t("twoFactor.step2Title")}>
-              <AuthInput
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="number-pad"
-                label={t("twoFactor.sixDigitCode")}
-                onChangeText={setVerificationCode}
-                placeholder={t("twoFactor.sixDigitCodePlaceholder")}
-                value={verificationCode}
-              />
-
-              <AuthSubmitButton
-                isPending={isVerifying}
-                label={t("twoFactor.verifyEnable")}
-                onPress={() => {
-                  void handleVerify();
-                }}
-              />
-            </DashboardCard>
-          ) : null}
-
-          {setup?.backupCodes.length ? (
-            <DashboardCard eyebrow={t("twoFactor.recoveryEyebrow")} title={t("twoFactor.recoveryTitle")}>
-              <Text className="text-base leading-6 text-ink-100">{t("twoFactor.recoveryDescription")}</Text>
-
-              <View className="mt-4 flex-row flex-wrap gap-3">
-                {setup.backupCodes.map((backupCode) => (
-                  <View className="rounded-2xl bg-ink-800/80 px-4 py-3" key={backupCode}>
-                    <Text className="text-base font-semibold text-white">{backupCode}</Text>
-                  </View>
-                ))}
-              </View>
-            </DashboardCard>
-          ) : null}
-
-          {message ? (
-            <View className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
-              <Text className="text-base leading-6 text-emerald-100">{message}</Text>
+              ))}
             </View>
-          ) : null}
+          </MinimalSection>
+        ) : null}
+      </View>
 
-          {errorMessage ? (
-            <View className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4">
-              <Text className="text-base leading-6 text-red-100">{errorMessage}</Text>
-            </View>
-          ) : null}
+      {message ? (
+        <View className="mt-4 rounded-[22px] border border-emerald-500/25 bg-emerald-500/10 px-4 py-3">
+          <Text className="text-sm leading-6 text-white">{message}</Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      ) : null}
+
+      {errorMessage ? (
+        <View className="mt-4 rounded-[22px] border border-red-500/25 bg-red-500/10 px-4 py-3">
+          <Text className="text-sm leading-6 text-white">{errorMessage}</Text>
+        </View>
+      ) : null}
+    </AuthShell>
   );
 }
