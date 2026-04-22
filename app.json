@@ -3,6 +3,7 @@
     "name": "Better Auth Dashboard",
     "slug": "better-auth-dashboard",
     "version": "1.0.0",
+    "backgroundColor": "#060c17",
     "orientation": "portrait",
     "scheme": "better-auth-dashboard",
     "icon": "./assets/icon.png",
@@ -17,6 +18,7 @@
       "supportsTablet": true
     },
     "android": {
+      "backgroundColor": "#060c17",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
