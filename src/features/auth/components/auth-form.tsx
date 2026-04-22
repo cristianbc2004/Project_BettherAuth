@@ -23,31 +23,31 @@ function AuthFormFrame({
   children,
   ctaHref,
   ctaLabel,
-  description,
   serverError,
-  title,
 }: {
   children: ReactNode;
   ctaHref: "/sign-in" | "/sign-up";
   ctaLabel: string;
-  description: string;
   serverError: string | null;
-  title: string;
 }) {
   const { t } = useTranslation();
 
   return (
-    <View>
-      <Text className="text-2xl font-black text-ink-900">{title}</Text>
-      <Text className="mt-2 text-base leading-6 text-ink-600">{description}</Text>
-      <View className="mt-6">{children}</View>
-      {serverError ? <Text className="mb-2 text-sm text-red-500">{serverError}</Text> : null}
-      <Text className="mt-6 text-center text-sm text-ink-600">
-        {ctaHref === "/sign-up" ? t("authForm.needAccount") : t("authForm.alreadyHaveAccount")}
-        <Link href={ctaHref} className="font-bold text-coral-500">
-          {ctaLabel}
-        </Link>
-      </Text>
+    <View className="px-4 pb-6 pt-6">
+      <View>{children}</View>
+      {serverError ? (
+        <View className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+          <Text className="text-sm text-red-300">{serverError}</Text>
+        </View>
+      ) : null}
+      <View className="mt-8">
+        <Text className="text-center text-sm text-white/75">
+          {ctaHref === "/sign-up" ? t("authForm.needAccount") : t("authForm.alreadyHaveAccount")}
+          <Link href={ctaHref} className="font-bold text-[#9851ff]">
+            {ctaLabel}
+          </Link>
+        </Text>
+      </View>
     </View>
   );
 }
@@ -109,9 +109,7 @@ function SignInForm() {
     <AuthFormFrame
       ctaHref="/sign-up"
       ctaLabel={t("authForm.createOne")}
-      description={t("authForm.welcomeDescription")}
       serverError={serverError}
-      title={t("authForm.welcomeBack")}
     >
       <Controller
         control={form.control}
@@ -146,15 +144,15 @@ function SignInForm() {
           )}
       />
 
-      <Text className="mb-4 mt-1 text-right text-sm text-ink-600">
-        <Link href={"/forgot-password" as never} className="font-semibold text-coral-500">
+      <View className="mb-2 mt-1 flex-row items-center justify-end">
+        <Link href={"/forgot-password" as never} className="font-medium text-[#a8b0c7]">
           {t("authForm.forgotPassword")}
         </Link>
-      </Text>
+      </View>
 
       <AuthSubmitButton
         isPending={isPending}
-        label={t("authForm.signIn")}
+        label="Get Started"
         onPress={() => {
           void handleSubmit();
         }}
@@ -229,9 +227,7 @@ function SignUpForm() {
     <AuthFormFrame
       ctaHref="/sign-in"
       ctaLabel={t("authForm.signIn")}
-      description={t("authForm.createAccountDescription")}
       serverError={serverError}
-      title={t("authForm.createAccount")}
     >
       <Controller
         control={form.control}

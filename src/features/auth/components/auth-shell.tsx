@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AuthBrandMark } from "@/features/auth/components/auth-brand-mark";
+
 type AuthShellProps = PropsWithChildren<{
   eyebrow: string;
   title: string;
@@ -78,11 +80,10 @@ export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-sand">
+    <SafeAreaView className="flex-1 bg-midnight-950">
       <View className="absolute inset-0">
-        <View className="absolute -left-10 top-10 h-44 w-44 rounded-full bg-coral-300/45" />
-        <View className="absolute right-[-20] top-36 h-56 w-56 rounded-full bg-ink-200/60" />
-        <View className="absolute bottom-0 left-0 right-0 h-72 rounded-t-[48px] bg-ink-900" />
+        <View className="absolute inset-0 bg-[#080c18]" />
+        <View className="absolute top-0 h-[240px] w-full bg-[#2a1a52]/4" />
       </View>
 
       <KeyboardAvoidingView
@@ -91,28 +92,30 @@ export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps
       >
         <ScrollView
           bounces={false}
-          contentContainerClassName={`${keyboardVisible ? "px-6 pb-6 pt-4" : "flex-grow px-6 pb-10 pt-6"}`}
+          contentContainerClassName={`${keyboardVisible ? "px-6 pb-8 pt-4" : "flex-grow px-6 pb-10 pt-8"}`}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {!keyboardVisible ? (
             <Animated.View
-              className="mt-8"
+              className="mt-10 items-center"
               style={{
                 opacity: headerOpacity,
                 transform: [{ translateY: headerTranslate }],
               }}
             >
-              <Text className="text-sm font-semibold uppercase tracking-[3px] text-ink-700">
-                {eyebrow}
+              <AuthBrandMark />
+              <Text className="mt-9 px-8 text-center text-[30px] font-black leading-[36px] text-white">
+                {title}
               </Text>
-              <Text className="mt-4 text-5xl font-black leading-[56px] text-ink-900">{title}</Text>
-              <Text className="mt-4 max-w-[320px] text-base leading-6 text-ink-700">{subtitle}</Text>
+              <Text className="mt-4 max-w-[320px] text-center text-[15px] leading-6 text-white/65">
+                {subtitle || eyebrow}
+              </Text>
             </Animated.View>
           ) : null}
 
           <Animated.View
-            className={`${keyboardVisible ? "mt-4" : "mt-10"} rounded-[36px] border border-white/70 bg-white/90 p-6 shadow-panel`}
+            className={`${keyboardVisible ? "mt-6" : "mt-10"} rounded-[36px] border border-white/6 bg-[#0b1220]/78 px-0 py-0`}
             style={{
               opacity: cardOpacity,
               transform: [{ translateY: cardTranslate }],

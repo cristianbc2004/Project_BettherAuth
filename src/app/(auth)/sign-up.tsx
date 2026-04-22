@@ -1,15 +1,12 @@
 import { AuthForm } from "@/features/auth/components/auth-form";
 import { AuthShell } from "@/features/auth/components/auth-shell";
-import { useTranslation } from "react-i18next";
 
 export default function SignUpScreen() {
-  const { t } = useTranslation();
-
   return (
     <AuthShell
-      eyebrow={t("authShell.signUp.eyebrow")}
-      subtitle={t("authShell.signUp.subtitle")}
-      title={t("authShell.signUp.title")}
+      eyebrow=""
+      subtitle="Set up your access and continue with the same secure mobile experience."
+      title="Create Your Access."
     >
       <AuthForm mode="signUp" />
     </AuthShell>
