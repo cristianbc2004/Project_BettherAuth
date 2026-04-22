@@ -23,7 +23,7 @@ export function AuthSubmitButton({ isPending, label, onPress }: AuthSubmitButton
 
   return (
     <AnimatedPressable
-      className="mt-2 h-14 items-center justify-center rounded-2xl bg-ink-900"
+      className="mt-4 h-14 items-center justify-center rounded-[26px] border border-[#ba7dff]/30 bg-[#8d3dff]"
       disabled={isPending}
       onPressIn={() => {
         animateScale(0.97);
@@ -35,9 +35,9 @@ export function AuthSubmitButton({ isPending, label, onPress }: AuthSubmitButton
       style={{ transform: [{ scale }] }}
     >
       {isPending ? (
-        <ActivityIndicator color="#f6efe6" />
+        <ActivityIndicator color="#f8fafc" />
       ) : (
-        <Text className="text-base font-bold text-sand">{label}</Text>
+        <Text className="text-base font-semibold text-white">{label}</Text>
       )}
     </AnimatedPressable>
   );

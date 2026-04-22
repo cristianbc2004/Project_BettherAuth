@@ -1,19 +1,69 @@
 import { Redirect, router } from "expo-router";
-import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
-import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
-import { DashboardCard } from "@/shared/components/ui/dashboard-card";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
+type MenuRowProps = {
+  accent?: string;
+  detail?: string;
+  label: string;
+  onPress: () => void;
+  tone?: "default" | "danger";
+};
+
+function MenuRow({ accent = "#2d3750", detail, label, onPress, tone = "default" }: MenuRowProps) {
+  return (
+    <Pressable
+      className="mb-4 flex-row items-center rounded-[24px] border border-white/5 bg-white/[0.06] px-4 py-4"
+      onPress={onPress}
+    >
+      <View
+        className="mr-4 h-11 w-11 items-center justify-center rounded-full"
+        style={{ backgroundColor: accent }}
+      >
+        <View className="h-3 w-3 rounded-full bg-white/85" />
+      </View>
+
+      <View className="flex-1">
+        <Text className={`text-[16px] font-medium ${tone === "danger" ? "text-white/70" : "text-white"}`}>
+          {label}
+        </Text>
+      </View>
+
+      {detail ? <Text className="mr-3 text-xs text-white/45">{detail}</Text> : null}
+      <Text className={`text-2xl ${tone === "danger" ? "text-white/28" : "text-white/55"}`}>{">"}</Text>
+    </Pressable>
+  );
+}
+
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <Text
+      className="mb-3 mt-2 px-1 text-xs font-medium uppercase tracking-[1.5px]"
+      style={{ color: "rgba(255, 255, 255, 0.72)" }}
+    >
+      {label}
+    </Text>
+  );
+}
+
+function getInitials(name: string) {
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+
+  return initials || "BA";
+}
 
 export default function DashboardScreen() {
   const { data: session, isPending } = authClient.useSession();
-  const { locale } = useLanguage();
-  const { t } = useTranslation();
+  const { locale, setLocale } = useLanguage();
   const role = (session?.user as { role?: string } | undefined)?.role ?? "user";
   const isAdmin = role
     .split(",")
@@ -28,98 +78,124 @@ export default function DashboardScreen() {
     return <Redirect href="/sign-in" />;
   }
 
+  const firstName = session.user.name.split(" ")[0] || session.user.name;
+
   return (
-    <SafeAreaView className="flex-1 bg-ink-900">
+    <SafeAreaView className="flex-1 bg-[#060c17]">
+      <View className="absolute inset-0">
+        <View className="absolute inset-0 bg-[#060c17]" />
+        <View className="absolute inset-x-0 top-0 h-[280px] bg-[#3a1b78]/18" />
+        <View className="absolute right-[-30] top-0 h-64 w-64 rounded-full bg-[#6d34d8]/12" />
+      </View>
+
       <ScrollView
         bounces={false}
-        contentContainerClassName="px-6 pb-10 pt-8"
+        contentContainerClassName="px-5 pb-10 pt-6"
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">
-          {t("dashboard.eyebrow")}
-        </Text>
-        <Text className="mt-4 text-5xl font-black leading-[56px] text-white">
-          {t("dashboard.greeting", { name: session.user.name.split(" ")[0] })}
-        </Text>
-        <Text className="mt-4 max-w-[320px] text-base leading-6 text-ink-100">
-          {t("dashboard.subtitle")}
-        </Text>
-
-        <View className="mt-10 gap-4">
-          <DashboardCard eyebrow={t("dashboard.profileTitle")} title={session.user.email}>
-            <Text className="text-base leading-6 text-ink-100">
-              {t("dashboard.profileDescription", { name: session.user.name })}
-            </Text>
-            <Text className="mt-3 text-sm font-semibold uppercase tracking-[2px] text-coral-300">
-              {t("common.roleLabel", { role })}
-            </Text>
-          </DashboardCard>
-
-          <DashboardCard eyebrow={t("dashboard.backendEyebrow")} title={t("dashboard.backendTitle")}>
-            <Text className="text-base leading-6 text-ink-100">{t("dashboard.backendDescription")}</Text>
-          </DashboardCard>
-
-          <DashboardCard eyebrow={t("dashboard.securityEyebrow")} title={t("dashboard.changePasswordTitle")}>
-            <Text className="text-base leading-6 text-ink-100">
-              {t("dashboard.changePasswordDescription")}
-            </Text>
-            <View className="mt-4">
-              <AuthSubmitButton
-                isPending={false}
-                label={t("dashboard.openPasswordSettings")}
-                onPress={() => {
-                  router.push("/change-password" as never);
-                }}
-              />
-            </View>
-          </DashboardCard>
-
-          <DashboardCard eyebrow={t("dashboard.securityEyebrow")} title={t("dashboard.twoFactorTitle")}>
-            <Text className="text-base leading-6 text-ink-100">{t("dashboard.twoFactorDescription")}</Text>
-            <View className="mt-4">
-              <AuthSubmitButton
-                isPending={false}
-                label={t("dashboard.openTwoFactor")}
-                onPress={() => {
-                  router.push("/two-factor" as never);
-                }}
-              />
-            </View>
-          </DashboardCard>
-
-          {isAdmin ? (
-            <DashboardCard eyebrow={t("dashboard.adminEyebrow")} title={t("dashboard.adminTitle")}>
-              <Text className="text-base leading-6 text-ink-100">{t("dashboard.adminDescription")}</Text>
-              <View className="mt-4">
-                <AuthSubmitButton
-                  isPending={false}
-                  label={t("dashboard.openAdmin")}
-                  onPress={() => {
-                    router.push("/admin" as never);
-                  }}
-                />
-              </View>
-            </DashboardCard>
-          ) : null}
-        </View>
-
-        <View className="mt-8">
-          <AuthSubmitButton
-            isPending={false}
-            label={t("dashboard.signOut")}
+        <View className="mb-8 flex-row items-center justify-between">
+          <Pressable
+            className="h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5"
             onPress={() => {
-              void authClient.signOut({
-                ...buildAuthFetchOptions(locale),
-                fetchOptions: {
-                  headers: buildAuthFetchOptions(locale).fetchOptions.headers,
-                  onSuccess: () => {
-                    router.replace("/sign-in");
-                  },
-                },
-              });
+              router.push("/notifications" as never);
             }}
-          />
+          >
+            <Text className="text-xs font-semibold uppercase tracking-[1.1px] text-white/78">NT</Text>
+          </Pressable>
+          <Text className="text-[24px] font-semibold text-white">Profile</Text>
+          <Pressable
+            className="h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5"
+            onPress={() => {
+              router.push("/two-factor" as never);
+            }}
+          >
+            <Text className="text-xs font-semibold uppercase tracking-[1.2px] text-white/80">2FA</Text>
+          </Pressable>
         </View>
+
+        <SectionLabel label="Profile" />
+        <Pressable
+          className="flex-row items-center rounded-[26px] border border-white/5 bg-[#6a34d3]/35 px-4 py-4"
+          onPress={() => {
+            router.push("/change-password" as never);
+          }}
+        >
+          <View className="mr-4 h-14 w-14 items-center justify-center rounded-full bg-[#4b258d]">
+            <Text className="text-lg font-bold text-white">{getInitials(session.user.name)}</Text>
+          </View>
+
+          <View className="flex-1">
+            <Text className="text-[16px] font-semibold text-white">{firstName}</Text>
+            <Text className="mt-1 text-sm text-white/65">{session.user.email}</Text>
+            <Text className="mt-2 text-[11px] uppercase tracking-[1.3px] text-white/55">{role}</Text>
+          </View>
+
+          <Text className="text-2xl text-white/70">{">"}</Text>
+        </Pressable>
+
+        <SectionLabel label="Authentication" />
+        <MenuRow
+          accent="#2a3144"
+          label="Change password"
+          onPress={() => {
+            router.push("/change-password" as never);
+          }}
+        />
+        <MenuRow
+          accent="#313a4f"
+          label="Two-factor authentication"
+          onPress={() => {
+            router.push("/two-factor" as never);
+          }}
+        />
+
+        <SectionLabel label="App" />
+        <MenuRow
+          accent="#43325d"
+          label="Notifications"
+          onPress={() => {
+            router.push("/notifications" as never);
+          }}
+        />
+        <MenuRow
+          accent="#313748"
+          detail={locale === "es" ? "Spanish" : "English"}
+          label="App language"
+          onPress={() => {
+            void setLocale(locale === "es" ? "en" : "es");
+          }}
+        />
+
+        {isAdmin ? (
+          <>
+            <SectionLabel label="Admin" />
+            <MenuRow
+              accent="#41385c"
+              label="Admin panel"
+              onPress={() => {
+                router.push("/admin" as never);
+              }}
+            />
+          </>
+        ) : null}
+
+        <SectionLabel label="Session" />
+        <MenuRow
+          accent="#232937"
+          label="Log out"
+          onPress={() => {
+            void authClient.signOut({
+              ...buildAuthFetchOptions(locale),
+              fetchOptions: {
+                headers: buildAuthFetchOptions(locale).fetchOptions.headers,
+                onSuccess: () => {
+                  router.replace("/sign-in");
+                },
+              },
+            });
+          }}
+          tone="danger"
+        />
       </ScrollView>
     </SafeAreaView>
   );

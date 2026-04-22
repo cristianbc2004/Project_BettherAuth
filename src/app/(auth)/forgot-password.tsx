@@ -72,51 +72,57 @@ export default function ForgotPasswordScreen() {
 
   return (
     <AuthShell
-      eyebrow={t("authShell.forgotPassword.eyebrow")}
-      subtitle={t("authShell.forgotPassword.subtitle")}
-      title={t("authShell.forgotPassword.title")}
+      eyebrow=""
+      subtitle="Enter your email to recover access and continue with the same secure mobile flow."
+      title="Recover Your Access."
     >
-      <Text className="text-2xl font-black text-ink-900">{t("forgotPassword.recoverAccess")}</Text>
-      <Text className="mt-2 text-base leading-6 text-ink-600">
-        {t("forgotPassword.recoverDescription")}
-      </Text>
+      <View className="px-4 pb-6 pt-6">
+        <Text className="text-sm font-medium text-white/82">{t("forgotPassword.recoverAccess")}</Text>
+        <Text className="mt-2 text-[15px] leading-6 text-white/60">
+          {t("forgotPassword.recoverDescription")}
+        </Text>
 
-      <View className="mt-6">
-        <Controller
-          control={form.control}
-          name="email"
-          render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-            <AuthInput
-              autoCapitalize="none"
-              autoCorrect={false}
-              error={error?.message}
-              keyboardType="email-address"
-              label={t("authForm.email")}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              placeholder={t("authForm.emailPlaceholder")}
-              value={value}
-            />
-          )}
+        <View className="mt-6">
+          <Controller
+            control={form.control}
+            name="email"
+            render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+              <AuthInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                error={error?.message}
+                keyboardType="email-address"
+                label={t("authForm.email")}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                placeholder={t("authForm.emailPlaceholder")}
+                value={value}
+              />
+            )}
+          />
+        </View>
+
+        {serverError ? (
+          <View className="mb-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+            <Text className="text-sm text-red-300">{serverError}</Text>
+          </View>
+        ) : null}
+
+        <AuthSubmitButton
+          isPending={isPending}
+          label={t("forgotPassword.continue")}
+          onPress={() => {
+            void handleSubmit();
+          }}
         />
+
+        <Text className="mt-6 text-center text-sm text-white/75">
+          {t("forgotPassword.remembered")}
+          <Link href="/sign-in" className="font-bold text-[#ab8ae6]">
+            {t("authForm.signIn")}
+          </Link>
+        </Text>
       </View>
-
-      {serverError ? <Text className="mb-2 text-sm text-red-500">{serverError}</Text> : null}
-
-      <AuthSubmitButton
-        isPending={isPending}
-        label={t("forgotPassword.continue")}
-        onPress={() => {
-          void handleSubmit();
-        }}
-      />
-
-      <Text className="mt-6 text-center text-sm text-ink-600">
-        {t("forgotPassword.remembered")}
-        <Link href="/sign-in" className="font-bold text-coral-500">
-          {t("authForm.signIn")}
-        </Link>
-      </Text>
     </AuthShell>
   );
 }
