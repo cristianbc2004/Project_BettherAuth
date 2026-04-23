@@ -1,7 +1,8 @@
-import { router } from "expo-router";
 import type { PropsWithChildren, ReactNode } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { backOrReplace } from "@/shared/lib/navigation";
 
 type AdminScreenShellProps = PropsWithChildren<{
   eyebrow: string;
@@ -36,7 +37,7 @@ export function AdminScreenShell({
           <Pressable
             className="h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5"
             onPress={() => {
-              router.back();
+              backOrReplace("/admin");
             }}
           >
             <Text className="text-xl font-light text-white/80">{"<"}</Text>

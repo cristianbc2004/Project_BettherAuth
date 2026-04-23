@@ -1,4 +1,4 @@
-import { AnimatedButton } from "react-native-3d-animated-buttons";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 type AuthSubmitButtonProps = {
   isPending: boolean;
@@ -8,19 +8,40 @@ type AuthSubmitButtonProps = {
 
 export function AuthSubmitButton({ isPending, label, onPress }: AuthSubmitButtonProps) {
   return (
-    <AnimatedButton
-      backgroundColor="#8d3dff"
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ busy: isPending, disabled: isPending }}
       disabled={isPending}
-      fullWidth={true}
-      hapticStyle="Medium"
-      minHeight={56}
       onPress={onPress}
-      shadowColor="#6f2fe0"
-      textColor="#ffffff"
-      textStyle={{ fontSize: 16, fontWeight: "600" }}
-      title={label}
-      type="capsule"
-      style={{ marginTop: 16 }}
-    />
+      style={{ marginTop: 16, width: "100%" }}
+    >
+      <View
+        style={{
+          alignItems: "center",
+          backgroundColor: "#8d3dff",
+          borderCurve: "continuous",
+          borderRadius: 999,
+          boxShadow: "0 10px 18px rgba(111, 47, 224, 0.34)",
+          flexDirection: "row",
+          justifyContent: "center",
+          minHeight: 56,
+          paddingHorizontal: 20,
+        }}
+      >
+        {isPending ? (
+          <ActivityIndicator color="#ffffff" size="small" />
+        ) : null}
+        <Text
+          style={{
+            color: "#ffffff",
+            fontSize: 16,
+            fontWeight: "600",
+            marginLeft: isPending ? 12 : 0,
+          }}
+        >
+          {label}
+        </Text>
+      </View>
+    </Pressable>
   );
 }
