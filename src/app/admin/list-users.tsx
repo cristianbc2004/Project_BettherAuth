@@ -1,14 +1,16 @@
-import { Redirect, router } from "expo-router";
+import { Redirect } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, View } from "react-native";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { authClient } from "@/features/auth/services/auth-client";
+import { AdminScreenShell } from "@/shared/components/ui/admin/admin-screen-shell";
+import { AdminSectionCard } from "@/shared/components/ui/admin/admin-section-card";
+import { AdminUserRow } from "@/shared/components/ui/admin/admin-user-row";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
-import { DashboardCard } from "@/shared/components/ui/dashboard-card";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { StatusMessage } from "@/shared/components/ui/status-message";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
 type AdminUser = {
@@ -91,77 +93,51 @@ export default function ListUsersScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-ink-900">
-      <ScrollView
-        bounces={false}
-        contentContainerClassName="px-6 pb-10 pt-8"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <Pressable className="mb-6 self-start" onPress={() => router.back()}>
-          <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">{t("common.back")}</Text>
-        </Pressable>
+    <AdminScreenShell
+      eyebrow={t("admin.listEyebrow")}
+      subtitle={t("admin.listPageSubtitle")}
+      title={t("admin.listPageTitle")}
+    >
+      <AdminSectionCard eyebrow={t("admin.directoryEyebrow")} title={t("admin.listTitle")}>
+        <AuthInput
+          autoCapitalize="none"
+          autoCorrect={false}
+          label={t("admin.search")}
+          onChangeText={setSearch}
+          placeholder={t("admin.searchPlaceholder")}
+          value={search}
+        />
 
-        <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">
-          {t("admin.listEyebrow")}
-        </Text>
-        <Text className="mt-4 text-5xl font-black leading-[56px] text-white">{t("admin.listPageTitle")}</Text>
-        <Text className="mt-4 max-w-[340px] text-base leading-6 text-ink-100">
-          {t("admin.listPageSubtitle")}
-        </Text>
-
-        <View className="mt-10 gap-4">
-          <DashboardCard eyebrow={t("admin.directoryEyebrow")} title={t("admin.listTitle")}>
-            <AuthInput
-              autoCapitalize="none"
-              autoCorrect={false}
-              label={t("admin.search")}
-              onChangeText={setSearch}
-              placeholder={t("admin.searchPlaceholder")}
-              value={search}
-            />
-
-            <View className="mb-4">
-              <AuthSubmitButton
-                isPending={isLoadingUsers}
-                label={t("admin.refreshUsers")}
-                onPress={() => {
-                  void loadUsers();
-                }}
-              />
-            </View>
-
-            <View className="gap-3">
-              {filteredUsers.length ? (
-                filteredUsers.map((user) => (
-                  <View className="rounded-3xl bg-ink-800/80 p-4" key={user.id}>
-                    <Text className="text-lg font-bold text-white">{user.name}</Text>
-                    <Text className="mt-1 text-base text-ink-100">{user.email}</Text>
-                    <Text className="mt-2 text-sm font-semibold uppercase tracking-[2px] text-coral-300">
-                      {t("common.roleLabel", { role: user.role ?? "user" })}
-                    </Text>
-                    <Text className="mt-1 text-sm text-ink-100">
-                      {t("common.statusLabel", {
-                        status: user.banned ? t("common.banned") : t("common.active"),
-                      })}
-                    </Text>
-                  </View>
-                ))
-              ) : (
-                <Text className="text-base leading-6 text-ink-100">
-                  {t("admin.noUsersFound")}
-                </Text>
-              )}
-            </View>
-          </DashboardCard>
-
-          {errorMessage ? (
-            <View className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4">
-              <Text className="text-base leading-6 text-red-100">{errorMessage}</Text>
-            </View>
-          ) : null}
+        <View className="mb-4">
+          <AuthSubmitButton
+            isPending={isLoadingUsers}
+            label={t("admin.refreshUsers")}
+            onPress={() => {
+              void loadUsers();
+            }}
+          />
         </View>
-      </ScrollView>
-    </SafeAreaView>
+
+        <View className="gap-3">
+          {filteredUsers.length ? (
+            filteredUsers.map((user) => (
+              <AdminUserRow
+                email={user.email}
+                key={user.id}
+                name={user.name}
+                role={user.role}
+                statusLabel={user.banned ? t("common.banned") : t("common.active")}
+              />
+            ))
+          ) : (
+            <Text className="rounded-[24px] border border-white/10 bg-white/[0.05] p-4 text-[15px] leading-6 text-white/58">
+              {t("admin.noUsersFound")}
+            </Text>
+          )}
+        </View>
+      </AdminSectionCard>
+
+      {errorMessage ? <StatusMessage message={errorMessage} tone="error" /> : null}
+    </AdminScreenShell>
   );
 }

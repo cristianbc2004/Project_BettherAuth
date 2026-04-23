@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
+import { PasswordRequirements } from "@/features/auth/components/password-requirements";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { appConfig } from "@/shared/lib/app-config";
@@ -170,7 +171,12 @@ function SignUpForm() {
     .object({
       name: z.string().min(2, t("authForm.minName")),
       email: z.email(t("authForm.invalidEmail")),
-      password: z.string().min(8, t("authForm.minPassword")),
+      password: z
+        .string()
+        .min(8, t("authForm.minPassword"))
+        .regex(/[A-Z]/, t("authForm.passwordNeedsUppercase"))
+        .regex(/[a-z]/, t("authForm.passwordNeedsLowercase"))
+        .regex(/\d/, t("authForm.passwordNeedsNumber")),
     });
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
@@ -179,7 +185,10 @@ function SignUpForm() {
       email: "",
       password: "",
     },
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
+  const passwordValue = form.watch("password");
 
   const handleSubmit = form.handleSubmit(async (values) => {
     try {
@@ -268,16 +277,17 @@ function SignUpForm() {
         control={form.control}
         name="password"
         render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-            <AuthPasswordInput
-              error={error?.message}
-              label={t("authForm.password")}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              placeholder={t("authForm.passwordPlaceholder")}
-              value={value}
-            />
-          )}
+          <AuthPasswordInput
+            error={error?.message}
+            label={t("authForm.password")}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            placeholder={t("authForm.passwordPlaceholder")}
+            value={value}
+          />
+        )}
       />
+      <PasswordRequirements password={passwordValue} />
 
       <AuthSubmitButton
         isPending={isPending}

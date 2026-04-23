@@ -7,6 +7,7 @@ import { Alert, Text, View } from "react-native";
 import { z } from "zod";
 
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
+import { PasswordRequirements } from "@/features/auth/components/password-requirements";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { appConfig } from "@/shared/lib/app-config";
@@ -21,7 +22,12 @@ export default function ResetPasswordScreen() {
   const { locale } = useLanguage();
   const resetPasswordSchema = z
     .object({
-      newPassword: z.string().min(8, t("resetPassword.passwordMin")),
+      newPassword: z
+        .string()
+        .min(8, t("resetPassword.passwordMin"))
+        .regex(/[A-Z]/, t("authForm.passwordNeedsUppercase"))
+        .regex(/[a-z]/, t("authForm.passwordNeedsLowercase"))
+        .regex(/\d/, t("authForm.passwordNeedsNumber")),
       confirmPassword: z.string().min(8, t("resetPassword.confirmNewPassword")),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
@@ -34,7 +40,11 @@ export default function ResetPasswordScreen() {
       newPassword: "",
       confirmPassword: "",
     },
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
+  const newPasswordValue = form.watch("newPassword");
+  const confirmPasswordValue = form.watch("confirmPassword");
 
   const handleSubmit = form.handleSubmit(async (values) => {
     try {
@@ -120,6 +130,11 @@ export default function ResetPasswordScreen() {
               value={value}
             />
           )}
+        />
+        <PasswordRequirements
+          confirmPassword={confirmPasswordValue}
+          password={newPasswordValue}
+          showMatch
         />
       </View>
 
