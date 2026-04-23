@@ -1,6 +1,7 @@
 import { Redirect, router } from "expo-router";
 import { useEffect, useRef } from "react";
-import { Animated, Easing, Pressable, ScrollView, Text, View } from "react-native";
+import type { ImageSourcePropType } from "react-native";
+import { Animated, Easing, Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -10,22 +11,32 @@ import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 type MenuRowProps = {
   accent?: string;
   detail?: string;
+  icon?: ImageSourcePropType;
   label: string;
   onPress: () => void;
   tone?: "default" | "danger";
 };
 
-function MenuRow({ accent = "#2d3750", detail, label, onPress, tone = "default" }: MenuRowProps) {
+function MenuRow({ accent = "#2d3750", detail, icon, label, onPress, tone = "default" }: MenuRowProps) {
   return (
     <Pressable
       className="mb-4 flex-row items-center rounded-[24px] border border-white/5 bg-white/[0.06] px-4 py-4"
       onPress={onPress}
     >
       <View
-        className="mr-4 h-11 w-11 items-center justify-center rounded-full"
-        style={{ backgroundColor: accent }}
+        className="mr-4 h-11 w-11 items-center justify-center"
+        style={icon ? undefined : { backgroundColor: accent }}
       >
-        <View className="h-3 w-3 rounded-full bg-white/85" />
+        {icon ? (
+          <Image
+            className="h-5 w-5"
+            resizeMode="contain"
+            source={icon}
+            style={{ tintColor: "rgba(255, 255, 255, 0.95)" }}
+          />
+        ) : (
+          <View className="h-3 w-3 rounded-full bg-white/85" />
+        )}
       </View>
 
       <View className="flex-1">
@@ -109,6 +120,14 @@ export default function DashboardScreen() {
   }
 
   const firstName = session.user.name.split(" ")[0] || session.user.name;
+  const dashboardIcons = {
+    admin: require("../../assets/administrator.png"),
+    notifications: require("../../assets/notifications_blanco.png"),
+    password: require("../../assets/padlock_blanco.png"),
+    twoFactor: require("../../assets/2fa_blanco.png"),
+    out: require("../../assets/logout.png"),
+    language: require("../../assets/language.png"),
+  } satisfies Record<string, ImageSourcePropType>;
 
   return (
     <SafeAreaView className="flex-1 bg-[#060c17]">
@@ -125,21 +144,31 @@ export default function DashboardScreen() {
       >
         <View className="mb-8 flex-row items-center justify-between">
           <Pressable
-            className="h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5"
+            className="h-11 w-11 items-center justify-center"
             onPress={() => {
               router.push("/notifications" as never);
             }}
           >
-            <Text className="text-xs font-semibold uppercase tracking-[1.1px] text-white/78">NT</Text>
+            <Image
+              className="h-5 w-5"
+              resizeMode="contain"
+              source={dashboardIcons.notifications}
+              style={{ tintColor: "rgba(255, 255, 255, 0.95)" }}
+            />
           </Pressable>
           <Text className="text-[24px] font-semibold text-white">Profile</Text>
           <Pressable
-            className="h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5"
+            className="h-11 w-11 items-center justify-center"
             onPress={() => {
               router.push("/two-factor" as never);
             }}
           >
-            <Text className="text-xs font-semibold uppercase tracking-[1.2px] text-white/80">2FA</Text>
+            <Image
+              className="h-5 w-5"
+              resizeMode="contain"
+              source={dashboardIcons.twoFactor}
+              style={{ tintColor: "rgba(255, 255, 255, 0.95)" }}
+            />
           </Pressable>
         </View>
 
@@ -179,6 +208,7 @@ export default function DashboardScreen() {
           <SectionLabel label="Authentication" />
           <MenuRow
             accent="#2a3144"
+            icon={dashboardIcons.password}
             label="Change password"
             onPress={() => {
               router.push("/change-password" as never);
@@ -186,6 +216,7 @@ export default function DashboardScreen() {
           />
           <MenuRow
             accent="#313a4f"
+            icon={dashboardIcons.twoFactor}
             label="Two-factor authentication"
             onPress={() => {
               router.push("/two-factor" as never);
@@ -202,6 +233,7 @@ export default function DashboardScreen() {
           <SectionLabel label="App" />
           <MenuRow
             accent="#43325d"
+            icon={dashboardIcons.notifications}
             label="Notifications"
             onPress={() => {
               router.push("/notifications" as never);
@@ -210,6 +242,7 @@ export default function DashboardScreen() {
           <MenuRow
             accent="#313748"
             detail={locale === "es" ? "Spanish" : "English"}
+            icon={dashboardIcons.language}
             label="App language"
             onPress={() => {
               void setLocale(locale === "es" ? "en" : "es");
@@ -227,6 +260,7 @@ export default function DashboardScreen() {
             <SectionLabel label="Admin" />
             <MenuRow
               accent="#41385c"
+              icon={dashboardIcons.admin}
               label="Admin panel"
               onPress={() => {
                 router.push("/admin" as never);
@@ -244,6 +278,7 @@ export default function DashboardScreen() {
           <SectionLabel label="Session" />
           <MenuRow
             accent="#232937"
+            icon={dashboardIcons.out}
             label="Log out"
             onPress={() => {
               void authClient.signOut({

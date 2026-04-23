@@ -32,18 +32,14 @@ export function AdminUserRow({ action, email, name, role, statusLabel }: AdminUs
           <Text className="text-[17px] font-semibold text-white">{name}</Text>
           <Text className="mt-1 text-sm text-white/58">{email}</Text>
 
-          <View className="mt-3 flex-row flex-wrap gap-2">
-            <View className="rounded-full border border-white/10 bg-white/[0.07] px-3 py-1">
-              <Text className="text-[11px] font-semibold uppercase tracking-[1.1px] text-white/64">
-                {role ?? "user"}
-              </Text>
-            </View>
+          <View className="mt-3 flex-row flex-wrap items-center">
+            <Text className="text-[11px] font-semibold uppercase tracking-[1.1px] text-white/70">
+              {role ?? "user"}
+            </Text>
             {statusLabel ? (
-              <View className="rounded-full border border-white/10 bg-white/[0.07] px-3 py-1">
-                <Text className="text-[11px] font-semibold uppercase tracking-[1.1px] text-white/64">
-                  {statusLabel}
-                </Text>
-              </View>
+              <Text className="ml-2 text-[11px] font-semibold uppercase tracking-[1.1px] text-white/70">
+                {"\u00b7"} {statusLabel}
+              </Text>
             ) : null}
           </View>
         </View>

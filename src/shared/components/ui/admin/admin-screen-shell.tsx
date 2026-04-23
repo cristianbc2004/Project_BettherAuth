@@ -48,11 +48,9 @@ export function AdminScreenShell({
         </View>
 
         <View className="rounded-[34px] border border-white/10 bg-white/[0.06] p-5">
-          <View className="mb-5 self-start rounded-full border border-white/10 bg-white/[0.07] px-4 py-2">
-            <Text className="text-[11px] font-semibold uppercase tracking-[1.6px] text-white/68">
-              {eyebrow}
-            </Text>
-          </View>
+          <Text className="mb-4 text-[11px] font-semibold uppercase tracking-[1.6px] text-white/68">
+            {eyebrow}
+          </Text>
           <Text className="text-[42px] font-semibold leading-[48px] text-white">{title}</Text>
           <Text className="mt-4 max-w-[360px] text-[15px] leading-6 text-white/62">{subtitle}</Text>
         </View>
