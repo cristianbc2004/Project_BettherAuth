@@ -1,6 +1,6 @@
 import { Redirect, router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
+import { View, type ImageSourcePropType } from "react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { AuthShell } from "@/features/auth/components/auth-shell";
@@ -40,36 +40,40 @@ export default function AdminPanelScreen() {
       subtitle={`Manage admin actions for ${session.user.email} with the same minimal secure flow.`}
       title={t("admin.panelTitle")}
     >
-      <AdminActionRow
-        accent="#4b258d"
-        description={t("admin.createDescription")}
-        eyebrow={t("admin.createEyebrow")}
-        icon={dashboardIcons.createUser}
-        onPress={() => {
-          router.push("/admin/create-user" as never);
-        }}
-        title={t("admin.createTitle")}
-      />
-      <AdminActionRow
-        accent="#4b258d"
-        description={t("admin.listDescription")}
-        eyebrow={t("admin.directoryEyebrow")}
-        icon={dashboardIcons.listUsers}
-        onPress={() => {
-          router.push("/admin/list-users" as never);
-        }}
-        title={t("admin.listTitle")}
-      />
-      <AdminActionRow
-        accent="#4b258d"
-        description={t("admin.deleteDescription")}
-        eyebrow={t("admin.deleteEyebrow")}
-        icon={dashboardIcons.deleteUser}
-        onPress={() => {
-          router.push("/admin/delete-user" as never);
-        }}
-        title={t("admin.deleteTitle")}
-      />
+      <View className="overflow-hidden rounded-[28px] border border-white/5 bg-transparent">
+        <AdminActionRow
+          accent="#40245f"
+          description={t("admin.createDescription")}
+          eyebrow={t("admin.createEyebrow")}
+          icon={dashboardIcons.createUser}
+          onPress={() => {
+            router.push("/admin/create-user" as never);
+          }}
+          title={t("admin.createTitle")}
+        />
+        <View className="mx-2 h-px bg-white/8" />
+        <AdminActionRow
+          accent="#1f3640"
+          description={t("admin.listDescription")}
+          eyebrow={t("admin.directoryEyebrow")}
+          icon={dashboardIcons.listUsers}
+          onPress={() => {
+            router.push("/admin/list-users" as never);
+          }}
+          title={t("admin.listTitle")}
+        />
+        <View className="mx-2 h-px bg-white/8" />
+        <AdminActionRow
+          accent="#42311f"
+          description={t("admin.deleteDescription")}
+          eyebrow={t("admin.deleteEyebrow")}
+          icon={dashboardIcons.deleteUser}
+          onPress={() => {
+            router.push("/admin/delete-user" as never);
+          }}
+          title={t("admin.deleteTitle")}
+        />
+      </View>
     </AuthShell>
   );
 }

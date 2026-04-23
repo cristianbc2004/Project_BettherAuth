@@ -121,7 +121,7 @@ export default function TwoFactorVerifyScreen() {
           router.replace("/sign-in");
         }}
       >
-        <Text className="text-center text-sm font-semibold text-coral-500">{t("twoFactorVerify.backToSignIn")}</Text>
+        <Text className="text-center text-sm font-semibold text-white">{t("twoFactorVerify.backToSignIn")}</Text>
       </Pressable>
     </AuthShell>
   );

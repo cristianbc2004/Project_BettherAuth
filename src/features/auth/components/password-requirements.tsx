@@ -46,7 +46,7 @@ export function PasswordRequirements({
   }
 
   return (
-    <View className="mb-5 mt-[-8px] rounded-[20px] border border-white/6 bg-white/4 px-4 py-3">
+    <View className="mb-5 mt-[-8px] rounded-[20px] bg-white/4 px-4 py-3">
       {checks.map((check) => (
         <View className="flex-row items-center py-1" key={check.key}>
           <View
