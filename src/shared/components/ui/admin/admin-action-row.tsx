@@ -1,9 +1,11 @@
-import { Pressable, Text, View } from "react-native";
+import type { ImageSourcePropType } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
 type AdminActionRowProps = {
   accent: string;
   description: string;
   eyebrow: string;
+  icon?: ImageSourcePropType;
   onPress: () => void;
   title: string;
 };
@@ -12,6 +14,7 @@ export function AdminActionRow({
   accent,
   description,
   eyebrow,
+  icon,
   onPress,
   title,
 }: AdminActionRowProps) {
@@ -22,10 +25,19 @@ export function AdminActionRow({
     >
       <View className="flex-row items-start">
         <View
-          className="mr-4 h-12 w-12 items-center justify-center rounded-full"
-          style={{ backgroundColor: accent }}
+          className="mr-4 h-12 w-12 items-center justify-center self-center"
+          style={icon ? undefined : { backgroundColor: accent }}
         >
-          <View className="h-3 w-3 rounded-full bg-white/85" />
+          {icon ? (
+            <Image
+              className="h-6 w-6"
+              resizeMode="contain"
+              source={icon}
+              style={{ tintColor: "rgba(255, 255, 255, 0.95)" }}
+            />
+          ) : (
+            <View className="h-3 w-3 rounded-full bg-white/85" />
+          )}
         </View>
 
         <View className="flex-1">

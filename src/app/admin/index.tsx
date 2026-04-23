@@ -1,5 +1,6 @@
 import { Redirect, router } from "expo-router";
 import { useTranslation } from "react-i18next";
+import type { ImageSourcePropType } from "react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { AdminActionRow } from "@/shared/components/ui/admin/admin-action-row";
@@ -7,6 +8,12 @@ import { AdminScreenShell } from "@/shared/components/ui/admin/admin-screen-shel
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 
 export default function AdminPanelScreen() {
+  const dashboardIcons = {
+    createUser: require("../../../assets/newuser.png"),
+    deleteUser: require("../../../assets/delete_user.png"),
+    listUsers: require("../../../assets/list_user.png"),
+  } satisfies Record<string, ImageSourcePropType>;
+
   const { data: session, isPending } = authClient.useSession();
   const { t } = useTranslation();
   const sessionRole = (session?.user as { role?: string } | undefined)?.role ?? "user";
@@ -37,6 +44,7 @@ export default function AdminPanelScreen() {
         accent="#4b258d"
         description={t("admin.createDescription")}
         eyebrow={t("admin.createEyebrow")}
+        icon={dashboardIcons.createUser}
         onPress={() => {
           router.push("/admin/create-user" as never);
         }}
@@ -46,6 +54,7 @@ export default function AdminPanelScreen() {
         accent="#4b258d"
         description={t("admin.listDescription")}
         eyebrow={t("admin.directoryEyebrow")}
+        icon={dashboardIcons.listUsers}
         onPress={() => {
           router.push("/admin/list-users" as never);
         }}
@@ -55,6 +64,7 @@ export default function AdminPanelScreen() {
         accent="#4b258d"
         description={t("admin.deleteDescription")}
         eyebrow={t("admin.deleteEyebrow")}
+        icon={dashboardIcons.deleteUser}
         onPress={() => {
           router.push("/admin/delete-user" as never);
         }}
