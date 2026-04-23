@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
 type MenuRowProps = {
@@ -146,6 +147,7 @@ export default function DashboardScreen() {
           <Pressable
             className="h-11 w-11 items-center justify-center"
             onPress={() => {
+              selectionHaptic();
               router.push("/notifications" as never);
             }}
           >
@@ -160,6 +162,7 @@ export default function DashboardScreen() {
           <Pressable
             className="h-11 w-11 items-center justify-center"
             onPress={() => {
+              selectionHaptic();
               router.push("/two-factor" as never);
             }}
           >
@@ -182,6 +185,7 @@ export default function DashboardScreen() {
           <Pressable
             className="flex-row items-center rounded-[26px] border border-white/5 bg-[#6a34d3]/35 px-4 py-4"
             onPress={() => {
+              selectionHaptic();
               router.push("/change-password" as never);
             }}
           >
@@ -211,6 +215,7 @@ export default function DashboardScreen() {
             icon={dashboardIcons.password}
             label="Change password"
             onPress={() => {
+              selectionHaptic();
               router.push("/change-password" as never);
             }}
           />
@@ -219,6 +224,7 @@ export default function DashboardScreen() {
             icon={dashboardIcons.twoFactor}
             label="Two-factor authentication"
             onPress={() => {
+              selectionHaptic();
               router.push("/two-factor" as never);
             }}
           />
@@ -236,6 +242,7 @@ export default function DashboardScreen() {
             icon={dashboardIcons.notifications}
             label="Notifications"
             onPress={() => {
+              selectionHaptic();
               router.push("/notifications" as never);
             }}
           />
@@ -245,6 +252,7 @@ export default function DashboardScreen() {
             icon={dashboardIcons.language}
             label="App language"
             onPress={() => {
+              selectionHaptic();
               void setLocale(locale === "es" ? "en" : "es");
             }}
           />
@@ -263,6 +271,7 @@ export default function DashboardScreen() {
               icon={dashboardIcons.admin}
               label="Admin panel"
               onPress={() => {
+                selectionHaptic();
                 router.push("/admin" as never);
               }}
             />
@@ -281,6 +290,7 @@ export default function DashboardScreen() {
             icon={dashboardIcons.out}
             label="Log out"
             onPress={() => {
+              warningHaptic();
               void authClient.signOut({
                 ...buildAuthFetchOptions(locale),
                 fetchOptions: {

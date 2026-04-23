@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 
+import { selectionHaptic } from "@/shared/lib/haptics";
 import { useLanguage } from "@/shared/lib/locale";
 
 export function LanguageToggle() {
@@ -10,6 +11,9 @@ export function LanguageToggle() {
       <Pressable
         className={`rounded-full px-3 py-2 ${locale === "es" ? "bg-coral-400" : ""}`}
         onPress={() => {
+          if (locale !== "es") {
+            selectionHaptic();
+          }
           void setLocale("es");
         }}
       >
@@ -21,6 +25,9 @@ export function LanguageToggle() {
       <Pressable
         className={`rounded-full px-3 py-2 ${locale === "en" ? "bg-coral-400" : ""}`}
         onPress={() => {
+          if (locale !== "en") {
+            selectionHaptic();
+          }
           void setLocale("en");
         }}
       >

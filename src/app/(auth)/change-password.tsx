@@ -11,6 +11,7 @@ import { PasswordRequirements } from "@/features/auth/components/password-requir
 import { authClient } from "@/features/auth/services/auth-client";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
+import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
 export default function ChangePasswordScreen() {
@@ -61,15 +62,18 @@ export default function ChangePasswordScreen() {
       if (response.error) {
         const message = response.error.message ?? t("changePassword.updateError");
         setServerError(message);
+        warningHaptic();
         Alert.alert(t("changePassword.updateFailed"), message);
         return;
       }
 
+      successHaptic();
       Alert.alert(t("changePassword.updateSuccessTitle"), t("changePassword.updateSuccessMessage"));
       router.replace("/dashboard");
     } catch (error) {
       const message = error instanceof Error ? error.message : t("authForm.networkError");
       setServerError(message);
+      warningHaptic();
       Alert.alert(t("changePassword.updateFailed"), message);
     } finally {
       setIsPending(false);
