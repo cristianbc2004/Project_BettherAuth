@@ -113,7 +113,6 @@ export default function NotificationsScreen() {
       <View className="absolute inset-0">
         <View className="absolute inset-0 bg-[#060c17]" />
         <View className="absolute inset-x-0 top-0 h-[220px] bg-[#33156d]/16" />
-        <View className="absolute right-[-10] top-0 h-56 w-56 rounded-full bg-[#6f35df]/10" />
       </View>
 
       <ScrollView

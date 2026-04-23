@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AuthBrandMark } from "@/features/auth/components/auth-brand-mark";
+import { useAppTheme } from "@/shared/lib/theme";
 
 type AuthShellProps = PropsWithChildren<{
   eyebrow: string;
@@ -21,6 +22,7 @@ type AuthShellProps = PropsWithChildren<{
 }>;
 
 export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps) {
+  const { colorScheme, theme } = useAppTheme();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const headerOpacity = useRef(new Animated.Value(0)).current;
   const headerTranslate = useRef(new Animated.Value(12)).current;
@@ -79,10 +81,16 @@ export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-midnight-950">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
       <View className="absolute inset-0">
-        <View className="absolute inset-0 bg-[#080c18]" />
-        <View className="absolute top-0 h-[240px] w-full bg-[#2a1a52]/4" />
+        <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
+        <View
+          className="absolute top-0 h-[240px] w-full"
+          style={{
+            backgroundColor:
+              colorScheme === "light" ? "rgba(141, 61, 255, 0.08)" : "rgba(42, 26, 82, 0.04)",
+          }}
+        />
       </View>
 
       <KeyboardAvoidingView
@@ -104,18 +112,27 @@ export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps
               }}
             >
               <AuthBrandMark />
-              <Text className="mt-9 px-8 text-center text-[30px] font-black leading-[36px] text-white">
+              <Text
+                className="mt-9 px-8 text-center text-[30px] font-black leading-[36px]"
+                style={{ color: theme.text }}
+              >
                 {title}
               </Text>
-              <Text className="mt-4 max-w-[320px] text-center text-[15px] leading-6 text-white/65">
+              <Text
+                className="mt-4 max-w-[320px] text-center text-[15px] leading-6"
+                style={{ color: theme.mutedText }}
+              >
                 {subtitle || eyebrow}
               </Text>
             </Animated.View>
           ) : null}
 
           <Animated.View
-            className={`${keyboardVisible ? "mt-6" : "mt-10"} rounded-[36px] border border-white/6 bg-[#0b1220]/78 px-0 py-0`}
+            className={`${keyboardVisible ? "mt-6" : "mt-10"} rounded-[36px] px-0 py-0`}
             style={{
+              backgroundColor: colorScheme === "light" ? "rgba(255, 255, 255, 0.84)" : "rgba(11, 18, 32, 0.78)",
+              borderColor: theme.border,
+              borderWidth: 1,
               opacity: cardOpacity,
               transform: [{ translateY: cardTranslate }],
             }}
