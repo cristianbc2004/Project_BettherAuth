@@ -1,27 +1,51 @@
-import { Redirect, router } from "expo-router";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Redirect } from "expo-router";
+import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Pressable, Text, View } from "react-native";
+import { z } from "zod";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
+import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
+import { PasswordRequirements } from "@/features/auth/components/password-requirements";
 import { authClient } from "@/features/auth/services/auth-client";
+import { AdminScreenShell } from "@/shared/components/ui/admin/admin-screen-shell";
+import { AdminSectionCard } from "@/shared/components/ui/admin/admin-section-card";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
-import { DashboardCard } from "@/shared/components/ui/dashboard-card";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { StatusMessage } from "@/shared/components/ui/status-message";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
 export default function CreateUserScreen() {
   const { data: session, isPending } = authClient.useSession();
   const { locale } = useLanguage();
   const { t } = useTranslation();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [role, setRole] = useState<"user" | "admin">("user");
   const [message, setMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const createUserSchema = z.object({
+    email: z.email(t("authForm.invalidEmail")),
+    name: z.string().min(2, t("authForm.minName")),
+    password: z
+      .string()
+      .min(8, t("authForm.minPassword"))
+      .regex(/[A-Z]/, t("authForm.passwordNeedsUppercase"))
+      .regex(/[a-z]/, t("authForm.passwordNeedsLowercase"))
+      .regex(/\d/, t("authForm.passwordNeedsNumber")),
+  });
+  const form = useForm<z.infer<typeof createUserSchema>>({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: {
+      email: "",
+      name: "",
+      password: "",
+    },
+    mode: "onChange",
+    reValidateMode: "onChange",
+  });
+  const passwordValue = form.watch("password");
 
   const sessionRole = (session?.user as { role?: string } | undefined)?.role ?? "user";
   const isAdmin = sessionRole
@@ -41,114 +65,129 @@ export default function CreateUserScreen() {
     return <Redirect href="/dashboard" />;
   }
 
-  const handleCreateUser = async () => {
+  const handleCreateUser = form.handleSubmit(async (values) => {
     setIsCreatingUser(true);
     setMessage(null);
     setErrorMessage(null);
 
-    const result = await authClient.admin.createUser({
-      email,
-      password,
-      name,
-      role,
-      ...buildAuthFetchOptions(locale),
-    });
+    try {
+      const result = await authClient.admin.createUser({
+        email: values.email,
+        password: values.password,
+        name: values.name,
+        role,
+        ...buildAuthFetchOptions(locale),
+      });
 
-    setIsCreatingUser(false);
+      if (result.error) {
+        setErrorMessage(result.error.message ?? t("admin.createError"));
+        return;
+      }
 
-    if (result.error) {
-      setErrorMessage(result.error.message ?? t("admin.createError"));
-      return;
+      form.reset();
+      setRole("user");
+      setMessage(t("admin.createSuccess"));
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : t("authForm.networkError"));
+    } finally {
+      setIsCreatingUser(false);
     }
-
-    setName("");
-    setEmail("");
-    setPassword("");
-    setRole("user");
-    setMessage(t("admin.createSuccess"));
-  };
+  });
 
   return (
-    <SafeAreaView className="flex-1 bg-ink-900">
-      <ScrollView
-        bounces={false}
-        contentContainerClassName="px-6 pb-10 pt-8"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <Pressable className="mb-6 self-start" onPress={() => router.back()}>
-          <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">{t("common.back")}</Text>
-        </Pressable>
-
-        <Text className="text-sm font-semibold uppercase tracking-[3px] text-coral-300">
-          {t("admin.createPageEyebrow")}
-        </Text>
-        <Text className="mt-4 text-5xl font-black leading-[56px] text-white">{t("admin.createPageTitle")}</Text>
-        <Text className="mt-4 max-w-[340px] text-base leading-6 text-ink-100">
-          {t("admin.createPageSubtitle")}
-        </Text>
-
-        <View className="mt-10 gap-4">
-          <DashboardCard eyebrow={t("admin.formEyebrow")} title={t("admin.formTitle")}>
+    <AdminScreenShell
+      eyebrow={t("admin.createPageEyebrow")}
+      subtitle={t("admin.createPageSubtitle")}
+      title={t("admin.createPageTitle")}
+    >
+      <AdminSectionCard eyebrow={t("admin.formEyebrow")} title={t("admin.formTitle")}>
+        <Controller
+          control={form.control}
+          name="name"
+          render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
             <AuthInput
               autoCapitalize="words"
               autoCorrect={false}
+              error={error?.message}
               label={t("authForm.fullName")}
-              onChangeText={setName}
+              onBlur={onBlur}
+              onChangeText={onChange}
               placeholder={t("authForm.namePlaceholder")}
-              value={name}
+              value={value}
             />
+          )}
+        />
+        <Controller
+          control={form.control}
+          name="email"
+          render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
             <AuthInput
               autoCapitalize="none"
               autoCorrect={false}
+              error={error?.message}
               keyboardType="email-address"
               label={t("authForm.email")}
-              onChangeText={setEmail}
+              onBlur={onBlur}
+              onChangeText={onChange}
               placeholder={t("authForm.emailPlaceholder")}
-              value={email}
+              value={value}
             />
-            <AuthInput
-              autoCapitalize="none"
-              autoCorrect={false}
+          )}
+        />
+        <Controller
+          control={form.control}
+          name="password"
+          render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+            <AuthPasswordInput
+              error={error?.message}
               label={t("authForm.password")}
-              onChangeText={setPassword}
+              onBlur={onBlur}
+              onChangeText={onChange}
               placeholder={t("authForm.passwordPlaceholder")}
-              secureTextEntry
-              value={password}
+              value={value}
             />
-            <AuthInput
-              autoCapitalize="none"
-              autoCorrect={false}
-              label={t("admin.role")}
-              onChangeText={(value) => {
-                setRole(value?.trim().toLowerCase() === "admin" ? "admin" : "user");
-              }}
-              placeholder={t("admin.rolePlaceholder")}
-              value={role}
-            />
+          )}
+        />
+        <PasswordRequirements password={passwordValue} />
 
-            <AuthSubmitButton
-              isPending={isCreatingUser}
-              label={t("admin.createUser")}
-              onPress={() => {
-                void handleCreateUser();
-              }}
-            />
-          </DashboardCard>
+        <Text className="mb-3 text-sm font-medium text-white/90">{t("admin.role")}</Text>
+        <View className="flex-row rounded-[24px] border border-white/5 bg-white/6 p-1">
+          {(["user", "admin"] as const).map((option) => {
+            const isSelected = role === option;
 
-          {message ? (
-            <View className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
-              <Text className="text-base leading-6 text-emerald-100">{message}</Text>
-            </View>
-          ) : null}
-
-          {errorMessage ? (
-            <View className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4">
-              <Text className="text-base leading-6 text-red-100">{errorMessage}</Text>
-            </View>
-          ) : null}
+            return (
+              <Pressable
+                className={`flex-1 items-center rounded-[20px] py-3 ${
+                  isSelected ? "bg-[#8d3dff]" : "bg-transparent"
+                }`}
+                key={option}
+                onPress={() => {
+                  setRole(option);
+                }}
+              >
+                <Text
+                  className={`text-sm font-semibold uppercase tracking-[1.1px] ${
+                    isSelected ? "text-white" : "text-white/48"
+                  }`}
+                >
+                  {option}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+
+        <AuthSubmitButton
+          isPending={isCreatingUser}
+          label={t("admin.createUser")}
+          onPress={() => {
+            void handleCreateUser();
+          }}
+        />
+      </AdminSectionCard>
+
+      {message ? <StatusMessage message={message} tone="success" /> : null}
+      {errorMessage ? <StatusMessage message={errorMessage} tone="error" /> : null}
+    </AdminScreenShell>
   );
 }

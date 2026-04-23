@@ -7,6 +7,7 @@ import { Alert, Text, View } from "react-native";
 import { z } from "zod";
 
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
+import { PasswordRequirements } from "@/features/auth/components/password-requirements";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
@@ -20,7 +21,12 @@ export default function ChangePasswordScreen() {
   const changePasswordSchema = z
     .object({
       currentPassword: z.string().min(8, t("changePassword.currentPasswordMin")),
-      newPassword: z.string().min(8, t("changePassword.newPasswordMin")),
+      newPassword: z
+        .string()
+        .min(8, t("changePassword.newPasswordMin"))
+        .regex(/[A-Z]/, t("authForm.passwordNeedsUppercase"))
+        .regex(/[a-z]/, t("authForm.passwordNeedsLowercase"))
+        .regex(/\d/, t("authForm.passwordNeedsNumber")),
       confirmPassword: z.string().min(8, t("changePassword.confirmNewPassword")),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
@@ -34,7 +40,11 @@ export default function ChangePasswordScreen() {
       newPassword: "",
       confirmPassword: "",
     },
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
+  const newPasswordValue = form.watch("newPassword");
+  const confirmPasswordValue = form.watch("confirmPassword");
 
   const handleSubmit = form.handleSubmit(async (values) => {
     try {
@@ -124,6 +134,11 @@ export default function ChangePasswordScreen() {
               value={value}
             />
           )}
+        />
+        <PasswordRequirements
+          confirmPassword={confirmPasswordValue}
+          password={newPasswordValue}
+          showMatch
         />
         </View>
 
