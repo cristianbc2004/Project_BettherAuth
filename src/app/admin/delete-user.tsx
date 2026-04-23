@@ -1,13 +1,13 @@
 import { Redirect } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
+import { AuthShell } from "@/features/auth/components/auth-shell";
 import { authClient } from "@/features/auth/services/auth-client";
-import { AdminScreenShell } from "@/shared/components/ui/admin/admin-screen-shell";
-import { AdminSectionCard } from "@/shared/components/ui/admin/admin-section-card";
-import { AdminUserRow } from "@/shared/components/ui/admin/admin-user-row";
+import { AdminMinimalPanel, AdminMinimalSection } from "@/shared/components/ui/admin/admin-minimal-panel";
+import { AdminUserNotificationRow } from "@/shared/components/ui/admin/admin-user-notification-row";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { StatusMessage } from "@/shared/components/ui/status-message";
@@ -116,22 +116,22 @@ export default function DeleteUserScreen() {
   };
 
   return (
-    <AdminScreenShell
-      eyebrow={t("admin.deletePageEyebrow")}
-      subtitle={t("admin.deletePageSubtitle")}
+    <AuthShell
+      eyebrow=""
+      subtitle={`Manage admin actions for ${session.user.email} with the same minimal secure flow.`}
       title={t("admin.deletePageTitle")}
     >
-      <AdminSectionCard eyebrow={t("admin.deleteEyebrow")} title={t("admin.deleteTitle")}>
-        <AuthInput
-          autoCapitalize="none"
-          autoCorrect={false}
-          label={t("admin.search")}
-          onChangeText={setSearch}
-          placeholder={t("admin.searchPlaceholder")}
-          value={search}
-        />
+      <AdminMinimalPanel>
+        <AdminMinimalSection title={t("admin.search")}>
+          <AuthInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            label={t("admin.search")}
+            onChangeText={setSearch}
+            placeholder={t("admin.searchPlaceholder")}
+            value={search}
+          />
 
-        <View className="mb-4">
           <AuthSubmitButton
             isPending={isLoadingUsers}
             label={t("admin.refreshUsers")}
@@ -139,55 +139,49 @@ export default function DeleteUserScreen() {
               void loadUsers();
             }}
           />
-        </View>
+        </AdminMinimalSection>
 
-        <View className="gap-3">
-          {filteredUsers.length ? (
-            filteredUsers.map((user) => {
-              const isCurrentUser = user.id === session.user.id;
+        <AdminMinimalSection title={t("admin.deleteTitle")} description={t("admin.deleteDescription")}>
+          <View className="gap-3">
+            {filteredUsers.length ? (
+              <View className="overflow-hidden rounded-[28px] border border-white/5 bg-transparent">
+                {filteredUsers.map((user, index) => {
+                  const isCurrentUser = user.id === session.user.id;
+                  const isDeleting = deletingUserId === user.id;
 
-              return (
-                <AdminUserRow
-                  action={
-                    <Pressable
-                      className={`h-14 items-center justify-center rounded-[24px] border ${
-                        isCurrentUser
-                          ? "border-white/10 bg-white/[0.04]"
-                          : "border-[#ba7dff]/30 bg-[#8d3dff]"
-                      }`}
-                      disabled={isCurrentUser || deletingUserId === user.id}
-                      onPress={() => {
-                        void handleDeleteUser(user.id);
-                      }}
-                    >
-                      {deletingUserId === user.id ? (
-                        <ActivityIndicator color="#fff1f2" />
-                      ) : (
-                        <Text
-                          className={`text-sm font-semibold ${isCurrentUser ? "text-white/42" : "text-white"}`}
-                        >
-                          {isCurrentUser ? t("admin.cannotRemoveSelf") : t("admin.removeUser")}
-                        </Text>
-                      )}
-                    </Pressable>
-                  }
-                  email={user.email}
-                  key={user.id}
-                  name={user.name}
-                  role={user.role}
-                />
-              );
-            })
-          ) : (
-            <Text className="rounded-[24px] border border-white/10 bg-white/[0.05] p-4 text-[15px] leading-6 text-white/58">
-              {t("admin.noUsersFound")}
-            </Text>
-          )}
-        </View>
-      </AdminSectionCard>
+                  return (
+                    <View key={user.id}>
+                      <AdminUserNotificationRow
+                        disabled={isCurrentUser || isDeleting}
+                        email={user.email}
+                        isPending={isDeleting}
+                        name={user.name}
+                        onPress={() => {
+                          if (isCurrentUser || isDeleting) {
+                            return;
+                          }
+
+                          void handleDeleteUser(user.id);
+                        }}
+                        role={user.role}
+                        statusLabel={isCurrentUser ? t("admin.cannotRemoveSelf") : t("admin.removeUser")}
+                      />
+                      {index < filteredUsers.length - 1 ? <View className="mx-2 h-px bg-white/8" /> : null}
+                    </View>
+                  );
+                })}
+              </View>
+            ) : (
+              <Text className="rounded-[24px] border border-white/10 bg-white/[0.05] p-4 text-[15px] leading-6 text-white/60">
+                {t("admin.noUsersFound")}
+              </Text>
+            )}
+          </View>
+        </AdminMinimalSection>
+      </AdminMinimalPanel>
 
       {message ? <StatusMessage message={message} tone="success" /> : null}
       {errorMessage ? <StatusMessage message={errorMessage} tone="error" /> : null}
-    </AdminScreenShell>
+    </AuthShell>
   );
 }

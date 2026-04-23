@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
+import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AdminActionRow } from "@/shared/components/ui/admin/admin-action-row";
-import { AdminScreenShell } from "@/shared/components/ui/admin/admin-screen-shell";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 
 export default function AdminPanelScreen() {
@@ -35,9 +35,9 @@ export default function AdminPanelScreen() {
   }
 
   return (
-    <AdminScreenShell
-      eyebrow={t("admin.panelEyebrow")}
-      subtitle={t("admin.panelSubtitle")}
+    <AuthShell
+      eyebrow=""
+      subtitle={`Manage admin actions for ${session.user.email} with the same minimal secure flow.`}
       title={t("admin.panelTitle")}
     >
       <AdminActionRow
@@ -70,6 +70,6 @@ export default function AdminPanelScreen() {
         }}
         title={t("admin.deleteTitle")}
       />
-    </AdminScreenShell>
+    </AuthShell>
   );
 }

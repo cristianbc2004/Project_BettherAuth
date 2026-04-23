@@ -39,7 +39,7 @@ export function AdminScreenShell({
               router.back();
             }}
           >
-            <Text className="text-xl font-light text-white/78">{"<"}</Text>
+            <Text className="text-xl font-light text-white/80">{"<"}</Text>
           </Pressable>
 
           <Text className="text-[24px] font-semibold text-white">Admin</Text>
@@ -48,11 +48,11 @@ export function AdminScreenShell({
         </View>
 
         <View className="rounded-[34px] border border-white/10 bg-white/[0.06] p-5">
-          <Text className="mb-4 text-[11px] font-semibold uppercase tracking-[1.6px] text-white/68">
+          <Text className="mb-4 text-[11px] font-semibold uppercase tracking-[1.6px] text-white/70">
             {eyebrow}
           </Text>
           <Text className="text-[42px] font-semibold leading-[48px] text-white">{title}</Text>
-          <Text className="mt-4 max-w-[360px] text-[15px] leading-6 text-white/62">{subtitle}</Text>
+          <Text className="mt-4 max-w-[360px] text-[15px] leading-6 text-white/60">{subtitle}</Text>
         </View>
 
         <View className="mt-6 gap-4">{children}</View>
