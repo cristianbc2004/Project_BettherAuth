@@ -12,6 +12,7 @@ import { PasswordRequirements } from "@/features/auth/components/password-requir
 import { authClient } from "@/features/auth/services/auth-client";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { appConfig } from "@/shared/lib/app-config";
+import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
 type AuthMode = "signIn" | "signUp";
@@ -83,6 +84,7 @@ function SignInForm() {
       if (response.error) {
         const message = response.error.message ?? t("authForm.genericError");
         setServerError(message);
+        warningHaptic();
         Alert.alert(t("authForm.signInFailed"), message);
         return;
       }
@@ -92,14 +94,17 @@ function SignInForm() {
         | undefined;
 
       if (signInData?.twoFactorRedirect) {
+        successHaptic();
         router.replace("/two-factor-verify" as never);
         return;
       }
 
+      successHaptic();
       router.replace("/dashboard");
     } catch (error) {
       const message = error instanceof Error ? error.message : t("authForm.networkError");
       setServerError(message);
+      warningHaptic();
       Alert.alert(t("authForm.signInFailed"), message);
     } finally {
       setIsPending(false);
@@ -201,6 +206,7 @@ function SignUpForm() {
       ) {
         const message = `Resend test mode only sends emails to ${appConfig.resendTestRecipient}. Verify your own domain in Resend to send verification emails to other users.`;
         setServerError(message);
+        warningHaptic();
         Alert.alert(t("authForm.signUpFailed"), message);
         return;
       }
@@ -214,10 +220,12 @@ function SignUpForm() {
       if (response.error) {
         const message = response.error.message ?? t("authForm.genericError");
         setServerError(message);
+        warningHaptic();
         Alert.alert(t("authForm.signUpFailed"), message);
         return;
       }
 
+      successHaptic();
       Alert.alert(
         t("authForm.createAccount"),
         "We created your account. Check your email and verify it before signing in.",
@@ -226,6 +234,7 @@ function SignUpForm() {
     } catch (error) {
       const message = error instanceof Error ? error.message : t("authForm.networkError");
       setServerError(message);
+      warningHaptic();
       Alert.alert(t("authForm.signUpFailed"), message);
     } finally {
       setIsPending(false);

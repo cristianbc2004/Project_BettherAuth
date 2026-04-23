@@ -7,6 +7,7 @@ import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
+import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
 export default function TwoFactorVerifyScreen() {
@@ -30,14 +31,17 @@ export default function TwoFactorVerifyScreen() {
       if (response.error) {
         const message = response.error.message ?? t("twoFactorVerify.invalidAuthenticatorCode");
         setServerError(message);
+        warningHaptic();
         Alert.alert(t("twoFactorVerify.verificationFailed"), message);
         return;
       }
 
+      successHaptic();
       router.replace("/dashboard");
     } catch (error) {
       const message = error instanceof Error ? error.message : t("twoFactorVerify.networkError");
       setServerError(message);
+      warningHaptic();
       Alert.alert(t("twoFactorVerify.verificationFailed"), message);
     } finally {
       setIsPending(false);
@@ -58,14 +62,17 @@ export default function TwoFactorVerifyScreen() {
       if (response.error) {
         const message = response.error.message ?? t("twoFactorVerify.invalidBackupCode");
         setServerError(message);
+        warningHaptic();
         Alert.alert(t("twoFactorVerify.verificationFailed"), message);
         return;
       }
 
+      successHaptic();
       router.replace("/dashboard");
     } catch (error) {
       const message = error instanceof Error ? error.message : t("twoFactorVerify.networkError");
       setServerError(message);
+      warningHaptic();
       Alert.alert(t("twoFactorVerify.verificationFailed"), message);
     } finally {
       setIsPending(false);

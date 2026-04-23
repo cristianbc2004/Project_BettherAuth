@@ -9,6 +9,7 @@ import { AuthShell } from "@/features/auth/components/auth-shell";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 
 type TwoFactorSetup = {
@@ -109,12 +110,14 @@ export default function TwoFactorScreen() {
     if (result.error) {
       setSetup(null);
       setErrorMessage(result.error.message ?? t("twoFactor.enableError"));
+      warningHaptic();
       return;
     }
 
     if (!result.data) {
       setSetup(null);
       setErrorMessage(t("twoFactor.missingSetupPayload"));
+      warningHaptic();
       return;
     }
 
@@ -123,6 +126,7 @@ export default function TwoFactorScreen() {
       totpURI: result.data.totpURI,
     });
     setMessage(t("twoFactor.setupStarted"));
+    successHaptic();
   };
 
   const handleVerify = async () => {
@@ -140,6 +144,7 @@ export default function TwoFactorScreen() {
 
     if (result.error) {
       setErrorMessage(result.error.message ?? t("twoFactor.verifyError"));
+      warningHaptic();
       return;
     }
 
@@ -147,6 +152,7 @@ export default function TwoFactorScreen() {
     setPassword("");
     setVerificationCode("");
     setMessage(t("twoFactor.enableSuccess"));
+    successHaptic();
   };
 
   const handleDisable = async () => {
@@ -163,12 +169,14 @@ export default function TwoFactorScreen() {
 
     if (result.error) {
       setErrorMessage(result.error.message ?? t("twoFactor.disableError"));
+      warningHaptic();
       return;
     }
 
     setSetup(null);
     setVerificationCode("");
     setMessage(t("twoFactor.disableSuccess"));
+    successHaptic();
   };
 
   return (

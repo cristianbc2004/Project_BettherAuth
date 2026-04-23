@@ -3,6 +3,8 @@ import { useEffect, useRef } from "react";
 import { Animated, Easing, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { selectionHaptic } from "@/shared/lib/haptics";
+
 type NotificationItem = {
   accent: string;
   iconAccent: string;
@@ -123,6 +125,7 @@ export default function NotificationsScreen() {
           <Pressable
             className="h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5"
             onPress={() => {
+              selectionHaptic();
               router.back();
             }}
           >
