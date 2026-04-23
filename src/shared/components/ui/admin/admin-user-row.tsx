@@ -30,7 +30,7 @@ export function AdminUserRow({ action, email, name, role, statusLabel }: AdminUs
 
         <View className="flex-1">
           <Text className="text-[17px] font-semibold text-white">{name}</Text>
-          <Text className="mt-1 text-sm text-white/58">{email}</Text>
+          <Text className="mt-1 text-sm text-white/60">{email}</Text>
 
           <View className="mt-3 flex-row flex-wrap items-center">
             <Text className="text-[11px] font-semibold uppercase tracking-[1.1px] text-white/70">

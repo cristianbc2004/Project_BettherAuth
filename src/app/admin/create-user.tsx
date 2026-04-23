@@ -10,8 +10,8 @@ import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
 import { PasswordRequirements } from "@/features/auth/components/password-requirements";
 import { authClient } from "@/features/auth/services/auth-client";
-import { AdminScreenShell } from "@/shared/components/ui/admin/admin-screen-shell";
-import { AdminSectionCard } from "@/shared/components/ui/admin/admin-section-card";
+import { AuthShell } from "@/features/auth/components/auth-shell";
+import { AdminMinimalPanel, AdminMinimalSection } from "@/shared/components/ui/admin/admin-minimal-panel";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { StatusMessage } from "@/shared/components/ui/status-message";
@@ -95,99 +95,104 @@ export default function CreateUserScreen() {
   });
 
   return (
-    <AdminScreenShell
-      eyebrow={t("admin.createPageEyebrow")}
-      subtitle={t("admin.createPageSubtitle")}
+    <AuthShell
+      eyebrow=""
+      subtitle={`Manage admin actions for ${session.user.email} with the same minimal secure flow.`}
       title={t("admin.createPageTitle")}
     >
-      <AdminSectionCard eyebrow={t("admin.formEyebrow")} title={t("admin.formTitle")}>
-        <Controller
-          control={form.control}
-          name="name"
-          render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-            <AuthInput
-              autoCapitalize="words"
-              autoCorrect={false}
-              error={error?.message}
-              label={t("authForm.fullName")}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              placeholder={t("authForm.namePlaceholder")}
-              value={value}
-            />
-          )}
-        />
-        <Controller
-          control={form.control}
-          name="email"
-          render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-            <AuthInput
-              autoCapitalize="none"
-              autoCorrect={false}
-              error={error?.message}
-              keyboardType="email-address"
-              label={t("authForm.email")}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              placeholder={t("authForm.emailPlaceholder")}
-              value={value}
-            />
-          )}
-        />
-        <Controller
-          control={form.control}
-          name="password"
-          render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-            <AuthPasswordInput
-              error={error?.message}
-              label={t("authForm.password")}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              placeholder={t("authForm.passwordPlaceholder")}
-              value={value}
-            />
-          )}
-        />
-        <PasswordRequirements password={passwordValue} />
+      <AdminMinimalPanel>
+        <AdminMinimalSection title={t("admin.formTitle")}>
+          <Controller
+            control={form.control}
+            name="name"
+            render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+              <AuthInput
+                autoCapitalize="words"
+                autoCorrect={false}
+                error={error?.message}
+                label={t("authForm.fullName")}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                placeholder={t("authForm.namePlaceholder")}
+                value={value}
+              />
+            )}
+          />
+          <Controller
+            control={form.control}
+            name="email"
+            render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+              <AuthInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                error={error?.message}
+                keyboardType="email-address"
+                label={t("authForm.email")}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                placeholder={t("authForm.emailPlaceholder")}
+                value={value}
+              />
+            )}
+          />
+          <Controller
+            control={form.control}
+            name="password"
+            render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+              <AuthPasswordInput
+                error={error?.message}
+                label={t("authForm.password")}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                placeholder={t("authForm.passwordPlaceholder")}
+                value={value}
+              />
+            )}
+          />
+          <PasswordRequirements password={passwordValue} />
+        </AdminMinimalSection>
 
-        <Text className="mb-3 text-sm font-medium text-white/90">{t("admin.role")}</Text>
-        <View className="flex-row rounded-[24px] border border-white/5 bg-white/6 p-1">
-          {(["user", "admin"] as const).map((option) => {
-            const isSelected = role === option;
+        <AdminMinimalSection title={t("admin.role")}>
+          <View className="flex-row rounded-[24px] border border-white/6 bg-white/[0.04] p-1">
+            {(["user", "admin"] as const).map((option) => {
+              const isSelected = role === option;
 
-            return (
-              <Pressable
-                className={`flex-1 items-center rounded-[20px] py-3 ${
-                  isSelected ? "bg-[#8d3dff]" : "bg-transparent"
-                }`}
-                key={option}
-                onPress={() => {
-                  setRole(option);
-                }}
-              >
-                <Text
-                  className={`text-sm font-semibold uppercase tracking-[1.1px] ${
-                    isSelected ? "text-white" : "text-white/48"
+              return (
+                <Pressable
+                  className={`flex-1 items-center rounded-[20px] py-3 ${
+                    isSelected ? "bg-[#8d3dff]" : "bg-transparent"
                   }`}
+                  key={option}
+                  onPress={() => {
+                    setRole(option);
+                  }}
                 >
-                  {option}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+                  <Text
+                    className={`text-sm font-semibold uppercase tracking-[1.1px] ${
+                      isSelected ? "text-white" : "text-white/50"
+                    }`}
+                  >
+                    {option}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </AdminMinimalSection>
 
-        <AuthSubmitButton
-          isPending={isCreatingUser}
-          label={t("admin.createUser")}
-          onPress={() => {
-            void handleCreateUser();
-          }}
-        />
-      </AdminSectionCard>
+        <AdminMinimalSection title={t("admin.createTitle")} description={t("admin.createDescription")}>
+          <AuthSubmitButton
+            isPending={isCreatingUser}
+            label={t("admin.createUser")}
+            onPress={() => {
+              void handleCreateUser();
+            }}
+          />
+        </AdminMinimalSection>
+      </AdminMinimalPanel>
 
       {message ? <StatusMessage message={message} tone="success" /> : null}
       {errorMessage ? <StatusMessage message={errorMessage} tone="error" /> : null}
-    </AdminScreenShell>
+    </AuthShell>
   );
 }
