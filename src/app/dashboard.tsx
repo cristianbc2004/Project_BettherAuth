@@ -8,6 +8,7 @@ import { authClient } from "@/features/auth/services/auth-client";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 type MenuRowProps = {
   accent?: string;
@@ -76,6 +77,7 @@ function getInitials(name: string) {
 
 export default function DashboardScreen() {
   const { data: session, isPending } = authClient.useSession();
+  const showSessionLoading = useSessionLoadingDelay(isPending);
   const { locale, setLocale } = useLanguage();
   const role = (session?.user as { role?: string } | undefined)?.role ?? "user";
   const isAdmin = role
@@ -112,7 +114,7 @@ export default function DashboardScreen() {
     ).start();
   }, [sectionAnimations]);
 
-  if (isPending) {
+  if (showSessionLoading) {
     return <LoadingScreen />;
   }
 

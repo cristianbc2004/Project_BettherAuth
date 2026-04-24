@@ -16,9 +16,11 @@ import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { StatusMessage } from "@/shared/components/ui/status-message";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 export default function CreateUserScreen() {
   const { data: session, isPending } = authClient.useSession();
+  const showSessionLoading = useSessionLoadingDelay(isPending);
   const { locale } = useLanguage();
   const { t } = useTranslation();
   const [role, setRole] = useState<"user" | "admin">("user");
@@ -53,7 +55,7 @@ export default function CreateUserScreen() {
     .map((entry) => entry.trim())
     .includes("admin");
 
-  if (isPending) {
+  if (showSessionLoading) {
     return <LoadingScreen />;
   }
 
@@ -100,6 +102,9 @@ export default function CreateUserScreen() {
       subtitle={`Manage admin actions for ${session.user.email} with the same minimal secure flow.`}
       title={t("admin.createPageTitle")}
     >
+      {message ? <StatusMessage message={message} tone="success" /> : null}
+      {errorMessage ? <StatusMessage message={errorMessage} tone="error" /> : null}
+
       <AdminMinimalPanel>
         <AdminMinimalSection title={t("admin.formTitle")}>
           <Controller
@@ -190,9 +195,6 @@ export default function CreateUserScreen() {
           />
         </AdminMinimalSection>
       </AdminMinimalPanel>
-
-      {message ? <StatusMessage message={message} tone="success" /> : null}
-      {errorMessage ? <StatusMessage message={errorMessage} tone="error" /> : null}
     </AuthShell>
   );
 }

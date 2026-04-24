@@ -12,6 +12,7 @@ import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { StatusMessage } from "@/shared/components/ui/status-message";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 type AdminUser = {
   id: string;
@@ -23,6 +24,7 @@ type AdminUser = {
 
 export default function DeleteUserScreen() {
   const { data: session, isPending } = authClient.useSession();
+  const showSessionLoading = useSessionLoadingDelay(isPending);
   const { locale } = useLanguage();
   const { t } = useTranslation();
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -82,7 +84,7 @@ export default function DeleteUserScreen() {
     }
   }, [isAdmin, locale, session?.user]);
 
-  if (isPending) {
+  if (showSessionLoading) {
     return <LoadingScreen />;
   }
 
@@ -121,6 +123,9 @@ export default function DeleteUserScreen() {
       subtitle={`Manage admin actions for ${session.user.email} with the same minimal secure flow.`}
       title={t("admin.deletePageTitle")}
     >
+      {message ? <StatusMessage message={message} tone="success" /> : null}
+      {errorMessage ? <StatusMessage message={errorMessage} tone="error" /> : null}
+
       <AdminMinimalPanel>
         <AdminMinimalSection title={t("admin.search")}>
           <AuthInput
@@ -179,9 +184,6 @@ export default function DeleteUserScreen() {
           </View>
         </AdminMinimalSection>
       </AdminMinimalPanel>
-
-      {message ? <StatusMessage message={message} tone="success" /> : null}
-      {errorMessage ? <StatusMessage message={errorMessage} tone="error" /> : null}
     </AuthShell>
   );
 }
