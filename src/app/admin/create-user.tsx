@@ -27,6 +27,8 @@ export default function CreateUserScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [isPasswordRequirementsFocused, setIsPasswordRequirementsFocused] = useState(false);
+  const [passwordRequirementsScrollRequest, setPasswordRequirementsScrollRequest] = useState(0);
   const createUserSchema = z.object({
     email: z.email(t("authForm.invalidEmail")),
     name: z.string().min(2, t("authForm.minName")),
@@ -48,6 +50,10 @@ export default function CreateUserScreen() {
     reValidateMode: "onChange",
   });
   const passwordValue = form.watch("password");
+  const requestPasswordRequirementsScroll = () => {
+    setIsPasswordRequirementsFocused(true);
+    setPasswordRequirementsScrollRequest((currentValue) => currentValue + 1);
+  };
 
   const sessionRole = (session?.user as { role?: string } | undefined)?.role ?? "user";
   const isAdmin = sessionRole
@@ -99,6 +105,8 @@ export default function CreateUserScreen() {
   return (
     <AuthShell
       eyebrow=""
+      keyboardFocusScrollY={isPasswordRequirementsFocused ? 260 : undefined}
+      scrollRequestKey={isPasswordRequirementsFocused ? passwordRequirementsScrollRequest : undefined}
       subtitle={`Manage admin actions for ${session.user.email} with the same minimal secure flow.`}
       title={t("admin.createPageTitle")}
     >
@@ -118,6 +126,9 @@ export default function CreateUserScreen() {
                 label={t("authForm.fullName")}
                 onBlur={onBlur}
                 onChangeText={onChange}
+                onFocus={() => {
+                  setIsPasswordRequirementsFocused(false);
+                }}
                 placeholder={t("authForm.namePlaceholder")}
                 value={value}
               />
@@ -135,6 +146,9 @@ export default function CreateUserScreen() {
                 label={t("authForm.email")}
                 onBlur={onBlur}
                 onChangeText={onChange}
+                onFocus={() => {
+                  setIsPasswordRequirementsFocused(false);
+                }}
                 placeholder={t("authForm.emailPlaceholder")}
                 value={value}
               />
@@ -149,6 +163,7 @@ export default function CreateUserScreen() {
                 label={t("authForm.password")}
                 onBlur={onBlur}
                 onChangeText={onChange}
+                onFocus={requestPasswordRequirementsScroll}
                 placeholder={t("authForm.passwordPlaceholder")}
                 value={value}
               />

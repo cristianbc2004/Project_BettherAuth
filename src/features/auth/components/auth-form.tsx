@@ -19,6 +19,8 @@ type AuthMode = "signIn" | "signUp";
 
 type AuthFormProps = {
   mode: AuthMode;
+  onPasswordRequirementsDismiss?: () => void;
+  onPasswordRequirementsFocus?: () => void;
 };
 
 function AuthFormFrame({
@@ -167,7 +169,10 @@ function SignInForm() {
   );
 }
 
-function SignUpForm() {
+function SignUpForm({
+  onPasswordRequirementsDismiss,
+  onPasswordRequirementsFocus,
+}: Pick<AuthFormProps, "onPasswordRequirementsDismiss" | "onPasswordRequirementsFocus">) {
   const { t } = useTranslation();
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -258,6 +263,7 @@ function SignUpForm() {
             label={t("authForm.fullName")}
             onBlur={onBlur}
             onChangeText={onChange}
+            onFocus={onPasswordRequirementsDismiss}
             placeholder={t("authForm.namePlaceholder")}
             value={value}
           />
@@ -276,6 +282,7 @@ function SignUpForm() {
             label={t("authForm.email")}
             onBlur={onBlur}
             onChangeText={onChange}
+            onFocus={onPasswordRequirementsDismiss}
             placeholder={t("authForm.emailPlaceholder")}
             value={value}
           />
@@ -291,6 +298,7 @@ function SignUpForm() {
             label={t("authForm.password")}
             onBlur={onBlur}
             onChangeText={onChange}
+            onFocus={onPasswordRequirementsFocus}
             placeholder={t("authForm.passwordPlaceholder")}
             value={value}
           />
@@ -309,6 +317,17 @@ function SignUpForm() {
   );
 }
 
-export function AuthForm({ mode }: AuthFormProps) {
-  return mode === "signIn" ? <SignInForm /> : <SignUpForm />;
+export function AuthForm({
+  mode,
+  onPasswordRequirementsDismiss,
+  onPasswordRequirementsFocus,
+}: AuthFormProps) {
+  return mode === "signIn" ? (
+    <SignInForm />
+  ) : (
+    <SignUpForm
+      onPasswordRequirementsDismiss={onPasswordRequirementsDismiss}
+      onPasswordRequirementsFocus={onPasswordRequirementsFocus}
+    />
+  );
 }
