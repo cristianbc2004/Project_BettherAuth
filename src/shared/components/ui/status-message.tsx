@@ -10,11 +10,11 @@ export function StatusMessage({ message, tone }: StatusMessageProps) {
 
   return (
     <View
-      className={`rounded-[24px] border p-4 ${
-        isSuccess ? "border-emerald-300/20 bg-emerald-500/10" : "border-red-300/20 bg-red-500/10"
+      className={`rounded-[24px] border px-4 py-3 ${
+        isSuccess ? "border-[#8d3dff]/45 bg-white/[0.07]" : "border-red-300/30 bg-red-500/15"
       }`}
     >
-      <Text className={`text-[15px] leading-6 ${isSuccess ? "text-emerald-50/88" : "text-red-50/88"}`}>
+      <Text className={`text-[15px] font-medium leading-6 ${isSuccess ? "text-white" : "text-white"}`}>
         {message}
       </Text>
     </View>

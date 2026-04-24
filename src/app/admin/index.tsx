@@ -6,6 +6,7 @@ import { authClient } from "@/features/auth/services/auth-client";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AdminActionRow } from "@/shared/components/ui/admin/admin-action-row";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 export default function AdminPanelScreen() {
   const dashboardIcons = {
@@ -15,6 +16,7 @@ export default function AdminPanelScreen() {
   } satisfies Record<string, ImageSourcePropType>;
 
   const { data: session, isPending } = authClient.useSession();
+  const showSessionLoading = useSessionLoadingDelay(isPending);
   const { t } = useTranslation();
   const sessionRole = (session?.user as { role?: string } | undefined)?.role ?? "user";
   const isAdmin = sessionRole
@@ -22,7 +24,7 @@ export default function AdminPanelScreen() {
     .map((entry) => entry.trim())
     .includes("admin");
 
-  if (isPending) {
+  if (showSessionLoading) {
     return <LoadingScreen />;
   }
 

@@ -11,6 +11,7 @@ import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 type TwoFactorSetup = {
   backupCodes: string[];
@@ -67,6 +68,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 export default function TwoFactorScreen() {
   const { data: session, isPending } = authClient.useSession();
+  const showSessionLoading = useSessionLoadingDelay(isPending);
   const { locale } = useLanguage();
   const { t } = useTranslation();
   const [password, setPassword] = useState("");
@@ -86,7 +88,7 @@ export default function TwoFactorScreen() {
     return setup ? extractSetupDetails(setup.totpURI) : null;
   }, [setup]);
 
-  if (isPending) {
+  if (showSessionLoading) {
     return <LoadingScreen />;
   }
 
