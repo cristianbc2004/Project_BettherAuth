@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Animated, Easing, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { selectionHaptic } from "@/shared/lib/haptics";
@@ -79,35 +79,6 @@ function NotificationRow({ accent, iconAccent, timestamp, title, unread }: Notif
 }
 
 export default function NotificationsScreen() {
-  const rowAnimations = useRef(
-    notifications.map(() => ({
-      opacity: new Animated.Value(0),
-      translateY: new Animated.Value(18),
-    })),
-  ).current;
-
-  useEffect(() => {
-    Animated.stagger(
-      120,
-      rowAnimations.map((row) =>
-        Animated.parallel([
-          Animated.timing(row.opacity, {
-            toValue: 1,
-            duration: 460,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-          Animated.timing(row.translateY, {
-            toValue: 0,
-            duration: 460,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-        ]),
-      ),
-    ).start();
-  }, [rowAnimations]);
-
   return (
     <SafeAreaView className="flex-1 bg-[#060c17]">
       <View className="absolute inset-0">
@@ -146,11 +117,10 @@ export default function NotificationsScreen() {
         <View className="overflow-hidden rounded-[28px] border border-white/5 bg-transparent">
           {notifications.map((item, index) => (
             <Animated.View
+              entering={FadeInDown.duration(460)
+                .delay(index * 120)
+                .easing(Easing.out(Easing.quad))}
               key={item.id}
-              style={{
-                opacity: rowAnimations[index].opacity,
-                transform: [{ translateY: rowAnimations[index].translateY }],
-              }}
             >
               <NotificationRow {...item} />
               {index < notifications.length - 1 ? (

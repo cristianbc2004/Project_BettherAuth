@@ -1,8 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Easing,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -10,66 +8,44 @@ import {
   Text,
   View,
 } from "react-native";
+import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AuthBrandMark } from "@/features/auth/components/auth-brand-mark";
 
 type AuthShellProps = PropsWithChildren<{
   eyebrow: string;
+  keyboardFocusScrollY?: number;
+  scrollRequestKey?: number;
   title: string;
   subtitle: string;
 }>;
 
-export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps) {
+export function AuthShell({
+  children,
+  eyebrow,
+  keyboardFocusScrollY,
+  scrollRequestKey,
+  title,
+  subtitle,
+}: AuthShellProps) {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const headerOpacity = useRef(new Animated.Value(0)).current;
-  const headerTranslate = useRef(new Animated.Value(12)).current;
-  const cardOpacity = useRef(new Animated.Value(0)).current;
-  const cardTranslate = useRef(new Animated.Value(18)).current;
-
-  useEffect(() => {
-    Animated.sequence([
-      Animated.parallel([
-        Animated.timing(headerOpacity, {
-          toValue: 1,
-          duration: 420,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(headerTranslate, {
-          toValue: 0,
-          duration: 420,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.parallel([
-        Animated.timing(cardOpacity, {
-          toValue: 1,
-          duration: 480,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(cardTranslate, {
-          toValue: 0,
-          duration: 480,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start();
-  }, [cardOpacity, cardTranslate, headerOpacity, headerTranslate]);
+  const [keyboardBottomInset, setKeyboardBottomInset] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const shouldAdjustForFocusedInput = keyboardFocusScrollY !== undefined && scrollRequestKey !== undefined;
 
   useEffect(() => {
     const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
     const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
 
-    const showSubscription = Keyboard.addListener(showEvent, () => {
+    const showSubscription = Keyboard.addListener(showEvent, (event) => {
       setKeyboardVisible(true);
+      setKeyboardBottomInset(event.endCoordinates.height);
     });
 
     const hideSubscription = Keyboard.addListener(hideEvent, () => {
       setKeyboardVisible(false);
+      setKeyboardBottomInset(0);
     });
 
     return () => {
@@ -77,6 +53,23 @@ export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps
       hideSubscription.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (!keyboardVisible || !shouldAdjustForFocusedInput) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      scrollViewRef.current?.scrollTo({
+        animated: true,
+        y: keyboardFocusScrollY,
+      });
+    }, 180);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [keyboardFocusScrollY, keyboardVisible, scrollRequestKey, shouldAdjustForFocusedInput]);
 
   return (
     <SafeAreaView className="flex-1 bg-midnight-950">
@@ -92,16 +85,22 @@ export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps
         <ScrollView
           bounces={false}
           contentContainerClassName={`${keyboardVisible ? "px-6 pb-8 pt-4" : "flex-grow px-6 pb-10 pt-8"}`}
+          contentContainerStyle={
+            keyboardVisible && shouldAdjustForFocusedInput
+              ? {
+                  paddingBottom: Math.max(keyboardBottomInset + 32, 220),
+                }
+              : undefined
+          }
+          keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
+          ref={scrollViewRef}
           showsVerticalScrollIndicator={false}
         >
           {!keyboardVisible ? (
             <Animated.View
               className="mt-10 items-center"
-              style={{
-                opacity: headerOpacity,
-                transform: [{ translateY: headerTranslate }],
-              }}
+              entering={FadeInDown.duration(420).easing(Easing.out(Easing.quad))}
             >
               <AuthBrandMark />
               <Text className="mt-9 px-8 text-center text-[30px] font-black leading-[36px] text-white">
@@ -115,10 +114,9 @@ export function AuthShell({ children, eyebrow, title, subtitle }: AuthShellProps
 
           <Animated.View
             className={`${keyboardVisible ? "mt-6" : "mt-10"} rounded-[36px] border border-white/6 bg-[#0b1220]/78 px-0 py-0`}
-            style={{
-              opacity: cardOpacity,
-              transform: [{ translateY: cardTranslate }],
-            }}
+            entering={FadeInDown.duration(480)
+              .delay(keyboardVisible ? 0 : 420)
+              .easing(Easing.out(Easing.quad))}
           >
             {children}
           </Animated.View>

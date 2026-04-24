@@ -1,7 +1,7 @@
 import { Redirect, router } from "expo-router";
-import { useEffect, useRef } from "react";
 import type { ImageSourcePropType } from "react-native";
-import { Animated, Easing, Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -84,35 +84,10 @@ export default function DashboardScreen() {
     .split(",")
     .map((entry) => entry.trim())
     .includes("admin");
-  const sectionAnimations = useRef([
-    { opacity: new Animated.Value(0), translateY: new Animated.Value(18) },
-    { opacity: new Animated.Value(0), translateY: new Animated.Value(18) },
-    { opacity: new Animated.Value(0), translateY: new Animated.Value(18) },
-    { opacity: new Animated.Value(0), translateY: new Animated.Value(18) },
-    { opacity: new Animated.Value(0), translateY: new Animated.Value(18) },
-  ]).current;
-
-  useEffect(() => {
-    Animated.stagger(
-      130,
-      sectionAnimations.map((section) =>
-        Animated.parallel([
-          Animated.timing(section.opacity, {
-            toValue: 1,
-            duration: 480,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-          Animated.timing(section.translateY, {
-            toValue: 0,
-            duration: 480,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-        ]),
-      ),
-    ).start();
-  }, [sectionAnimations]);
+  const sectionEntering = (index: number) =>
+    FadeInDown.duration(480)
+      .delay(index * 130)
+      .easing(Easing.out(Easing.quad));
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -177,12 +152,7 @@ export default function DashboardScreen() {
           </Pressable>
         </View>
 
-        <Animated.View
-          style={{
-            opacity: sectionAnimations[0].opacity,
-            transform: [{ translateY: sectionAnimations[0].translateY }],
-          }}
-        >
+        <Animated.View entering={sectionEntering(0)}>
           <SectionLabel label="Profile" />
           <Pressable
             className="flex-row items-center rounded-[26px] border border-white/5 bg-[#6a34d3]/35 px-4 py-4"
@@ -205,12 +175,7 @@ export default function DashboardScreen() {
           </Pressable>
         </Animated.View>
 
-        <Animated.View
-          style={{
-            opacity: sectionAnimations[1].opacity,
-            transform: [{ translateY: sectionAnimations[1].translateY }],
-          }}
-        >
+        <Animated.View entering={sectionEntering(1)}>
           <SectionLabel label="Authentication" />
           <MenuRow
             accent="#2a3144"
@@ -232,12 +197,7 @@ export default function DashboardScreen() {
           />
         </Animated.View>
 
-        <Animated.View
-          style={{
-            opacity: sectionAnimations[2].opacity,
-            transform: [{ translateY: sectionAnimations[2].translateY }],
-          }}
-        >
+        <Animated.View entering={sectionEntering(2)}>
           <SectionLabel label="App" />
           <MenuRow
             accent="#43325d"
@@ -261,12 +221,7 @@ export default function DashboardScreen() {
         </Animated.View>
 
         {isAdmin ? (
-          <Animated.View
-            style={{
-              opacity: sectionAnimations[3].opacity,
-              transform: [{ translateY: sectionAnimations[3].translateY }],
-            }}
-          >
+          <Animated.View entering={sectionEntering(3)}>
             <SectionLabel label="Admin" />
             <MenuRow
               accent="#41385c"
@@ -280,12 +235,7 @@ export default function DashboardScreen() {
           </Animated.View>
         ) : null}
 
-        <Animated.View
-          style={{
-            opacity: sectionAnimations[4].opacity,
-            transform: [{ translateY: sectionAnimations[4].translateY }],
-          }}
-        >
+        <Animated.View entering={sectionEntering(4)}>
           <SectionLabel label="Session" />
           <MenuRow
             accent="#232937"

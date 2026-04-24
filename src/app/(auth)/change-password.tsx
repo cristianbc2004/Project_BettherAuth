@@ -18,6 +18,8 @@ export default function ChangePasswordScreen() {
   const { t } = useTranslation();
   const [isPending, setIsPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [isPasswordRequirementsFocused, setIsPasswordRequirementsFocused] = useState(false);
+  const [passwordRequirementsScrollRequest, setPasswordRequirementsScrollRequest] = useState(0);
   const { locale } = useLanguage();
   const changePasswordSchema = z
     .object({
@@ -46,6 +48,10 @@ export default function ChangePasswordScreen() {
   });
   const newPasswordValue = form.watch("newPassword");
   const confirmPasswordValue = form.watch("confirmPassword");
+  const requestPasswordRequirementsScroll = () => {
+    setIsPasswordRequirementsFocused(true);
+    setPasswordRequirementsScrollRequest((currentValue) => currentValue + 1);
+  };
 
   const handleSubmit = form.handleSubmit(async (values) => {
     try {
@@ -83,6 +89,8 @@ export default function ChangePasswordScreen() {
   return (
     <AuthShell
       eyebrow=""
+      keyboardFocusScrollY={isPasswordRequirementsFocused ? 360 : undefined}
+      scrollRequestKey={isPasswordRequirementsFocused ? passwordRequirementsScrollRequest : undefined}
       subtitle="Update your password and keep your account protected with the same secure mobile flow."
       title="Change Your Password."
     >
@@ -104,6 +112,9 @@ export default function ChangePasswordScreen() {
               label={t("authForm.currentPassword")}
               onBlur={onBlur}
               onChangeText={onChange}
+              onFocus={() => {
+                setIsPasswordRequirementsFocused(false);
+              }}
               placeholder={t("changePassword.currentPasswordPlaceholder")}
               value={value}
             />
@@ -119,6 +130,7 @@ export default function ChangePasswordScreen() {
               label={t("authForm.newPassword")}
               onBlur={onBlur}
               onChangeText={onChange}
+              onFocus={requestPasswordRequirementsScroll}
               placeholder={t("changePassword.newPasswordPlaceholder")}
               value={value}
             />
@@ -134,6 +146,7 @@ export default function ChangePasswordScreen() {
               label={t("changePassword.confirmNewPassword")}
               onBlur={onBlur}
               onChangeText={onChange}
+              onFocus={requestPasswordRequirementsScroll}
               placeholder={t("changePassword.confirmPasswordPlaceholder")}
               value={value}
             />

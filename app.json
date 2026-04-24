@@ -20,6 +20,7 @@
     "android": {
       "package": "com.betterauth.dashboard",
       "backgroundColor": "#060c17",
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

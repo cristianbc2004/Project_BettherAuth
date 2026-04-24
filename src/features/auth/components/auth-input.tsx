@@ -1,5 +1,12 @@
-import { useEffect, useRef, useState } from "react";
-import { Animated, Text, TextInput, type TextInputProps, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Text, TextInput, type TextInputProps, View } from "react-native";
+import Animated, {
+  interpolate,
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 type AuthInputProps = TextInputProps & {
   error?: string;
@@ -8,34 +15,27 @@ type AuthInputProps = TextInputProps & {
 
 export function AuthInput({ error, label, onBlur, onFocus, ...props }: AuthInputProps) {
   const [isFocused, setIsFocused] = useState(false);
-  const inputState = useRef(new Animated.Value(0)).current;
+  const inputState = useSharedValue(0);
 
   useEffect(() => {
-    Animated.timing(inputState, {
-      toValue: error ? 2 : isFocused ? 1 : 0,
+    inputState.value = withTiming(error ? 2 : isFocused ? 1 : 0, {
       duration: 180,
-      useNativeDriver: false,
-    }).start();
+    });
   }, [error, inputState, isFocused]);
 
-  const inputContainerStyle = {
-    backgroundColor: inputState.interpolate({
-      inputRange: [0, 1, 2],
-      outputRange: ["rgba(255, 255, 255, 0.06)", "rgba(141, 61, 255, 0.12)", "rgba(239, 68, 68, 0.1)"],
-    }),
-    borderColor: inputState.interpolate({
-      inputRange: [0, 1, 2],
-      outputRange: ["rgba(255, 255, 255, 0.05)", "rgba(168, 120, 255, 0.65)", "rgba(248, 113, 113, 0.6)"],
-    }),
-    transform: [
-      {
-        scale: inputState.interpolate({
-          inputRange: [0, 1, 2],
-          outputRange: [1, 1.01, 1],
-        }),
-      },
-    ],
-  };
+  const inputContainerStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(inputState.value, [0, 1, 2], [
+      "rgba(255, 255, 255, 0.06)",
+      "rgba(141, 61, 255, 0.12)",
+      "rgba(239, 68, 68, 0.1)",
+    ]),
+    borderColor: interpolateColor(inputState.value, [0, 1, 2], [
+      "rgba(255, 255, 255, 0.05)",
+      "rgba(168, 120, 255, 0.65)",
+      "rgba(248, 113, 113, 0.6)",
+    ]),
+    transform: [{ scale: interpolate(inputState.value, [0, 1, 2], [1, 1.01, 1]) }],
+  }));
 
   return (
     <View className="mb-5">
