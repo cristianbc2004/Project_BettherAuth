@@ -13,7 +13,7 @@ export default function IndexScreen() {
   }
 
   if (session?.user) {
-    return <Redirect href="/dashboard" />;
+    return <Redirect href={"/home" as never} />;
   }
 
   return <Redirect href="/sign-in" />;

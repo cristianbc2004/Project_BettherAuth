@@ -104,7 +104,7 @@ function SignInForm() {
       }
 
       successHaptic();
-      router.replace("/dashboard");
+      router.replace("/home" as never);
     } catch (error) {
       const message = error instanceof Error ? error.message : t("authForm.networkError");
       setServerError(message);

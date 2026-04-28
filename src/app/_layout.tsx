@@ -5,7 +5,6 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
-import { LanguageToggle } from "@/shared/components/ui/language-toggle";
 import { LanguageProvider } from "@/shared/lib/locale";
 import { AppThemeProvider, useAppTheme } from "@/shared/lib/theme-context";
 
@@ -36,6 +35,7 @@ function AppNavigation() {
           }}
         >
           <Stack.Screen name="index" options={{ animation: "none" }} />
+          <Stack.Screen name="home" />
           <Stack.Screen name="dashboard" />
           <Stack.Screen name="notifications" />
           <Stack.Screen name="(auth)/sign-in" />
@@ -51,7 +51,6 @@ function AppNavigation() {
           <Stack.Screen name="admin/list-users" />
           <Stack.Screen name="admin/delete-user" />
         </Stack>
-        <LanguageToggle />
       </ThemeProvider>
     </LanguageProvider>
   );
