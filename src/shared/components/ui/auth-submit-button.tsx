@@ -1,5 +1,7 @@
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
+import { useAppTheme } from "@/shared/lib/theme-context";
+
 type AuthSubmitButtonProps = {
   isPending: boolean;
   label: string;
@@ -7,6 +9,8 @@ type AuthSubmitButtonProps = {
 };
 
 export function AuthSubmitButton({ isPending, label, onPress }: AuthSubmitButtonProps) {
+  const { theme } = useAppTheme();
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -18,10 +22,10 @@ export function AuthSubmitButton({ isPending, label, onPress }: AuthSubmitButton
       <View
         style={{
           alignItems: "center",
-          backgroundColor: "#8d3dff",
+          backgroundColor: theme.primary,
           borderCurve: "continuous",
           borderRadius: 999,
-          boxShadow: "0 10px 18px rgba(111, 47, 224, 0.34)",
+          boxShadow: `0 10px 18px ${theme.primarySoft}`,
           flexDirection: "row",
           justifyContent: "center",
           minHeight: 56,
@@ -33,7 +37,7 @@ export function AuthSubmitButton({ isPending, label, onPress }: AuthSubmitButton
         ) : null}
         <Text
           style={{
-            color: "#ffffff",
+            color: theme.textOnPrimary,
             fontSize: 16,
             fontWeight: "600",
             marginLeft: isPending ? 12 : 0,

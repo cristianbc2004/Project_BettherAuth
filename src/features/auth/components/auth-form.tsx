@@ -14,6 +14,7 @@ import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { appConfig } from "@/shared/lib/app-config";
 import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useAppTheme } from "@/shared/lib/theme-context";
 
 type AuthMode = "signIn" | "signUp";
 
@@ -35,19 +36,20 @@ function AuthFormFrame({
   serverError: string | null;
 }) {
   const { t } = useTranslation();
+  const { theme } = useAppTheme();
 
   return (
     <View className="px-4 pb-6 pt-6">
       <View>{children}</View>
       {serverError ? (
         <View className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3">
-          <Text className="text-sm text-red-300">{serverError}</Text>
+          <Text className="text-sm" style={{ color: theme.danger }}>{serverError}</Text>
         </View>
       ) : null}
       <View className="mt-8">
-        <Text className="text-center text-sm text-white/75">
+        <Text className="text-center text-sm" style={{ color: theme.mutedText }}>
           {ctaHref === "/sign-up" ? t("authForm.needAccount") : t("authForm.alreadyHaveAccount")}
-          <Link href={ctaHref} className="font-bold text-[#9851ff]">
+          <Link href={ctaHref} className="font-bold" style={{ color: theme.primary }}>
             {ctaLabel}
           </Link>
         </Text>

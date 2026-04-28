@@ -3,6 +3,7 @@ import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppBackButton } from "@/shared/components/ui/app-back-button";
+import { useAppTheme } from "@/shared/lib/theme-context";
 
 type NotificationItem = {
   accent: string;
@@ -53,6 +54,8 @@ const notifications: NotificationItem[] = [
 ];
 
 function NotificationRow({ accent, iconAccent, timestamp, title, unread }: NotificationItem) {
+  const { theme } = useAppTheme();
+
   return (
     <Pressable className="flex-row items-center px-2 py-5">
       <View
@@ -68,22 +71,22 @@ function NotificationRow({ accent, iconAccent, timestamp, title, unread }: Notif
       </View>
 
       <View className="flex-1">
-        <Text className="text-[17px] font-semibold text-white">{title}</Text>
-        <Text className="mt-1 text-sm text-white/55">{timestamp}</Text>
+        <Text className="text-[17px] font-semibold" style={{ color: theme.text }}>{title}</Text>
+        <Text className="mt-1 text-sm" style={{ color: theme.mutedText }}>{timestamp}</Text>
       </View>
 
-      {unread ? <View className="ml-3 h-3 w-3 rounded-full bg-[#8f64ff]" /> : null}
+      {unread ? <View className="ml-3 h-3 w-3 rounded-full" style={{ backgroundColor: theme.primary }} /> : null}
     </Pressable>
   );
 }
 
 export default function NotificationsScreen() {
+  const { theme } = useAppTheme();
+
   return (
-    <SafeAreaView className="flex-1 bg-[#060c17]">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
       <View className="absolute inset-0">
-        <View className="absolute inset-0 bg-[#060c17]" />
-        <View className="absolute inset-x-0 top-0 h-[220px] bg-[#33156d]/16" />
-        <View className="absolute right-[-10] top-0 h-56 w-56 rounded-full bg-[#6f35df]/10" />
+        <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
       </View>
 
       <ScrollView
@@ -94,18 +97,21 @@ export default function NotificationsScreen() {
         <View className="mb-8 flex-row items-center justify-between">
           <AppBackButton fallbackHref="/dashboard" />
 
-          <Text className="text-[24px] font-semibold text-white">Notifications</Text>
+          <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>Notifications</Text>
 
-          <View className="h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5">
-            <Text className="text-xs font-semibold uppercase tracking-[1.1px] text-white/78">5 new</Text>
+          <View
+            className="h-11 w-11 items-center justify-center rounded-full border"
+            style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}
+          >
+            <Text className="text-xs font-semibold uppercase tracking-[1.1px]" style={{ color: theme.text }}>5 new</Text>
           </View>
         </View>
 
-        <Text className="mb-4 px-1 text-xs font-medium uppercase tracking-[1.5px] text-white/70">
+        <Text className="mb-4 px-1 text-xs font-medium uppercase tracking-[1.5px]" style={{ color: theme.mutedText }}>
           Latest activity
         </Text>
 
-        <View className="overflow-hidden rounded-[28px] border border-white/5 bg-transparent">
+        <View>
           {notifications.map((item, index) => (
             <Animated.View
               entering={FadeInDown.duration(460)
@@ -115,7 +121,7 @@ export default function NotificationsScreen() {
             >
               <NotificationRow {...item} />
               {index < notifications.length - 1 ? (
-                <View className="mx-2 h-px bg-white/8" />
+                <View className="mx-2 h-px" style={{ backgroundColor: theme.border }} />
               ) : null}
             </Animated.View>
           ))}

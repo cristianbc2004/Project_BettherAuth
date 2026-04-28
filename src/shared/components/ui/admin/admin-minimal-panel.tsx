@@ -1,12 +1,10 @@
 import type { PropsWithChildren } from "react";
 import { Text, View } from "react-native";
 
+import { useAppTheme } from "@/shared/lib/theme-context";
+
 export function AdminMinimalPanel({ children }: PropsWithChildren) {
-  return (
-    <View className="overflow-hidden rounded-[30px] border border-white/6 bg-[#0b1220]/40">
-      {children}
-    </View>
-  );
+  return <View>{children}</View>;
 }
 
 type AdminMinimalSectionProps = PropsWithChildren<{
@@ -15,10 +13,12 @@ type AdminMinimalSectionProps = PropsWithChildren<{
 }>;
 
 export function AdminMinimalSection({ children, description, title }: AdminMinimalSectionProps) {
+  const { theme } = useAppTheme();
+
   return (
-    <View className="border-t border-white/6 px-4 py-5">
-      <Text className="text-base font-semibold text-white">{title}</Text>
-      {description ? <Text className="mt-2 text-[15px] leading-6 text-white/60">{description}</Text> : null}
+    <View className="border-t py-5" style={{ borderColor: theme.border }}>
+      <Text className="text-base font-semibold" style={{ color: theme.text }}>{title}</Text>
+      {description ? <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>{description}</Text> : null}
       {children ? <View className="mt-5">{children}</View> : null}
     </View>
   );

@@ -8,12 +8,15 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { useAppTheme } from "@/shared/lib/theme-context";
+
 type AuthInputProps = TextInputProps & {
   error?: string;
   label: string;
 };
 
 export function AuthInput({ error, label, onBlur, onFocus, ...props }: AuthInputProps) {
+  const { theme } = useAppTheme();
   const [isFocused, setIsFocused] = useState(false);
   const inputState = useSharedValue(0);
 
@@ -25,12 +28,12 @@ export function AuthInput({ error, label, onBlur, onFocus, ...props }: AuthInput
 
   const inputContainerStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(inputState.value, [0, 1, 2], [
-      "rgba(255, 255, 255, 0.06)",
-      "rgba(141, 61, 255, 0.12)",
+      theme.inputBackground,
+      theme.primarySoft,
       "rgba(239, 68, 68, 0.1)",
     ]),
     borderColor: interpolateColor(inputState.value, [0, 1, 2], [
-      "rgba(255, 255, 255, 0.05)",
+      theme.inputBorder,
       "rgba(168, 120, 255, 0.65)",
       "rgba(248, 113, 113, 0.6)",
     ]),
@@ -39,12 +42,12 @@ export function AuthInput({ error, label, onBlur, onFocus, ...props }: AuthInput
 
   return (
     <View className="mb-5">
-      <Text className="mb-3 text-sm font-medium text-white/90">
+      <Text className="mb-3 text-sm font-medium" style={{ color: theme.text }}>
         {label}
       </Text>
       <Animated.View className="rounded-[22px] border px-5" style={inputContainerStyle}>
         <TextInput
-          className="py-4 text-base text-white"
+          className="py-4 text-base"
           onBlur={(event) => {
             setIsFocused(false);
             onBlur?.(event);
@@ -53,11 +56,12 @@ export function AuthInput({ error, label, onBlur, onFocus, ...props }: AuthInput
             setIsFocused(true);
             onFocus?.(event);
           }}
-          placeholderTextColor="rgba(255,255,255,0.38)"
+          placeholderTextColor={theme.mutedText}
+          style={{ color: theme.text }}
           {...props}
         />
       </Animated.View>
-      {error ? <Text className="mt-2 text-sm text-red-500">{error}</Text> : null}
+      {error ? <Text className="mt-2 text-sm" style={{ color: theme.danger }}>{error}</Text> : null}
     </View>
   );
 }

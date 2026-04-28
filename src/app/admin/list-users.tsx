@@ -12,6 +12,7 @@ import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { StatusMessage } from "@/shared/components/ui/status-message";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 type AdminUser = {
@@ -27,6 +28,7 @@ export default function ListUsersScreen() {
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { locale } = useLanguage();
   const { t } = useTranslation();
+  const { theme } = useAppTheme();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [search, setSearch] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -126,7 +128,7 @@ export default function ListUsersScreen() {
         <AdminMinimalSection title={t("admin.listTitle")} description={t("admin.listDescription")}>
           <View className="gap-3">
             {filteredUsers.length ? (
-              <View className="overflow-hidden rounded-[28px] border border-white/5 bg-transparent">
+              <View>
                 {filteredUsers.map((user, index) => (
                   <View key={user.id}>
                     <AdminUserNotificationRow
@@ -135,12 +137,12 @@ export default function ListUsersScreen() {
                       role={user.role}
                       statusLabel={user.banned ? t("common.banned") : t("common.active")}
                     />
-                    {index < filteredUsers.length - 1 ? <View className="mx-2 h-px bg-white/8" /> : null}
+                    {index < filteredUsers.length - 1 ? <View className="mx-2 h-px" style={{ backgroundColor: theme.border }} /> : null}
                   </View>
                 ))}
               </View>
             ) : (
-              <Text className="rounded-[24px] border border-white/10 bg-white/[0.05] p-4 text-[15px] leading-6 text-white/60">
+              <Text className="rounded-[24px] border p-4 text-[15px] leading-6" style={{ backgroundColor: theme.inputBackground, borderColor: theme.border, color: theme.mutedText }}>
                 {t("admin.noUsersFound")}
               </Text>
             )}

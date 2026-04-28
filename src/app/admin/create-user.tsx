@@ -16,6 +16,7 @@ import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { StatusMessage } from "@/shared/components/ui/status-message";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 export default function CreateUserScreen() {
@@ -23,6 +24,7 @@ export default function CreateUserScreen() {
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { locale } = useLanguage();
   const { t } = useTranslation();
+  const { theme } = useAppTheme();
   const [role, setRole] = useState<"user" | "admin">("user");
   const [message, setMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -174,24 +176,22 @@ export default function CreateUserScreen() {
         </AdminMinimalSection>
 
         <AdminMinimalSection title={t("admin.role")}>
-          <View className="flex-row rounded-[24px] border border-white/6 bg-white/[0.04] p-1">
+          <View className="flex-row rounded-[24px] border p-1" style={{ backgroundColor: theme.inputBackground, borderColor: theme.border }}>
             {(["user", "admin"] as const).map((option) => {
               const isSelected = role === option;
 
               return (
                 <Pressable
-                  className={`flex-1 items-center rounded-[20px] py-3 ${
-                    isSelected ? "bg-[#8d3dff]" : "bg-transparent"
-                  }`}
+                  className="flex-1 items-center rounded-[20px] py-3"
                   key={option}
                   onPress={() => {
                     setRole(option);
                   }}
+                  style={{ backgroundColor: isSelected ? theme.primary : "transparent" }}
                 >
                   <Text
-                    className={`text-sm font-semibold uppercase tracking-[1.1px] ${
-                      isSelected ? "text-white" : "text-white/50"
-                    }`}
+                    className="text-sm font-semibold uppercase tracking-[1.1px]"
+                    style={{ color: isSelected ? theme.textOnPrimary : theme.mutedText }}
                   >
                     {option}
                   </Text>

@@ -6,6 +6,7 @@ import { authClient } from "@/features/auth/services/auth-client";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AdminActionRow } from "@/shared/components/ui/admin/admin-action-row";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 export default function AdminPanelScreen() {
@@ -18,6 +19,7 @@ export default function AdminPanelScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { t } = useTranslation();
+  const { theme } = useAppTheme();
   const sessionRole = (session?.user as { role?: string } | undefined)?.role ?? "user";
   const isAdmin = sessionRole
     .split(",")
@@ -43,7 +45,7 @@ export default function AdminPanelScreen() {
       subtitle={`Manage admin actions for ${session.user.email} with the same minimal secure flow.`}
       title={t("admin.panelTitle")}
     >
-      <View className="overflow-hidden rounded-[28px] border border-white/5 bg-transparent">
+      <View>
         <AdminActionRow
           accent="#40245f"
           description={t("admin.createDescription")}
@@ -54,7 +56,7 @@ export default function AdminPanelScreen() {
           }}
           title={t("admin.createTitle")}
         />
-        <View className="mx-2 h-px bg-white/8" />
+        <View className="mx-2 h-px" style={{ backgroundColor: theme.border }} />
         <AdminActionRow
           accent="#1f3640"
           description={t("admin.listDescription")}
@@ -65,7 +67,7 @@ export default function AdminPanelScreen() {
           }}
           title={t("admin.listTitle")}
         />
-        <View className="mx-2 h-px bg-white/8" />
+        <View className="mx-2 h-px" style={{ backgroundColor: theme.border }} />
         <AdminActionRow
           accent="#42311f"
           description={t("admin.deleteDescription")}

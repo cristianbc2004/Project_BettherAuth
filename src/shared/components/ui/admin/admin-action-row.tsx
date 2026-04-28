@@ -1,6 +1,8 @@
 import type { ImageSourcePropType } from "react-native";
 import { Image, Pressable, Text, View } from "react-native";
 
+import { useAppTheme } from "@/shared/lib/theme-context";
+
 type AdminActionRowProps = {
   accent: string;
   description: string;
@@ -18,6 +20,8 @@ export function AdminActionRow({
   onPress,
   title,
 }: AdminActionRowProps) {
+  const { theme } = useAppTheme();
+
   return (
     <Pressable
       className="flex-row items-center px-2 py-5"
@@ -35,7 +39,7 @@ export function AdminActionRow({
             className="h-6 w-6"
             resizeMode="contain"
             source={icon}
-            style={{ tintColor: "rgba(255, 255, 255, 0.95)" }}
+            style={{ tintColor: theme.textOnPrimary }}
           />
         ) : (
           <View className="h-3 w-3 rounded-full bg-white/85" />
@@ -43,14 +47,14 @@ export function AdminActionRow({
       </View>
 
       <View className="flex-1">
-        <Text className="text-[11px] font-semibold uppercase tracking-[1.4px] text-white/55">
+        <Text className="text-[11px] font-semibold uppercase tracking-[1.4px]" style={{ color: theme.mutedText }}>
           {eyebrow}
         </Text>
-        <Text className="mt-1 text-[17px] font-semibold text-white">{title}</Text>
-        <Text className="mt-1 text-sm leading-5 text-white/55">{description}</Text>
+        <Text className="mt-1 text-[17px] font-semibold" style={{ color: theme.text }}>{title}</Text>
+        <Text className="mt-1 text-sm leading-5" style={{ color: theme.mutedText }}>{description}</Text>
       </View>
 
-      <Text className="ml-3 text-2xl text-white/45">{">"}</Text>
+      <Text className="ml-3 text-2xl" style={{ color: theme.mutedText }}>{">"}</Text>
     </Pressable>
   );
 }

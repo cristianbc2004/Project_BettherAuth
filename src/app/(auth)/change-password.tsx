@@ -13,9 +13,11 @@ import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useAppTheme } from "@/shared/lib/theme-context";
 
 export default function ChangePasswordScreen() {
   const { t } = useTranslation();
+  const { theme } = useAppTheme();
   const [isPending, setIsPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPasswordRequirementsFocused, setIsPasswordRequirementsFocused] = useState(false);
@@ -96,10 +98,10 @@ export default function ChangePasswordScreen() {
       title="Change Your Password."
     >
       <View className="px-4 pb-6 pt-6">
-        <Text className="text-sm font-medium" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
+        <Text className="text-sm font-medium" style={{ color: theme.text }}>
           {t("changePassword.keepSecure")}
         </Text>
-        <Text className="mt-2 text-[15px] leading-6" style={{ color: "rgba(255, 255, 255, 0.7)" }}>
+        <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
           {t("changePassword.description")}
         </Text>
 

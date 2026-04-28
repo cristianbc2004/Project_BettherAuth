@@ -9,9 +9,11 @@ import { authClient } from "@/features/auth/services/auth-client";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useAppTheme } from "@/shared/lib/theme-context";
 
 export default function TwoFactorVerifyScreen() {
   const { t } = useTranslation();
+  const { theme } = useAppTheme();
   const [code, setCode] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -95,7 +97,7 @@ export default function TwoFactorVerifyScreen() {
         value={code}
       />
 
-      {serverError ? <Text className="mb-4 text-sm text-red-500">{serverError}</Text> : null}
+      {serverError ? <Text className="mb-4 text-sm" style={{ color: theme.danger }}>{serverError}</Text> : null}
 
       <AuthSubmitButton
         isPending={isPending}
@@ -121,7 +123,7 @@ export default function TwoFactorVerifyScreen() {
           router.replace("/sign-in");
         }}
       >
-        <Text className="text-center text-sm font-semibold text-white">{t("twoFactorVerify.backToSignIn")}</Text>
+        <Text className="text-center text-sm font-semibold" style={{ color: theme.text }}>{t("twoFactorVerify.backToSignIn")}</Text>
       </Pressable>
     </AuthShell>
   );
