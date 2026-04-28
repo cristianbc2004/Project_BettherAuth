@@ -1,5 +1,6 @@
 import { Redirect, router } from "expo-router";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import Animated, { Easing, FadeInDown } from "react-native-reanimated";
@@ -80,6 +81,7 @@ type ThemeModeSelectorProps = {
   icons: Record<"dark" | "light" | "system", ImageSourcePropType>;
   onSelect: (mode: ThemeMode) => void;
   selectedMode: ThemeMode;
+  title: string;
 };
 
 type OptionSelectorFrameProps = {
@@ -102,16 +104,17 @@ function OptionSelectorFrame({ children, title }: OptionSelectorFrameProps) {
   );
 }
 
-function ThemeModeSelector({ icons, onSelect, selectedMode }: ThemeModeSelectorProps) {
+function ThemeModeSelector({ icons, onSelect, selectedMode, title }: ThemeModeSelectorProps) {
   const { theme } = useAppTheme();
+  const { t } = useTranslation();
   const options: Array<{ label: string; mode: ThemeMode }> = [
-    { label: "Light", mode: "light" },
-    { label: "Dark", mode: "dark" },
-    { label: "System", mode: "system" },
+    { label: t("dashboard.themeLight"), mode: "light" },
+    { label: t("dashboard.themeDark"), mode: "dark" },
+    { label: t("dashboard.themeSystem"), mode: "system" },
   ];
 
   return (
-    <OptionSelectorFrame title="Theme">
+    <OptionSelectorFrame title={title}>
       <View className="flex-row gap-3">
         {options.map((option) => {
           const isSelected = selectedMode === option.mode;
@@ -155,17 +158,19 @@ type LanguageSelectorProps = {
   icons: Record<AppLocale, ImageSourcePropType>;
   onSelect: (locale: AppLocale) => void;
   selectedLocale: AppLocale;
+  title: string;
 };
 
-function LanguageSelector({ icons, onSelect, selectedLocale }: LanguageSelectorProps) {
+function LanguageSelector({ icons, onSelect, selectedLocale, title }: LanguageSelectorProps) {
   const { theme } = useAppTheme();
+  const { t } = useTranslation();
   const options: Array<{ label: string; locale: AppLocale }> = [
-    { label: "Spanish", locale: "es" },
-    { label: "English", locale: "en" },
+    { label: t("dashboard.languageSpanish"), locale: "es" },
+    { label: t("dashboard.languageEnglish"), locale: "en" },
   ];
 
   return (
-    <OptionSelectorFrame title="App language">
+    <OptionSelectorFrame title={title}>
       <View className="flex-row gap-3">
         {options.map((option) => {
           const isSelected = selectedLocale === option.locale;
@@ -220,6 +225,7 @@ export default function DashboardScreen() {
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { locale, setLocale } = useLanguage();
   const { theme, themeMode, setThemeMode } = useAppTheme();
+  const { t } = useTranslation();
   const role = (session?.user as { role?: string } | undefined)?.role ?? "user";
   const isAdmin = role
     .split(",")
@@ -266,7 +272,7 @@ export default function DashboardScreen() {
       >
 
         <Animated.View entering={sectionEntering(0)}>
-          <SectionLabel label="Profile" />
+          <SectionLabel label={t("dashboard.profileSection")} />
           <View
             className="flex-row items-center px-1 py-3"
             style={{
@@ -292,27 +298,27 @@ export default function DashboardScreen() {
         </Animated.View>
 
         <Animated.View entering={sectionEntering(1)}>
-          <SectionLabel label="Authentication" />
+          <SectionLabel label={t("dashboard.authenticationSection")} />
           <MenuRow
             icon={dashboardIcons.password}
-            label="Change password"
+            label={t("dashboard.changePasswordOption")}
             onPress={() => {
               selectionHaptic();
-              router.push("/change-password" as never);
+              router.navigate("/change-password" as never);
             }}
           />
           <MenuRow
             icon={dashboardIcons.twoFactor}
-            label="Two-factor authentication"
+            label={t("dashboard.twoFactorOption")}
             onPress={() => {
               selectionHaptic();
-              router.push("/two-factor" as never);
+              router.navigate("/two-factor" as never);
             }}
           />
         </Animated.View>
 
         <Animated.View entering={sectionEntering(2)}>
-          <SectionLabel label="App" />
+          <SectionLabel label={t("dashboard.appSection")} />
           <LanguageSelector
             icons={{
               en: dashboardIcons.en,
@@ -322,6 +328,7 @@ export default function DashboardScreen() {
               void setLocale(nextLocale);
             }}
             selectedLocale={locale}
+            title={t("dashboard.languageOption")}
           />
           <ThemeModeSelector
             icons={{
@@ -333,28 +340,29 @@ export default function DashboardScreen() {
               void setThemeMode(mode);
             }}
             selectedMode={themeMode}
+            title={t("dashboard.themeOption")}
           />
         </Animated.View>
 
         {isAdmin ? (
           <Animated.View entering={sectionEntering(3)}>
-            <SectionLabel label="Admin" />
+            <SectionLabel label={t("dashboard.adminSection")} />
             <MenuRow
               icon={dashboardIcons.admin}
-              label="Admin panel"
+              label={t("dashboard.adminPanelOption")}
               onPress={() => {
                 selectionHaptic();
-                router.push("/admin" as never);
+                router.navigate("/admin" as never);
               }}
             />
           </Animated.View>
         ) : null}
 
         <Animated.View entering={sectionEntering(4)}>
-          <SectionLabel label="Session" />
+          <SectionLabel label={t("dashboard.sessionSection")} />
           <MenuRow
             icon={dashboardIcons.out}
-            label="Log out"
+            label={t("dashboard.signOut")}
             onPress={() => {
               warningHaptic();
               void authClient.signOut({

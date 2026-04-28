@@ -52,7 +52,7 @@ export default function AdminPanelScreen() {
           eyebrow={t("admin.createEyebrow")}
           icon={dashboardIcons.createUser}
           onPress={() => {
-            router.push("/admin/create-user" as never);
+            router.navigate("/admin/create-user" as never);
           }}
           title={t("admin.createTitle")}
         />
@@ -63,7 +63,7 @@ export default function AdminPanelScreen() {
           eyebrow={t("admin.directoryEyebrow")}
           icon={dashboardIcons.listUsers}
           onPress={() => {
-            router.push("/admin/list-users" as never);
+            router.navigate("/admin/list-users" as never);
           }}
           title={t("admin.listTitle")}
         />
@@ -74,7 +74,7 @@ export default function AdminPanelScreen() {
           eyebrow={t("admin.deleteEyebrow")}
           icon={dashboardIcons.deleteUser}
           onPress={() => {
-            router.push("/admin/delete-user" as never);
+            router.navigate("/admin/delete-user" as never);
           }}
           title={t("admin.deleteTitle")}
         />
