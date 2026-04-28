@@ -1,35 +1,38 @@
 import "../../global.css";
 import "@/shared/lib/i18n";
 
-import { DarkTheme, ThemeProvider } from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import { LanguageToggle } from "@/shared/components/ui/language-toggle";
 import { LanguageProvider } from "@/shared/lib/locale";
+import { AppThemeProvider, useAppTheme } from "@/shared/lib/theme-context";
 
-const navigationTheme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    background: "#060c17",
-    card: "#060c17",
-    border: "rgba(255,255,255,0.08)",
-    primary: "#ab8ae6",
-    text: "#ffffff",
-  },
-};
+function AppNavigation() {
+  const { resolvedThemeName, theme } = useAppTheme();
+  const baseNavigationTheme = resolvedThemeName === "dark" ? DarkTheme : DefaultTheme;
+  const navigationTheme = {
+    ...baseNavigationTheme,
+    colors: {
+      ...baseNavigationTheme.colors,
+      background: theme.background,
+      card: theme.card,
+      border: theme.border,
+      primary: theme.primary,
+      text: theme.text,
+    },
+  };
 
-export default function RootLayout() {
   return (
     <LanguageProvider>
       <ThemeProvider value={navigationTheme}>
-        <StatusBar style="light" />
+        <StatusBar style={resolvedThemeName === "dark" ? "light" : "dark"} />
         <Stack
           screenOptions={{
             headerShown: false,
             animation: "fade_from_bottom",
-            contentStyle: { backgroundColor: "#060c17" },
+            contentStyle: { backgroundColor: theme.background },
           }}
         >
           <Stack.Screen name="index" options={{ animation: "none" }} />
@@ -51,5 +54,13 @@ export default function RootLayout() {
         <LanguageToggle />
       </ThemeProvider>
     </LanguageProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AppThemeProvider>
+      <AppNavigation />
+    </AppThemeProvider>
   );
 }

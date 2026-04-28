@@ -12,8 +12,11 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useAppTheme } from "@/shared/lib/theme-context";
+
 export function LoadingScreen() {
   const { t } = useTranslation();
+  const { theme } = useAppTheme();
   const progress = useSharedValue(0);
   const shimmer = useSharedValue(0);
 
@@ -48,29 +51,27 @@ export function LoadingScreen() {
   }));
 
   return (
-    <SafeAreaView className="flex-1 bg-midnight-950">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
       <View className="absolute inset-0">
-        <View className="absolute inset-0 bg-[#080c18]" />
-        <View className="absolute top-0 h-[260px] w-full bg-[#2a1a52]/5" />
-        <View className="absolute right-[-48px] top-[-20px] h-56 w-56 rounded-full bg-[#6d34d8]/10" />
+        <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
       </View>
       <View className="flex-1 items-center justify-center px-8">
-        <View className="w-full max-w-[320px] rounded-[30px] border border-white/6 bg-[#0b1220]/78 px-6 py-7">
-          <View className="h-2 overflow-hidden rounded-full bg-white/10">
+        <View className="w-full max-w-[320px] rounded-[30px] border px-6 py-7" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+          <View className="h-2 overflow-hidden rounded-full" style={{ backgroundColor: theme.inputBackground }}>
             <Animated.View
-              className="h-full rounded-full bg-[#8d3dff]"
-              style={progressStyle}
+              className="h-full rounded-full"
+              style={[progressStyle, { backgroundColor: theme.primary }]}
             >
               <Animated.View
-                className="h-full w-20 bg-white/30"
-                style={shimmerStyle}
+                className="h-full w-20"
+                style={[shimmerStyle, { backgroundColor: theme.textOnPrimary }]}
               />
             </Animated.View>
           </View>
-          <Text className="mt-5 text-center text-base font-semibold text-white">
+          <Text className="mt-5 text-center text-base font-semibold" style={{ color: theme.text }}>
             {t("common.loadingSession")}
           </Text>
-          <Text className="mt-2 text-center text-sm leading-5 text-white/55">
+          <Text className="mt-2 text-center text-sm leading-5" style={{ color: theme.mutedText }}>
             Better Auth Dashboard
           </Text>
         </View>

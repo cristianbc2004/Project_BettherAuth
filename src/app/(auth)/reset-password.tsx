@@ -12,9 +12,11 @@ import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { appConfig } from "@/shared/lib/app-config";
 import { buildLanguageHeaders, useLanguage } from "@/shared/lib/locale";
+import { useAppTheme } from "@/shared/lib/theme-context";
 
 export default function ResetPasswordScreen() {
   const { t } = useTranslation();
+  const { theme } = useAppTheme();
   const params = useLocalSearchParams<{ email?: string }>();
   const email = typeof params.email === "string" ? params.email : "";
   const [isPending, setIsPending] = useState(false);
@@ -97,8 +99,8 @@ export default function ResetPasswordScreen() {
       subtitle={t("authShell.resetPassword.subtitle", { email: email || t("authForm.email") })}
       title={t("authShell.resetPassword.title")}
     >
-      <Text className="text-2xl font-black text-ink-900">{t("resetPassword.createNewPassword")}</Text>
-      <Text className="mt-2 text-base leading-6 text-ink-600">
+      <Text className="text-2xl font-black" style={{ color: theme.text }}>{t("resetPassword.createNewPassword")}</Text>
+      <Text className="mt-2 text-base leading-6" style={{ color: theme.mutedText }}>
         {t("resetPassword.description")}
       </Text>
 
@@ -139,7 +141,7 @@ export default function ResetPasswordScreen() {
         />
       </View>
 
-      {serverError ? <Text className="mb-2 text-sm text-red-500">{serverError}</Text> : null}
+      {serverError ? <Text className="mb-2 text-sm" style={{ color: theme.danger }}>{serverError}</Text> : null}
 
       <AuthSubmitButton
         isPending={isPending}

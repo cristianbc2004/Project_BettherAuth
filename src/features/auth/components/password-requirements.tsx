@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
+import { useAppTheme } from "@/shared/lib/theme-context";
+
 type PasswordRequirementsProps = {
   confirmPassword?: string;
   password: string;
@@ -13,6 +15,7 @@ export function PasswordRequirements({
   showMatch = false,
 }: PasswordRequirementsProps) {
   const { t } = useTranslation();
+  const { theme } = useAppTheme();
 
   const checks = [
     {
@@ -46,13 +49,14 @@ export function PasswordRequirements({
   }
 
   return (
-    <View className="mb-5 mt-[-8px] rounded-[20px] bg-white/4 px-4 py-3">
+    <View className="mb-5 mt-[-8px] rounded-[20px] px-4 py-3" style={{ backgroundColor: theme.inputBackground }}>
       {checks.map((check) => (
         <View className="flex-row items-center py-1" key={check.key}>
           <View
-            className={`mr-3 h-2.5 w-2.5 rounded-full ${check.met ? "bg-emerald-400" : "bg-white/20"}`}
+            className="mr-3 h-2.5 w-2.5 rounded-full"
+            style={{ backgroundColor: check.met ? theme.success : theme.border }}
           />
-          <Text className={`text-sm ${check.met ? "text-emerald-200" : "text-white/55"}`}>
+          <Text className="text-sm" style={{ color: check.met ? theme.success : theme.mutedText }}>
             {check.label}
           </Text>
         </View>

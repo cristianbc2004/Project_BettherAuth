@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthBrandMark } from "@/features/auth/components/auth-brand-mark";
 import { AppBackButton } from "@/shared/components/ui/app-back-button";
 import { backOrReplace } from "@/shared/lib/navigation";
+import { useAppTheme } from "@/shared/lib/theme-context";
 
 type AuthShellProps = PropsWithChildren<{
   backAccessibilityLabel?: string;
@@ -35,6 +36,7 @@ export function AuthShell({
   title,
   subtitle,
 }: AuthShellProps) {
+  const { theme } = useAppTheme();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [keyboardBottomInset, setKeyboardBottomInset] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -78,10 +80,9 @@ export function AuthShell({
   }, [keyboardFocusScrollY, keyboardVisible, scrollRequestKey, shouldAdjustForFocusedInput]);
 
   return (
-    <SafeAreaView className="flex-1 bg-midnight-950">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
       <View className="absolute inset-0">
-        <View className="absolute inset-0 bg-[#080c18]" />
-        <View className="absolute top-0 h-[240px] w-full bg-[#2a1a52]/4" />
+        <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
       </View>
 
       <KeyboardAvoidingView
@@ -118,17 +119,27 @@ export function AuthShell({
               entering={FadeInDown.duration(420).easing(Easing.out(Easing.quad))}
             >
               <AuthBrandMark />
-              <Text className="mt-9 px-8 text-center text-[30px] font-black leading-[36px] text-white">
+              <Text
+                className="mt-9 px-8 text-center text-[30px] font-black leading-[36px]"
+                style={{ color: theme.text }}
+              >
                 {title}
               </Text>
-              <Text className="mt-4 max-w-[320px] text-center text-[15px] leading-6 text-white/65">
+              <Text
+                className="mt-4 max-w-[320px] text-center text-[15px] leading-6"
+                style={{ color: theme.mutedText }}
+              >
                 {subtitle || eyebrow}
               </Text>
             </Animated.View>
           ) : null}
 
+          {!keyboardVisible ? (
+            <View className="mt-8 h-px w-full" style={{ backgroundColor: theme.border }} />
+          ) : null}
+
           <Animated.View
-            className={`${keyboardVisible ? "mt-6" : "mt-10"} rounded-[36px] border border-white/6 bg-[#0b1220]/78 px-0 py-0`}
+            className={keyboardVisible ? "mt-6" : "mt-8"}
             entering={FadeInDown.duration(480)
               .delay(keyboardVisible ? 0 : 420)
               .easing(Easing.out(Easing.quad))}

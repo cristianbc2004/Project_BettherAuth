@@ -8,6 +8,7 @@ import { authClient } from "@/features/auth/services/auth-client";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 type MenuRowProps = {
@@ -20,10 +21,16 @@ type MenuRowProps = {
 };
 
 function MenuRow({ accent = "#2d3750", detail, icon, label, onPress, tone = "default" }: MenuRowProps) {
+  const { theme } = useAppTheme();
+
   return (
     <Pressable
-      className="mb-4 flex-row items-center rounded-[24px] border border-white/5 bg-white/[0.06] px-4 py-4"
+      className="mb-4 flex-row items-center rounded-[24px] border px-4 py-4"
       onPress={onPress}
+      style={{
+        backgroundColor: theme.card,
+        borderColor: theme.border,
+      }}
     >
       <View
         className="mr-4 h-11 w-11 items-center justify-center"
@@ -34,30 +41,35 @@ function MenuRow({ accent = "#2d3750", detail, icon, label, onPress, tone = "def
             className="h-5 w-5"
             resizeMode="contain"
             source={icon}
-            style={{ tintColor: "rgba(255, 255, 255, 0.95)" }}
+            style={{ tintColor: tone === "danger" ? theme.danger : theme.text }}
           />
         ) : (
-          <View className="h-3 w-3 rounded-full bg-white/85" />
+          <View className="h-3 w-3 rounded-full" style={{ backgroundColor: theme.text }} />
         )}
       </View>
 
       <View className="flex-1">
-        <Text className={`text-[16px] font-medium ${tone === "danger" ? "text-white/70" : "text-white"}`}>
+        <Text
+          className="text-[16px] font-medium"
+          style={{ color: tone === "danger" ? theme.danger : theme.text }}
+        >
           {label}
         </Text>
       </View>
 
-      {detail ? <Text className="mr-3 text-xs text-white/45">{detail}</Text> : null}
-      <Text className={`text-2xl ${tone === "danger" ? "text-white/28" : "text-white/55"}`}>{">"}</Text>
+      {detail ? <Text className="mr-3 text-xs" style={{ color: theme.mutedText }}>{detail}</Text> : null}
+      <Text className="text-2xl" style={{ color: theme.mutedText }}>{">"}</Text>
     </Pressable>
   );
 }
 
 function SectionLabel({ label }: { label: string }) {
+  const { theme } = useAppTheme();
+
   return (
     <Text
       className="mb-3 mt-2 px-1 text-xs font-medium uppercase tracking-[1.5px]"
-      style={{ color: "rgba(255, 255, 255, 0.72)" }}
+      style={{ color: theme.mutedText }}
     >
       {label}
     </Text>
@@ -79,6 +91,7 @@ export default function DashboardScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { locale, setLocale } = useLanguage();
+  const { theme, themeMode, toggleThemeMode } = useAppTheme();
   const role = (session?.user as { role?: string } | undefined)?.role ?? "user";
   const isAdmin = role
     .split(",")
@@ -98,6 +111,11 @@ export default function DashboardScreen() {
   }
 
   const firstName = session.user.name.split(" ")[0] || session.user.name;
+  const themeModeLabel = {
+    dark: "Dark",
+    light: "Light",
+    system: "System",
+  }[themeMode];
   const dashboardIcons = {
     admin: require("../../assets/administrator.png"),
     notifications: require("../../assets/notifications_blanco.png"),
@@ -108,11 +126,9 @@ export default function DashboardScreen() {
   } satisfies Record<string, ImageSourcePropType>;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#060c17]">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
       <View className="absolute inset-0">
-        <View className="absolute inset-0 bg-[#060c17]" />
-        <View className="absolute inset-x-0 top-0 h-[280px] bg-[#3a1b78]/18" />
-        <View className="absolute right-[-30] top-0 h-64 w-64 rounded-full bg-[#6d34d8]/12" />
+        <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
       </View>
 
       <ScrollView
@@ -132,10 +148,10 @@ export default function DashboardScreen() {
               className="h-5 w-5"
               resizeMode="contain"
               source={dashboardIcons.notifications}
-              style={{ tintColor: "rgba(255, 255, 255, 0.95)" }}
+              style={{ tintColor: theme.text }}
             />
           </Pressable>
-          <Text className="text-[24px] font-semibold text-white">Profile</Text>
+          <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>Profile</Text>
           <Pressable
             className="h-11 w-11 items-center justify-center"
             onPress={() => {
@@ -147,7 +163,7 @@ export default function DashboardScreen() {
               className="h-5 w-5"
               resizeMode="contain"
               source={dashboardIcons.twoFactor}
-              style={{ tintColor: "rgba(255, 255, 255, 0.95)" }}
+              style={{ tintColor: theme.text }}
             />
           </Pressable>
         </View>
@@ -155,23 +171,27 @@ export default function DashboardScreen() {
         <Animated.View entering={sectionEntering(0)}>
           <SectionLabel label="Profile" />
           <Pressable
-            className="flex-row items-center rounded-[26px] border border-white/5 bg-[#6a34d3]/35 px-4 py-4"
+            className="flex-row items-center rounded-[26px] border px-4 py-4"
             onPress={() => {
               selectionHaptic();
               router.push("/change-password" as never);
             }}
+            style={{
+              backgroundColor: theme.primarySoft,
+              borderColor: theme.border,
+            }}
           >
-            <View className="mr-4 h-14 w-14 items-center justify-center rounded-full bg-[#4b258d]">
-              <Text className="text-lg font-bold text-white">{getInitials(session.user.name)}</Text>
+            <View className="mr-4 h-14 w-14 items-center justify-center rounded-full" style={{ backgroundColor: theme.primary }}>
+              <Text className="text-lg font-bold" style={{ color: theme.textOnPrimary }}>{getInitials(session.user.name)}</Text>
             </View>
 
             <View className="flex-1">
-              <Text className="text-[16px] font-semibold text-white">{firstName}</Text>
-              <Text className="mt-1 text-sm text-white/65">{session.user.email}</Text>
-              <Text className="mt-2 text-[11px] uppercase tracking-[1.3px] text-white/55">{role}</Text>
+              <Text className="text-[16px] font-semibold" style={{ color: theme.text }}>{firstName}</Text>
+              <Text className="mt-1 text-sm" style={{ color: theme.mutedText }}>{session.user.email}</Text>
+              <Text className="mt-2 text-[11px] uppercase tracking-[1.3px]" style={{ color: theme.mutedText }}>{role}</Text>
             </View>
 
-            <Text className="text-2xl text-white/70">{">"}</Text>
+            <Text className="text-2xl" style={{ color: theme.mutedText }}>{">"}</Text>
           </Pressable>
         </Animated.View>
 
@@ -216,6 +236,15 @@ export default function DashboardScreen() {
             onPress={() => {
               selectionHaptic();
               void setLocale(locale === "es" ? "en" : "es");
+            }}
+          />
+          <MenuRow
+            accent="#49366d"
+            detail={themeModeLabel}
+            label="Theme"
+            onPress={() => {
+              selectionHaptic();
+              void toggleThemeMode();
             }}
           />
         </Animated.View>

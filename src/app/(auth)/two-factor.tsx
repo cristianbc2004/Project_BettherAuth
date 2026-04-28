@@ -11,6 +11,7 @@ import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 type TwoFactorSetup = {
@@ -48,20 +49,24 @@ function MinimalSection({
   description?: string;
   title: string;
 }) {
+  const { theme } = useAppTheme();
+
   return (
-    <View className="border-t border-white/6 px-4 py-5">
-      <Text className="text-base font-semibold text-white">{title}</Text>
-      {description ? <Text className="mt-2 text-[15px] leading-6 text-white/60">{description}</Text> : null}
+    <View className="border-t px-4 py-5" style={{ borderColor: theme.border }}>
+      <Text className="text-base font-semibold" style={{ color: theme.text }}>{title}</Text>
+      {description ? <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>{description}</Text> : null}
       {children ? <View className="mt-5">{children}</View> : null}
     </View>
   );
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
+  const { theme } = useAppTheme();
+
   return (
-    <View className="mb-3 rounded-[20px] border border-white/6 bg-white/[0.04] px-4 py-4">
-      <Text className="text-xs font-medium uppercase tracking-[1.2px] text-white/45">{label}</Text>
-      <Text className="mt-2 text-[15px] text-white">{value || "-"}</Text>
+    <View className="mb-3 rounded-[20px] border px-4 py-4" style={{ backgroundColor: theme.inputBackground, borderColor: theme.border }}>
+      <Text className="text-xs font-medium uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>{label}</Text>
+      <Text className="mt-2 text-[15px]" style={{ color: theme.text }}>{value || "-"}</Text>
     </View>
   );
 }
@@ -71,6 +76,7 @@ export default function TwoFactorScreen() {
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { locale } = useLanguage();
   const { t } = useTranslation();
+  const { theme } = useAppTheme();
   const [password, setPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [setup, setSetup] = useState<TwoFactorSetup | null>(null);
@@ -188,7 +194,7 @@ export default function TwoFactorScreen() {
       subtitle={`Manage two-factor authentication for ${session.user.email} with the same minimal secure flow.`}
       title="Two-Factor Authentication."
     >
-      <View className="overflow-hidden rounded-[30px] border border-white/6 bg-[#0b1220]/40">
+      <View>
         <MinimalSection
           description={
             twoFactorEnabled
@@ -257,8 +263,8 @@ export default function TwoFactorScreen() {
           <MinimalSection description={t("twoFactor.recoveryDescription")} title={t("twoFactor.recoveryTitle")}>
             <View className="gap-3">
               {setup.backupCodes.map((backupCode) => (
-                <View className="rounded-[20px] border border-white/6 bg-white/[0.04] px-4 py-4" key={backupCode}>
-                  <Text className="text-[15px] font-medium text-white">{backupCode}</Text>
+                <View className="rounded-[20px] border px-4 py-4" key={backupCode} style={{ backgroundColor: theme.inputBackground, borderColor: theme.border }}>
+                  <Text className="text-[15px] font-medium" style={{ color: theme.text }}>{backupCode}</Text>
                 </View>
               ))}
             </View>
@@ -268,13 +274,13 @@ export default function TwoFactorScreen() {
 
       {message ? (
         <View className="mt-4 rounded-[22px] border border-emerald-500/25 bg-emerald-500/10 px-4 py-3">
-          <Text className="text-sm leading-6 text-white">{message}</Text>
+          <Text className="text-sm leading-6" style={{ color: theme.text }}>{message}</Text>
         </View>
       ) : null}
 
       {errorMessage ? (
         <View className="mt-4 rounded-[22px] border border-red-500/25 bg-red-500/10 px-4 py-3">
-          <Text className="text-sm leading-6 text-white">{errorMessage}</Text>
+          <Text className="text-sm leading-6" style={{ color: theme.danger }}>{errorMessage}</Text>
         </View>
       ) : null}
     </AuthShell>

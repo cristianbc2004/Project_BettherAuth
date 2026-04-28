@@ -8,6 +8,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { useAppTheme } from "@/shared/lib/theme-context";
+
 type AuthPasswordInputProps = {
   error?: string;
   label: string;
@@ -27,6 +29,7 @@ export function AuthPasswordInput({
   placeholder,
   value,
 }: AuthPasswordInputProps) {
+  const { theme } = useAppTheme();
   const [isVisible, setIsVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const inputState = useSharedValue(0);
@@ -39,12 +42,12 @@ export function AuthPasswordInput({
 
   const inputContainerStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(inputState.value, [0, 1, 2], [
-      "rgba(255, 255, 255, 0.06)",
-      "rgba(141, 61, 255, 0.12)",
+      theme.inputBackground,
+      theme.primarySoft,
       "rgba(239, 68, 68, 0.1)",
     ]),
     borderColor: interpolateColor(inputState.value, [0, 1, 2], [
-      "rgba(255, 255, 255, 0.05)",
+      theme.inputBorder,
       "rgba(168, 120, 255, 0.65)",
       "rgba(248, 113, 113, 0.6)",
     ]),
@@ -53,12 +56,12 @@ export function AuthPasswordInput({
 
   return (
     <View className="mb-5">
-      <Text className="mb-3 text-sm font-medium text-white/90">
+      <Text className="mb-3 text-sm font-medium" style={{ color: theme.text }}>
         {label}
       </Text>
       <Animated.View className="flex-row items-center rounded-[22px] border px-5" style={inputContainerStyle}>
         <TextInput
-          className="flex-1 py-4 text-base text-white"
+          className="flex-1 py-4 text-base"
           autoCapitalize="none"
           autoCorrect={false}
           onBlur={() => {
@@ -71,8 +74,9 @@ export function AuthPasswordInput({
             onFocus?.();
           }}
           placeholder={placeholder}
-          placeholderTextColor="rgba(255,255,255,0.38)"
+          placeholderTextColor={theme.mutedText}
           secureTextEntry={!isVisible}
+          style={{ color: theme.text }}
           value={value}
         />
         <Pressable
@@ -81,10 +85,12 @@ export function AuthPasswordInput({
             setIsVisible((currentValue) => !currentValue);
           }}
         >
-          <Text className="text-xs font-medium text-white/55">{isVisible ? "Hide" : "Show"}</Text>
+          <Text className="text-xs font-medium" style={{ color: theme.mutedText }}>
+            {isVisible ? "Hide" : "Show"}
+          </Text>
         </Pressable>
       </Animated.View>
-      {error ? <Text className="mt-2 text-sm text-red-500">{error}</Text> : null}
+      {error ? <Text className="mt-2 text-sm" style={{ color: theme.danger }}>{error}</Text> : null}
     </View>
   );
 }

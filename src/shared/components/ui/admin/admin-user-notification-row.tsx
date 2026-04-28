@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
+import { useAppTheme } from "@/shared/lib/theme-context";
+
 type AdminUserNotificationRowProps = {
   email: string;
   name: string;
@@ -33,6 +35,7 @@ export function AdminUserNotificationRow({
   statusLabel,
   trailing,
 }: AdminUserNotificationRowProps) {
+  const { theme } = useAppTheme();
   const accents = pickAccents(role);
   const isPressable = Boolean(onPress) && !disabled;
 
@@ -58,18 +61,18 @@ export function AdminUserNotificationRow({
       </View>
 
       <View className="flex-1">
-        <Text className="text-[17px] font-semibold text-white">{name}</Text>
-        <Text className="mt-1 text-sm text-white/55">{email}</Text>
+        <Text className="text-[17px] font-semibold" style={{ color: theme.text }}>{name}</Text>
+        <Text className="mt-1 text-sm" style={{ color: theme.mutedText }}>{email}</Text>
       </View>
 
       {trailing ? (
         trailing
       ) : isPending ? (
         <View className="ml-3 h-6 w-6 items-center justify-center">
-          <ActivityIndicator color="#ffffff" />
+          <ActivityIndicator color={theme.primary} />
         </View>
       ) : statusLabel ? (
-        <View className="ml-3 h-3 w-3 rounded-full bg-[#8f64ff]" />
+        <View className="ml-3 h-3 w-3 rounded-full" style={{ backgroundColor: theme.primary }} />
       ) : (
         <View className="ml-3 h-3 w-3 rounded-full" style={{ backgroundColor: accents.highlight }} />
       )}

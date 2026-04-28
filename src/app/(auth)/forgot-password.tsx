@@ -11,9 +11,11 @@ import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { appConfig } from "@/shared/lib/app-config";
 import { buildLanguageHeaders, useLanguage } from "@/shared/lib/locale";
+import { useAppTheme } from "@/shared/lib/theme-context";
 
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
+  const { theme } = useAppTheme();
   const [isPending, setIsPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const { locale } = useLanguage();
@@ -78,8 +80,8 @@ export default function ForgotPasswordScreen() {
       title="Recover Your Access."
     >
       <View className="px-4 pb-6 pt-6">
-        <Text className="text-sm font-medium text-white/82">{t("forgotPassword.recoverAccess")}</Text>
-        <Text className="mt-2 text-[15px] leading-6 text-white/60">
+        <Text className="text-sm font-medium" style={{ color: theme.text }}>{t("forgotPassword.recoverAccess")}</Text>
+        <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
           {t("forgotPassword.recoverDescription")}
         </Text>
 
@@ -117,9 +119,9 @@ export default function ForgotPasswordScreen() {
           }}
         />
 
-        <Text className="mt-6 text-center text-sm text-white/75">
+        <Text className="mt-6 text-center text-sm" style={{ color: theme.mutedText }}>
           {t("forgotPassword.remembered")}
-          <Link href="/sign-in" className="font-bold text-[#ab8ae6]">
+          <Link href="/sign-in" className="font-bold" style={{ color: theme.primary }}>
             {t("authForm.signIn")}
           </Link>
         </Text>
