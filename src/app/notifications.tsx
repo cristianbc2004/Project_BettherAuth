@@ -95,7 +95,7 @@ export default function NotificationsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="mb-8 flex-row items-center justify-between">
-          <AppBackButton fallbackHref="/dashboard" />
+          <AppBackButton fallbackHref={"/home" as never} />
 
           <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>Notifications</Text>
 

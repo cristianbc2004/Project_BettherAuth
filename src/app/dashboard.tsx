@@ -5,6 +5,7 @@ import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
+import { AppBackButton } from "@/shared/components/ui/app-back-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
@@ -137,6 +138,8 @@ export default function DashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="mb-8 flex-row items-center justify-between">
+          <AppBackButton fallbackHref={"/home" as never} />
+          <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>Profile</Text>
           <Pressable
             className="h-11 w-11 items-center justify-center"
             onPress={() => {
@@ -148,21 +151,6 @@ export default function DashboardScreen() {
               className="h-5 w-5"
               resizeMode="contain"
               source={dashboardIcons.notifications}
-              style={{ tintColor: theme.text }}
-            />
-          </Pressable>
-          <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>Profile</Text>
-          <Pressable
-            className="h-11 w-11 items-center justify-center"
-            onPress={() => {
-              selectionHaptic();
-              router.push("/two-factor" as never);
-            }}
-          >
-            <Image
-              className="h-5 w-5"
-              resizeMode="contain"
-              source={dashboardIcons.twoFactor}
               style={{ tintColor: theme.text }}
             />
           </Pressable>
