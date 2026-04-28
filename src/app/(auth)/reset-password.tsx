@@ -92,6 +92,7 @@ export default function ResetPasswordScreen() {
 
   return (
     <AuthShell
+      backHref="/sign-in"
       eyebrow={t("authShell.resetPassword.eyebrow")}
       subtitle={t("authShell.resetPassword.subtitle", { email: email || t("authForm.email") })}
       title={t("authShell.resetPassword.title")}

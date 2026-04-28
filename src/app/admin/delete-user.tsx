@@ -119,6 +119,7 @@ export default function DeleteUserScreen() {
 
   return (
     <AuthShell
+      backHref="/admin"
       eyebrow=""
       subtitle={`Manage admin actions for ${session.user.email} with the same minimal secure flow.`}
       title={t("admin.deletePageTitle")}
