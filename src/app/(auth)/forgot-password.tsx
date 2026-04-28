@@ -80,12 +80,7 @@ export default function ForgotPasswordScreen() {
       title="Recover Your Access."
     >
       <View className="px-4 pb-6 pt-6">
-        <Text className="text-sm font-medium" style={{ color: theme.text }}>{t("forgotPassword.recoverAccess")}</Text>
-        <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-          {t("forgotPassword.recoverDescription")}
-        </Text>
-
-        <View className="mt-6">
+        <View>
           <Controller
             control={form.control}
             name="email"

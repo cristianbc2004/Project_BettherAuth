@@ -30,11 +30,9 @@ export function AuthShell({
   backAccessibilityLabel,
   backHref,
   children,
-  eyebrow,
   keyboardFocusScrollY,
   scrollRequestKey,
   title,
-  subtitle,
 }: AuthShellProps) {
   const { theme } = useAppTheme();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -124,12 +122,6 @@ export function AuthShell({
                 style={{ color: theme.text }}
               >
                 {title}
-              </Text>
-              <Text
-                className="mt-4 max-w-[320px] text-center text-[15px] leading-6"
-                style={{ color: theme.mutedText }}
-              >
-                {subtitle || eyebrow}
               </Text>
             </Animated.View>
           ) : null}

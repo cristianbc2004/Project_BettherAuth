@@ -99,12 +99,7 @@ export default function ResetPasswordScreen() {
       subtitle={t("authShell.resetPassword.subtitle", { email: email || t("authForm.email") })}
       title={t("authShell.resetPassword.title")}
     >
-      <Text className="text-2xl font-black" style={{ color: theme.text }}>{t("resetPassword.createNewPassword")}</Text>
-      <Text className="mt-2 text-base leading-6" style={{ color: theme.mutedText }}>
-        {t("resetPassword.description")}
-      </Text>
-
-      <View className="mt-6">
+      <View>
         <Controller
           control={form.control}
           name="newPassword"
