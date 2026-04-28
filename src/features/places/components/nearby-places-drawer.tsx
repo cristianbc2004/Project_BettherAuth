@@ -103,7 +103,7 @@ export function NearbyPlacesDrawer({
                 onPress={() => {
                   selectionHaptic();
                   onClose();
-                  router.push("/dashboard" as never);
+                  router.navigate("/dashboard" as never);
                 }}
               >
                 <View

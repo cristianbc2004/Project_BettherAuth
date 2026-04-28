@@ -107,7 +107,7 @@ export default function HomeScreen() {
           }}
           onOpenNotifications={() => {
             selectionHaptic();
-            router.push("/notifications" as never);
+            router.navigate("/notifications" as never);
           }}
         />
 

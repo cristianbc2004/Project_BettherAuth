@@ -57,7 +57,7 @@ export default function ForgotPasswordScreen() {
         return;
       }
 
-      router.push({
+      router.navigate({
         pathname: "/reset-password" as never,
         params: {
           email: values.email,
