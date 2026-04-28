@@ -29,6 +29,7 @@
     "expo-dev-client": "~55.0.28",
     "expo-haptics": "^55.0.14",
     "expo-linking": "~55.0.14",
+    "expo-location": "~55.1.8",
     "expo-network": "~55.0.13",
     "expo-router": "~55.0.13",
     "expo-secure-store": "~55.0.13",
