@@ -72,6 +72,7 @@ export default function ForgotPasswordScreen() {
 
   return (
     <AuthShell
+      backHref="/sign-in"
       eyebrow=""
       subtitle="Enter your email to recover access and continue with the same secure mobile flow."
       title="Recover Your Access."

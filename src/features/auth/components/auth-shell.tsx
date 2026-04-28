@@ -12,8 +12,12 @@ import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AuthBrandMark } from "@/features/auth/components/auth-brand-mark";
+import { AppBackButton } from "@/shared/components/ui/app-back-button";
+import { backOrReplace } from "@/shared/lib/navigation";
 
 type AuthShellProps = PropsWithChildren<{
+  backAccessibilityLabel?: string;
+  backHref?: Parameters<typeof backOrReplace>[0];
   eyebrow: string;
   keyboardFocusScrollY?: number;
   scrollRequestKey?: number;
@@ -22,6 +26,8 @@ type AuthShellProps = PropsWithChildren<{
 }>;
 
 export function AuthShell({
+  backAccessibilityLabel,
+  backHref,
   children,
   eyebrow,
   keyboardFocusScrollY,
@@ -97,6 +103,15 @@ export function AuthShell({
           ref={scrollViewRef}
           showsVerticalScrollIndicator={false}
         >
+          {backHref ? (
+            <View className="mb-2 flex-row">
+              <AppBackButton
+                accessibilityLabel={backAccessibilityLabel}
+                fallbackHref={backHref}
+              />
+            </View>
+          ) : null}
+
           {!keyboardVisible ? (
             <Animated.View
               className="mt-10 items-center"

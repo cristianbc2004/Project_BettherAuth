@@ -38,6 +38,7 @@ export default function AdminPanelScreen() {
 
   return (
     <AuthShell
+      backHref="/dashboard"
       eyebrow=""
       subtitle={`Manage admin actions for ${session.user.email} with the same minimal secure flow.`}
       title={t("admin.panelTitle")}

@@ -2,8 +2,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { selectionHaptic } from "@/shared/lib/haptics";
-import { backOrReplace } from "@/shared/lib/navigation";
+import { AppBackButton } from "@/shared/components/ui/app-back-button";
 
 type NotificationItem = {
   accent: string;
@@ -93,15 +92,7 @@ export default function NotificationsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="mb-8 flex-row items-center justify-between">
-          <Pressable
-            className="h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5"
-            onPress={() => {
-              selectionHaptic();
-              backOrReplace("/dashboard");
-            }}
-          >
-            <Text className="text-2xl text-white/80">{"<"}</Text>
-          </Pressable>
+          <AppBackButton fallbackHref="/dashboard" />
 
           <Text className="text-[24px] font-semibold text-white">Notifications</Text>
 

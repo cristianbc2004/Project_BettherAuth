@@ -183,6 +183,7 @@ export default function TwoFactorScreen() {
 
   return (
     <AuthShell
+      backHref="/dashboard"
       eyebrow=""
       subtitle={`Manage two-factor authentication for ${session.user.email} with the same minimal secure flow.`}
       title="Two-Factor Authentication."

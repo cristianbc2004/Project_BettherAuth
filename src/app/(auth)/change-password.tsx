@@ -88,6 +88,7 @@ export default function ChangePasswordScreen() {
 
   return (
     <AuthShell
+      backHref="/dashboard"
       eyebrow=""
       keyboardFocusScrollY={isPasswordRequirementsFocused ? 360 : undefined}
       scrollRequestKey={isPasswordRequirementsFocused ? passwordRequirementsScrollRequest : undefined}

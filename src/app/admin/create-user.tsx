@@ -104,6 +104,7 @@ export default function CreateUserScreen() {
 
   return (
     <AuthShell
+      backHref="/admin"
       eyebrow=""
       keyboardFocusScrollY={isPasswordRequirementsFocused ? 260 : undefined}
       scrollRequestKey={isPasswordRequirementsFocused ? passwordRequirementsScrollRequest : undefined}
