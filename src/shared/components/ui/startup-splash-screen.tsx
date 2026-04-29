@@ -8,7 +8,8 @@ import { useAppTheme } from "@/shared/lib/theme-context";
 const splashLogo = require("../../../../assets/logo.png");
 
 export function StartupSplashScreen() {
-  const { theme } = useAppTheme();
+  const { resolvedThemeName, theme } = useAppTheme();
+  const brandTextColor = resolvedThemeName === "dark" ? "#FFFFFF" : theme.text;
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
@@ -28,12 +29,14 @@ export function StartupSplashScreen() {
             }}
           />
           <Animated.View
-            className="mt-8 w-full rounded-[30px] border px-6 py-7"
+            className="mt-8 w-full px-6 py-7"
             entering={FadeInDown.duration(520).delay(180).easing(Easing.out(Easing.quad))}
-            style={{ backgroundColor: theme.card, borderColor: theme.border }}
           >
             <AppProgressBar />
-            <Text className="mt-5 text-center text-base font-semibold" style={{ color: theme.text }}>
+            <Text
+              className="mt-5 text-center text-base font-semibold italic"
+              style={{ color: brandTextColor }}
+            >
               Better Auth
             </Text>
           </Animated.View>

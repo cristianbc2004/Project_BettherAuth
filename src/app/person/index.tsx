@@ -1,4 +1,4 @@
-import { Redirect } from "expo-router";
+import { Redirect, useLocalSearchParams } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -8,10 +8,29 @@ import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("es-ES", {
+    currency: "EUR",
+    maximumFractionDigits: 0,
+    style: "currency",
+  }).format(value);
+}
+
+function getSelectedPerson(personId?: string) {
+  const selectedPersonId = personId ? Number(personId) : undefined;
+
+  return (
+    mockIngresos.detalles.find((person) => person.id === selectedPersonId) ??
+    mockIngresos.detalles[0]
+  );
+}
+
 export default function PersonGeneralScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
+  const { personId } = useLocalSearchParams<{ personId?: string }>();
+  const selectedPerson = getSelectedPerson(personId);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -29,17 +48,24 @@ export default function PersonGeneralScreen() {
       style={{ backgroundColor: theme.background }}
     >
       <PersonScreenHeader title="Información general" />
-      <View
-        className="mt-6 rounded-[28px] border px-5 py-5"
-        style={{
-          backgroundColor: theme.card,
-          borderColor: theme.border,
-        }}
-      >
-        <Text className="text-[20px] font-bold" style={{ color: theme.text }}>
-          {mockIngresos.general.titulo}
+
+      <View className="mt-8">
+        <Text className="text-[28px] font-bold" style={{ color: theme.text }}>
+          {selectedPerson.nombre}
         </Text>
         <Text className="mt-2 text-[16px]" style={{ color: theme.mutedText }}>
+          {selectedPerson.cargo}
+        </Text>
+      </View>
+
+      <View className="mt-10">
+        <Text className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
+          Ingreso del periodo
+        </Text>
+        <Text className="mt-2 text-[36px] font-bold" style={{ color: theme.text }}>
+          {formatCurrency(selectedPerson.ingresos)}
+        </Text>
+        <Text className="mt-2 text-[15px]" style={{ color: theme.mutedText }}>
           {mockIngresos.general.periodo}
         </Text>
       </View>

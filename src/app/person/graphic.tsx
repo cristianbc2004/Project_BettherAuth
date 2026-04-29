@@ -31,7 +31,7 @@ export default function PersonGraphicScreen() {
       contentInsetAdjustmentBehavior="automatic"
       style={{ backgroundColor: theme.background }}
     >
-      <PersonScreenHeader title="Gráfica" />
+      <PersonScreenHeader title="Gráfica de ingresos" />
       <Graphic initialSelectedPersonId={initialSelectedPersonId} />
     </ScrollView>
   );

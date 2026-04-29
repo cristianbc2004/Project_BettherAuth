@@ -160,13 +160,7 @@ export function Graphic({ initialSelectedPersonId }: GraphicProps) {
   }, []);
 
   return (
-    <GestureHandlerRootView
-      className="mt-6 rounded-[28px] border px-5 py-5"
-      style={{
-        backgroundColor: theme.card,
-        borderColor: theme.border,
-      }}
-    >
+    <GestureHandlerRootView className="mt-6">
       <Text className="text-[13px] font-semibold uppercase tracking-[1.3px]" style={{ color: theme.mutedText }}>
         Ingresos por mes
       </Text>
