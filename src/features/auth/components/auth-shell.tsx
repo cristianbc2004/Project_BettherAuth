@@ -126,10 +126,6 @@ export function AuthShell({
             </Animated.View>
           ) : null}
 
-          {!keyboardVisible ? (
-            <View className="mt-8 h-px w-full" style={{ backgroundColor: theme.border }} />
-          ) : null}
-
           <Animated.View
             className={keyboardVisible ? "mt-6" : "mt-8"}
             entering={FadeInDown.duration(480)
