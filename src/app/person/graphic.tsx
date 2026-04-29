@@ -1,7 +1,8 @@
-import { Redirect } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { Redirect, useLocalSearchParams } from "expo-router";
+import { ScrollView } from "react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
+import { Graphic } from "@/features/ingresos/components/person/graphic";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -11,6 +12,9 @@ export default function PersonGraphicScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
+  const { personId } = useLocalSearchParams<{ personId?: string }>();
+  const selectedPersonId = personId ? Number(personId) : undefined;
+  const initialSelectedPersonId = Number.isFinite(selectedPersonId) ? selectedPersonId : undefined;
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -28,17 +32,7 @@ export default function PersonGraphicScreen() {
       style={{ backgroundColor: theme.background }}
     >
       <PersonScreenHeader title="Gráfica" />
-      <View
-        className="mt-6 rounded-[28px] border px-5 py-5"
-        style={{
-          backgroundColor: theme.card,
-          borderColor: theme.border,
-        }}
-      >
-        <Text className="text-[16px]" style={{ color: theme.mutedText }}>
-          Base de la pantalla de gráfica.
-        </Text>
-      </View>
+      <Graphic initialSelectedPersonId={initialSelectedPersonId} />
     </ScrollView>
   );
 }

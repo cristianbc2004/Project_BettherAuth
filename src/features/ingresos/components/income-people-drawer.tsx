@@ -67,10 +67,10 @@ export function IncomePeopleDrawer({
   role,
 }: IncomePeopleDrawerProps) {
   const { theme } = useAppTheme();
-  const handleOpenPerson = useCallback(() => {
+  const handleOpenPerson = useCallback((personId: number) => {
     selectionHaptic();
     onClose();
-    router.navigate("/person" as never);
+    router.navigate(`/person/graphic?personId=${personId}` as never);
   }, [onClose]);
   const renderPerson: ListRenderItem<MockIncomePerson> = useCallback(
     ({ index, item }) => (
@@ -79,7 +79,7 @@ export function IncomePeopleDrawer({
           .delay(index * 90)
           .easing(Easing.out(Easing.quad))}
       >
-        <IncomePersonRow nombre={item.nombre} onPress={handleOpenPerson} />
+        <IncomePersonRow nombre={item.nombre} onPress={() => handleOpenPerson(item.id)} />
       </Animated.View>
     ),
     [handleOpenPerson],
