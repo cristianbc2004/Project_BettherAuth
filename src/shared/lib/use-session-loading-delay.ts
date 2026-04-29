@@ -2,12 +2,18 @@ import { useEffect, useRef, useState } from "react";
 
 const DEFAULT_MINIMUM_SESSION_LOADING_MS = 1400;
 
+type UseSessionLoadingDelayOptions = {
+  showOnMount?: boolean;
+};
+
 export function useSessionLoadingDelay(
   isPending: boolean,
   minimumDuration = DEFAULT_MINIMUM_SESSION_LOADING_MS,
+  options: UseSessionLoadingDelayOptions = {},
 ) {
-  const [isVisible, setIsVisible] = useState(isPending);
-  const startedAtRef = useRef<number | null>(isPending ? Date.now() : null);
+  const shouldShowOnMount = options.showOnMount ?? false;
+  const [isVisible, setIsVisible] = useState(isPending || shouldShowOnMount);
+  const startedAtRef = useRef<number | null>(isPending || shouldShowOnMount ? Date.now() : null);
 
   useEffect(() => {
     if (isPending) {

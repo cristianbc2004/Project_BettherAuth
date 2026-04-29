@@ -3,8 +3,8 @@ import { ScrollView, Text, View } from "react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
+import { PersonDetailsSkeleton } from "@/features/ingresos/components/person/person-skeletons";
 import { mockIngresos } from "@/features/ingresos/services/income-mock";
-import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
@@ -25,15 +25,19 @@ function getSelectedPerson(personId?: string) {
   );
 }
 
+const PERSON_SKELETON_MINIMUM_MS = 3000;
+
 export default function PersonDetailsScreen() {
   const { data: session, isPending } = authClient.useSession();
-  const showSessionLoading = useSessionLoadingDelay(isPending);
+  const showSessionLoading = useSessionLoadingDelay(isPending, PERSON_SKELETON_MINIMUM_MS, {
+    showOnMount: true,
+  });
   const { theme } = useAppTheme();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
   const selectedPerson = getSelectedPerson(personId);
 
   if (showSessionLoading) {
-    return <LoadingScreen />;
+    return <PersonDetailsSkeleton />;
   }
 
   if (!session?.user) {

@@ -19,19 +19,13 @@ const homeIcons = {
 };
 
 function HeaderButton({ accessibilityLabel, children, onPress }: HeaderButtonProps) {
-  const { theme } = useAppTheme();
-
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
-      className="h-12 w-12 items-center justify-center rounded-[18px] border"
+      className="h-12 w-12 items-center justify-center"
       hitSlop={10}
       onPress={onPress}
-      style={{
-        backgroundColor: theme.card,
-        borderColor: theme.border,
-      }}
     >
       {children}
     </Pressable>

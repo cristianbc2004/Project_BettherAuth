@@ -270,6 +270,9 @@ export default function DashboardScreen() {
         contentContainerClassName="px-5 pb-10 pt-6"
         showsVerticalScrollIndicator={false}
       >
+        <View className="mb-2 flex-row">
+          <AppBackButton fallbackHref="/home" />
+        </View>
 
         <Animated.View entering={sectionEntering(0)}>
           <SectionLabel label={t("dashboard.profileSection")} />

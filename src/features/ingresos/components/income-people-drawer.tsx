@@ -47,10 +47,7 @@ const IncomePersonRow = memo(function IncomePersonRow({ nombre, onPress }: Incom
       <Text className="flex-1 text-[18px] font-bold" style={{ color: theme.text }}>
         {nombre}
       </Text>
-      <View
-        className="h-11 w-11 items-center justify-center rounded-full"
-        style={{ backgroundColor: theme.backgroundMuted }}
-      >
+      <View className="h-11 w-11 items-center justify-center">
         <Text className="text-2xl font-semibold" style={{ color: theme.text }}>
           {">"}
         </Text>
@@ -132,14 +129,10 @@ export function IncomePeopleDrawer({
               <Pressable
                 accessibilityLabel="Close menu"
                 accessibilityRole="button"
-                className="ml-4 h-14 w-14 items-center justify-center rounded-[22px] border"
+                className="ml-4 h-14 w-14 items-center justify-center"
                 onPress={() => {
                   selectionHaptic();
                   onClose();
-                }}
-                style={{
-                  backgroundColor: theme.card,
-                  borderColor: theme.border,
                 }}
               >
                 <Text className="text-3xl" style={{ color: theme.text }}>
