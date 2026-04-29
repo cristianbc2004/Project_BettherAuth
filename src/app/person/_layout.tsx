@@ -1,67 +1,111 @@
 import { Tabs, useLocalSearchParams } from "expo-router";
-import { Image, type ImageSourcePropType } from "react-native";
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import type { ComponentType } from "react";
+import { Pressable, Text, View } from "react-native";
+import { ChartNoAxesCombined, FileText, UserRound } from "lucide-react-native";
+import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
 
-const tabIcons = {
-  details: require("../../../assets/details.png"),
-  general: require("../../../assets/general.png"),
-  graphic: require("../../../assets/graphic.png"),
-} satisfies Record<string, ImageSourcePropType>;
+type PersonTabName = "details" | "graphic" | "index";
 
-const activeTabColor = "#4F7DFF";
-const darkInactiveTabColor = "#FFFFFF";
-const lightInactiveTabColor = "#111827";
+type PersonTabConfig = {
+  icon: ComponentType<any>;
+  label: string;
+};
 
-function TabIcon({ color, source }: { color: string; source: ImageSourcePropType }) {
+const personTabs = {
+  details: {
+    icon: FileText,
+    label: "Detalles",
+  },
+  graphic: {
+    icon: ChartNoAxesCombined,
+    label: "Grafica",
+  },
+  index: {
+    icon: UserRound,
+    label: "General",
+  },
+} satisfies Record<PersonTabName, PersonTabConfig>;
+
+function isPersonTabName(routeName: string): routeName is PersonTabName {
+  return routeName === "index" || routeName === "details" || routeName === "graphic";
+}
+
+function PersonTabBar({
+  navigation,
+  personId,
+  state,
+}: BottomTabBarProps & { personId?: string }) {
+  const { theme } = useAppTheme();
+
   return (
-    <Image
-      resizeMode="contain"
-      source={source}
+    <Animated.View
+      className="absolute bottom-5 left-5 right-5 h-[76px] flex-row items-center rounded-[28px] border px-2"
+      entering={FadeInDown.duration(560).delay(220).easing(Easing.out(Easing.quad))}
       style={{
-        height: 34,
-        tintColor: color,
-        width: 34,
+        backgroundColor: theme.card,
+        borderColor: theme.border,
+        borderCurve: "continuous",
+        boxShadow: "0 16px 38px rgba(7, 17, 31, 0.18)",
       }}
-    />
+    >
+      {state.routes.map((route, index) => {
+        if (!isPersonTabName(route.name)) {
+          return null;
+        }
+
+        const tab = personTabs[route.name];
+        const Icon = tab.icon;
+        const isFocused = state.index === index;
+        const color = isFocused ? theme.primary : theme.mutedText;
+
+        return (
+          <Pressable
+            accessibilityLabel={tab.label}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isFocused }}
+            className="flex-1 items-center justify-center gap-1"
+            key={route.key}
+            onPress={() => {
+              const event = navigation.emit({
+                canPreventDefault: true,
+                target: route.key,
+                type: "tabPress",
+              });
+
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name, personId ? { personId } : undefined);
+              }
+            }}
+          >
+            <View
+              className="h-8 w-8 items-center justify-center rounded-full"
+              style={{ backgroundColor: isFocused ? theme.primarySoft : "transparent" }}
+            >
+              <Icon color={color} size={20} strokeWidth={isFocused ? 2.8 : 2.2} />
+            </View>
+            <Text className="text-[10px] font-semibold" numberOfLines={1} style={{ color }}>
+              {tab.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </Animated.View>
   );
 }
 
 export default function PersonTabsLayout() {
-  const { resolvedThemeName, theme } = useAppTheme();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
   const personParams = personId ? { personId } : undefined;
-  const inactiveTabColor =
-    resolvedThemeName === "light" ? lightInactiveTabColor : darkInactiveTabColor;
 
   return (
     <Tabs
+      backBehavior="none"
+      tabBar={(props) => <PersonTabBar {...props} personId={personId} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: activeTabColor,
-        tabBarIconStyle: {
-          marginBottom: 6,
-          marginTop: 8,
-        },
-        tabBarInactiveTintColor: inactiveTabColor,
-        tabBarItemStyle: {
-          paddingVertical: 10,
-        },
-        tabBarLabelStyle: {
-          fontSize: 15,
-          fontWeight: "400",
-          lineHeight: 20,
-        },
-        tabBarStyle: {
-          backgroundColor: theme.background,
-          borderTopColor: theme.background,
-          borderTopWidth: 0,
-          elevation: 0,
-          height: 108,
-          paddingBottom: 22,
-          paddingTop: 12,
-          shadowOpacity: 0,
-        },
       }}
     >
       <Tabs.Screen
@@ -69,7 +113,6 @@ export default function PersonTabsLayout() {
         options={{
           href: personParams ? { pathname: "/person", params: personParams } : "/person",
           title: "General",
-          tabBarIcon: ({ color }) => <TabIcon color={color} source={tabIcons.general} />,
         }}
       />
       <Tabs.Screen
@@ -77,7 +120,6 @@ export default function PersonTabsLayout() {
         options={{
           href: personParams ? { pathname: "/person/details", params: personParams } : "/person/details",
           title: "Detalles",
-          tabBarIcon: ({ color }) => <TabIcon color={color} source={tabIcons.details} />,
         }}
       />
       <Tabs.Screen
@@ -85,7 +127,6 @@ export default function PersonTabsLayout() {
         options={{
           href: personParams ? { pathname: "/person/graphic", params: personParams } : "/person/graphic",
           title: "Gr\u00e1fica",
-          tabBarIcon: ({ color }) => <TabIcon color={color} source={tabIcons.graphic} />,
         }}
       />
     </Tabs>

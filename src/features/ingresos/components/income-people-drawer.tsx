@@ -67,7 +67,7 @@ export function IncomePeopleDrawer({
   const handleOpenPerson = useCallback((personId: number) => {
     selectionHaptic();
     onClose();
-    router.navigate(`/person/graphic?personId=${personId}` as never);
+    router.navigate(`/person?personId=${personId}` as never);
   }, [onClose]);
   const renderPerson: ListRenderItem<MockIncomePerson> = useCallback(
     ({ index, item }) => (

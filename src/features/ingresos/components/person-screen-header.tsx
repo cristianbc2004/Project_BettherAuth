@@ -1,15 +1,12 @@
 import { router } from "expo-router";
-import { Image, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { Home } from "lucide-react-native";
 
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
 type PersonScreenHeaderProps = {
   title: string;
-};
-
-const headerIcons = {
-  home: require("../../../../assets/home.png"),
 };
 
 export function PersonScreenHeader({ title }: PersonScreenHeaderProps) {
@@ -30,12 +27,7 @@ export function PersonScreenHeader({ title }: PersonScreenHeaderProps) {
           router.navigate("/home" as never);
         }}
       >
-        <Image
-          className="h-6 w-6"
-          resizeMode="contain"
-          source={headerIcons.home}
-          style={{ tintColor: theme.text }}
-        />
+        <Home color={theme.text} size={25} strokeWidth={2.4} />
       </Pressable>
     </View>
   );

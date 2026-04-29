@@ -31,7 +31,7 @@ export default function PersonGraphicScreen() {
   return (
     <ScrollView
       className="flex-1"
-      contentContainerClassName="px-5 pb-10 pt-20"
+      contentContainerClassName="px-5 pb-32 pt-20"
       contentInsetAdjustmentBehavior="automatic"
       style={{ backgroundColor: theme.background }}
     >
