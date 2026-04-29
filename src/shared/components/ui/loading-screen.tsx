@@ -15,7 +15,7 @@ export function LoadingScreen() {
         <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
       </View>
       <View className="flex-1 items-center justify-center px-8">
-        <View className="w-full max-w-[320px] rounded-[30px] border px-6 py-7" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+        <View className="w-full max-w-[320px] px-6 py-7">
           <AppProgressBar />
           <Text className="mt-5 text-center text-base font-semibold" style={{ color: theme.text }}>
             {t("common.loadingSession")}

@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { Tabs, useLocalSearchParams } from "expo-router";
 import { Image, type ImageSourcePropType } from "react-native";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -10,7 +10,8 @@ const tabIcons = {
 } satisfies Record<string, ImageSourcePropType>;
 
 const activeTabColor = "#4F7DFF";
-const inactiveTabColor = "#FFFFFF";
+const darkInactiveTabColor = "#FFFFFF";
+const lightInactiveTabColor = "#111827";
 
 function TabIcon({ color, source }: { color: string; source: ImageSourcePropType }) {
   return (
@@ -27,7 +28,11 @@ function TabIcon({ color, source }: { color: string; source: ImageSourcePropType
 }
 
 export default function PersonTabsLayout() {
-  const { theme } = useAppTheme();
+  const { resolvedThemeName, theme } = useAppTheme();
+  const { personId } = useLocalSearchParams<{ personId?: string }>();
+  const personParams = personId ? { personId } : undefined;
+  const inactiveTabColor =
+    resolvedThemeName === "light" ? lightInactiveTabColor : darkInactiveTabColor;
 
   return (
     <Tabs
@@ -62,6 +67,7 @@ export default function PersonTabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          href: personParams ? { pathname: "/person", params: personParams } : "/person",
           title: "General",
           tabBarIcon: ({ color }) => <TabIcon color={color} source={tabIcons.general} />,
         }}
@@ -69,6 +75,7 @@ export default function PersonTabsLayout() {
       <Tabs.Screen
         name="details"
         options={{
+          href: personParams ? { pathname: "/person/details", params: personParams } : "/person/details",
           title: "Detalles",
           tabBarIcon: ({ color }) => <TabIcon color={color} source={tabIcons.details} />,
         }}
@@ -76,7 +83,8 @@ export default function PersonTabsLayout() {
       <Tabs.Screen
         name="graphic"
         options={{
-          title: "Gráfica",
+          href: personParams ? { pathname: "/person/graphic", params: personParams } : "/person/graphic",
+          title: "Gr\u00e1fica",
           tabBarIcon: ({ color }) => <TabIcon color={color} source={tabIcons.graphic} />,
         }}
       />
