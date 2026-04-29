@@ -38,6 +38,7 @@ function AppNavigation() {
           <Stack.Screen name="home" />
           <Stack.Screen name="dashboard" />
           <Stack.Screen name="notifications" />
+          <Stack.Screen name="person" />
           <Stack.Screen name="(auth)/sign-in" />
           <Stack.Screen name="(auth)/sign-up" />
           <Stack.Screen name="(auth)/forgot-password" />

@@ -1,19 +1,12 @@
-import * as Location from "expo-location";
 import { Redirect, router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Text, View } from "react-native";
 import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
-import { HomeHeader } from "@/features/places/components/home-header";
-import { NearbyPlacesDrawer } from "@/features/places/components/nearby-places-drawer";
-import {
-  fallbackLocation,
-  fetchNearbyFoodPlaces,
-  type NearbyPlace,
-  type UserLocation,
-} from "@/features/places/services/nearby-places";
+import { IncomePeopleDrawer } from "@/features/ingresos/components/income-people-drawer";
+import { HomeHeader } from "@/shared/components/ui/home-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -23,67 +16,7 @@ export default function HomeScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [nearbyRestaurants, setNearbyRestaurants] = useState<NearbyPlace[]>([]);
-  const [restaurantsError, setRestaurantsError] = useState<string | null>(null);
-  const [restaurantsLoading, setRestaurantsLoading] = useState(true);
-  const [usesFallbackLocation, setUsesFallbackLocation] = useState(true);
   const { theme } = useAppTheme();
-
-  useEffect(() => {
-    let isActive = true;
-
-    const loadNearbyRestaurants = async () => {
-      if (!session?.user || showSessionLoading) {
-        return;
-      }
-
-      try {
-        setRestaurantsError(null);
-        setRestaurantsLoading(true);
-
-        const permission = await Location.requestForegroundPermissionsAsync();
-        let searchLocation: UserLocation = fallbackLocation;
-        let shouldUseFallback = true;
-
-        if (permission.status === Location.PermissionStatus.GRANTED) {
-          const currentPosition = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced,
-          });
-
-          searchLocation = {
-            latitude: currentPosition.coords.latitude,
-            longitude: currentPosition.coords.longitude,
-          };
-          shouldUseFallback = false;
-        }
-
-        const restaurants = await fetchNearbyFoodPlaces(searchLocation);
-
-        if (!isActive) {
-          return;
-        }
-
-        setNearbyRestaurants(restaurants);
-        setUsesFallbackLocation(shouldUseFallback);
-      } catch {
-        if (!isActive) {
-          return;
-        }
-
-        setRestaurantsError("No pudimos cargar restaurantes reales cerca.");
-      } finally {
-        if (isActive) {
-          setRestaurantsLoading(false);
-        }
-      }
-    };
-
-    void loadNearbyRestaurants();
-
-    return () => {
-      isActive = false;
-    };
-  }, [session?.user, showSessionLoading]);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -130,16 +63,12 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <NearbyPlacesDrawer
+      <IncomePeopleDrawer
         email={session.user.email}
         isVisible={isDrawerOpen}
         name={session.user.name}
         onClose={() => setIsDrawerOpen(false)}
-        restaurants={nearbyRestaurants}
-        restaurantsError={restaurantsError}
-        restaurantsLoading={restaurantsLoading}
         role={role}
-        usesFallbackLocation={usesFallbackLocation}
       />
     </SafeAreaView>
   );
