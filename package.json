@@ -37,6 +37,7 @@
     "expo-status-bar": "~55.0.5",
     "expo-web-browser": "~55.0.14",
     "i18next": "^26.0.5",
+    "lucide-react-native": "^1.14.0",
     "moti": "^0.30.0",
     "nativewind": "^4.2.3",
     "nodemailer": "^8.0.5",

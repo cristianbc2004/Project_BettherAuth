@@ -36,6 +36,9 @@ function AppNavigation() {
         >
           <Stack.Screen name="index" options={{ animation: "none" }} />
           <Stack.Screen name="home" />
+          <Stack.Screen name="movements" />
+          <Stack.Screen name="cards" />
+          <Stack.Screen name="assets" />
           <Stack.Screen name="dashboard" />
           <Stack.Screen name="notifications" />
           <Stack.Screen name="person" />
