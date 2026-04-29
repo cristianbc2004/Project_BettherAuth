@@ -11,6 +11,7 @@ type HeaderButtonProps = {
 };
 
 type HomeHeaderProps = {
+  canOpenMenu?: boolean;
   onOpenMenu: () => void;
   onOpenNotifications: () => void;
 };
@@ -29,14 +30,18 @@ function HeaderButton({ accessibilityLabel, children, onPress }: HeaderButtonPro
   );
 }
 
-export function HomeHeader({ onOpenMenu, onOpenNotifications }: HomeHeaderProps) {
+export function HomeHeader({ canOpenMenu = true, onOpenMenu, onOpenNotifications }: HomeHeaderProps) {
   const { theme } = useAppTheme();
 
   return (
     <View className="flex-row items-center justify-between">
-      <HeaderButton accessibilityLabel="Open menu" onPress={onOpenMenu}>
-        <Menu color={theme.text} size={30} strokeWidth={2.4} />
-      </HeaderButton>
+      {canOpenMenu ? (
+        <HeaderButton accessibilityLabel="Open menu" onPress={onOpenMenu}>
+          <Menu color={theme.text} size={30} strokeWidth={2.4} />
+        </HeaderButton>
+      ) : (
+        <View className="h-12 w-12" />
+      )}
       <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>
         Home
       </Text>

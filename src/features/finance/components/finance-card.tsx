@@ -31,7 +31,6 @@ export function WalletCardPreview({ card, width }: WalletCardPreviewProps) {
       start={{ x: 0, y: 0 }}
       style={{
         borderCurve: "continuous",
-        boxShadow: "0 18px 34px rgba(7, 17, 31, 0.18)",
         width,
       }}
     >

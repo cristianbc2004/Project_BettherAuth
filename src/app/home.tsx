@@ -62,6 +62,13 @@ function getGreeting() {
   return "Buenas noches";
 }
 
+function isAdminRole(role: string) {
+  return role
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .includes("admin");
+}
+
 function SectionHeader({ action, onActionPress, title }: SectionHeaderProps) {
   const { theme } = useAppTheme();
   const actionContent = action ? (
@@ -163,6 +170,7 @@ export default function HomeScreen() {
   }
 
   const role = (session.user as { role?: string }).role ?? "Usuario";
+  const isAdmin = isAdminRole(role);
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
@@ -170,7 +178,12 @@ export default function HomeScreen() {
 
       <View className="flex-1 px-5 pt-5">
         <HomeHeader
+          canOpenMenu={isAdmin}
           onOpenMenu={() => {
+            if (!isAdmin) {
+              return;
+            }
+
             selectionHaptic();
             setIsDrawerOpen(true);
           }}
@@ -279,7 +292,7 @@ export default function HomeScreen() {
 
       <IncomePeopleDrawer
         email={session.user.email}
-        isVisible={isDrawerOpen}
+        isVisible={isAdmin && isDrawerOpen}
         name={session.user.name}
         onClose={() => setIsDrawerOpen(false)}
         role={role}
