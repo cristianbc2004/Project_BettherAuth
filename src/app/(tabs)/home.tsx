@@ -296,7 +296,20 @@ export default function HomeScreen() {
               snapToInterval={cardWidth + 16}
             >
               {walletCards.map((card) => (
-                <WalletCardPreview card={card} key={card.id} width={cardWidth} />
+                <Pressable
+                  accessibilityLabel={`Abrir tarjeta ${card.status}`}
+                  accessibilityRole="button"
+                  key={card.id}
+                  onPress={() => {
+                    selectionHaptic();
+                    router.push({
+                      params: { cardId: card.id },
+                      pathname: "/details-target",
+                    } as never);
+                  }}
+                >
+                  <WalletCardPreview card={card} width={cardWidth} />
+                </Pressable>
               ))}
             </ScrollView>
           </View>
