@@ -88,6 +88,16 @@ export const walletCards: WalletCard[] = [
     status: "Ahorro",
     textColor: "#ffffff",
   },
+  {
+    balance: "2.465 EUR",
+    gradient: ["#221628", "#6b1f4f", "#ff7db4"],
+    id: "travel",
+    lastDigits: "1284",
+    name: "Viajes",
+    network: "MASTERCARD",
+    status: "Travel",
+    textColor: "#ffffff",
+  },
 ];
 
 const transactionSeeds = [
