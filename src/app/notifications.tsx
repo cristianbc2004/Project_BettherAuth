@@ -1,4 +1,6 @@
+import type { ComponentType } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { Apple, ArrowRightLeft, BadgeCheck, RefreshCcw, ShieldCheck } from "lucide-react-native";
 import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -7,6 +9,7 @@ import { useAppTheme } from "@/shared/lib/theme-context";
 
 type NotificationItem = {
   accent: string;
+  icon: ComponentType<any>;
   iconAccent: string;
   id: string;
   title: string;
@@ -16,45 +19,51 @@ type NotificationItem = {
 
 const notifications: NotificationItem[] = [
   {
-    id: "account-security",
-    title: "New sign-in detected",
+    id: "Apple payment",
+    icon: Apple,
+    title: "Apple payment",
     timestamp: "Today | 03:23 AM",
     accent: "#40245f",
     iconAccent: "#f47ca8",
     unread: true,
   },
   {
-    id: "password-updated",
-    title: "Password updated",
+    id: "new transaction",
+    icon: ArrowRightLeft,
+    title: "new transaction",
     timestamp: "Tuesday | 05:23 PM",
     accent: "#1f3640",
     iconAccent: "#67dbc8",
   },
   {
     id: "two-factor-enabled",
+    icon: ShieldCheck,
     title: "Two-factor enabled",
     timestamp: "Friday | 05:00 PM",
     accent: "#2e2950",
     iconAccent: "#8d7cff",
   },
   {
-    id: "admin-review",
-    title: "Admin review available",
+    id: "subscription renewal",
+    icon: RefreshCcw,
+    title: "subscription renewal",
     timestamp: "12 Dec 2024 | 04:00 PM",
     accent: "#42311f",
     iconAccent: "#f0b245",
   },
   {
-    id: "language-updated",
-    title: "Language preference saved",
+    id: "accepted payment",
+    icon: BadgeCheck,
+    title: "accepted payment",
     timestamp: "02 Dec 2024 | 02:00 PM",
     accent: "#203946",
     iconAccent: "#4dc4ff",
   },
 ];
 
-function NotificationRow({ accent, iconAccent, timestamp, title, unread }: NotificationItem) {
+function NotificationRow({ accent, icon, iconAccent, timestamp, title, unread }: NotificationItem) {
   const { theme } = useAppTheme();
+  const Icon = icon;
 
   return (
     <Pressable className="flex-row items-center px-2 py-5">
@@ -62,12 +71,7 @@ function NotificationRow({ accent, iconAccent, timestamp, title, unread }: Notif
         className="mr-4 h-14 w-14 items-center justify-center rounded-full"
         style={{ backgroundColor: accent }}
       >
-        <View
-          className="h-7 w-7 items-center justify-center rounded-full"
-          style={{ backgroundColor: iconAccent }}
-        >
-          <View className="h-2.5 w-2.5 rounded-full bg-white/90" />
-        </View>
+        <Icon color={iconAccent} size={22} strokeWidth={2.4} />
       </View>
 
       <View className="flex-1">

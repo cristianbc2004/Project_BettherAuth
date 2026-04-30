@@ -67,9 +67,6 @@ export default function MovementsScreen() {
               <Text className="mt-3 text-[34px] font-black" style={{ color: theme.text }}>
                 Movimientos
               </Text>
-              <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-                Lista virtualizada con 1500 operaciones para probar scroll fluido y lazy loading.
-              </Text>
             </View>
 
             <View className="flex-row gap-3">
