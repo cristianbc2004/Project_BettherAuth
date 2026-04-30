@@ -2,13 +2,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColorScheme as useNativeWindColorScheme } from "nativewind";
 import {
   createContext,
+  useCallback,
   type PropsWithChildren,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
-import { useColorScheme } from "react-native";
+import { InteractionManager, useColorScheme } from "react-native";
 
 import { type AppTheme, type ThemeMode, type ThemeName, themes } from "@/shared/lib/theme-tokens";
 
@@ -17,10 +18,10 @@ const themeModes: ThemeMode[] = ["system", "light", "dark"];
 
 type AppThemeContextValue = {
   resolvedThemeName: ThemeName;
-  setThemeMode: (mode: ThemeMode) => Promise<void>;
+  setThemeMode: (mode: ThemeMode) => void;
   theme: AppTheme;
   themeMode: ThemeMode;
-  toggleThemeMode: () => Promise<void>;
+  toggleThemeMode: () => void;
 };
 
 const AppThemeContext = createContext<AppThemeContextValue | null>(null);
@@ -61,19 +62,30 @@ export function AppThemeProvider({ children }: PropsWithChildren) {
     setColorScheme(themeMode);
   }, [setColorScheme, themeMode]);
 
-  const setThemeMode = async (mode: ThemeMode) => {
-    // Update immediately for responsive UI, then persist for the next app launch.
-    setThemeModeState(mode);
-    await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
-  };
+  const persistThemeMode = useCallback((mode: ThemeMode) => {
+    InteractionManager.runAfterInteractions(() => {
+      void AsyncStorage.setItem(THEME_STORAGE_KEY, mode).catch(() => {
+        // Persistence failure should not block the in-memory theme update.
+      });
+    });
+  }, []);
 
-  const toggleThemeMode = async () => {
+  const setThemeMode = useCallback((mode: ThemeMode) => {
+    // Update immediately for responsive UI, then persist after the current interaction finishes.
+    setThemeModeState((currentMode) => (currentMode === mode ? currentMode : mode));
+    persistThemeMode(mode);
+  }, [persistThemeMode]);
+
+  const toggleThemeMode = useCallback(() => {
     // Cycle through the supported modes from the single floating theme control.
-    const currentIndex = themeModes.indexOf(themeMode);
-    const nextMode = themeModes[(currentIndex + 1) % themeModes.length];
+    setThemeModeState((currentMode) => {
+      const currentIndex = themeModes.indexOf(currentMode);
+      const nextMode = themeModes[(currentIndex + 1) % themeModes.length];
 
-    await setThemeMode(nextMode);
-  };
+      persistThemeMode(nextMode);
+      return nextMode;
+    });
+  }, [persistThemeMode]);
 
   const value = useMemo(
     () => ({
@@ -83,7 +95,7 @@ export function AppThemeProvider({ children }: PropsWithChildren) {
       themeMode,
       toggleThemeMode,
     }),
-    [resolvedThemeName, theme, themeMode],
+    [resolvedThemeName, setThemeMode, theme, themeMode, toggleThemeMode],
   );
 
   return <AppThemeContext.Provider value={value}>{children}</AppThemeContext.Provider>;
