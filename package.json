@@ -26,6 +26,7 @@
     "@shopify/react-native-skia": "2.4.18",
     "better-auth": "^1.6.4",
     "expo": "~55.0.18",
+    "expo-blur": "^55.0.14",
     "expo-constants": "~55.0.15",
     "expo-dev-client": "~55.0.28",
     "expo-haptics": "^55.0.14",
