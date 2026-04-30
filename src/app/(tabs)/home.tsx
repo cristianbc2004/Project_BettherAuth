@@ -1,13 +1,8 @@
 import { Redirect, router } from "expo-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
-import Svg, {
-  Circle,
-  Defs,
-  LinearGradient as SvgLinearGradient,
-  Path,
-  Stop,
-} from "react-native-svg";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { LineGraph, type GraphPoint } from "react-native-graph";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
@@ -32,10 +27,8 @@ type SectionHeaderProps = {
   title: string;
 };
 
-type BalanceChartProps = {
-  color: string;
-  points: WeeklyBalancePoint[];
-  width: number;
+type HomeBalancePoint = GraphPoint & {
+  label: string;
 };
 
 function formatCurrency(value: number) {
@@ -96,46 +89,17 @@ function SectionHeader({ action, onActionPress, title }: SectionHeaderProps) {
   );
 }
 
-function buildChartPaths(points: WeeklyBalancePoint[], width: number, height: number) {
-  const chartPadding = 14;
-  const chartWidth = width - chartPadding * 2;
-  const values = points.map((point) => point.value);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = Math.max(max - min, 1);
-  const coordinates = points.map((point, index) => {
-    const x = chartPadding + (chartWidth / (points.length - 1)) * index;
-    const y = height - chartPadding - ((point.value - min) / range) * (height - chartPadding * 2);
-
-    return { x, y };
-  });
-  const linePath = coordinates
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
-    .join(" ");
-  const areaPath = `${linePath} L ${coordinates[coordinates.length - 1].x.toFixed(2)} ${height - chartPadding} L ${coordinates[0].x.toFixed(2)} ${height - chartPadding} Z`;
-
-  return { areaPath, coordinates, linePath };
-}
-
-function BalanceChart({ color, points, width }: BalanceChartProps) {
-  const height = 132;
-  const { areaPath, coordinates, linePath } = buildChartPaths(points, width, height);
-  const lastPoint = coordinates[coordinates.length - 1];
+function AxisLabel({ label, title, value }: { label: string; title: string; value: number }) {
+  const { theme } = useAppTheme();
 
   return (
-    <View className="mt-5 overflow-hidden rounded-[26px]" style={{ height, width }}>
-      <Svg height={height} width={width}>
-        <Defs>
-          <SvgLinearGradient id="balanceGradient" x1="0" x2="0" y1="0" y2="1">
-            <Stop offset="0" stopColor={color} stopOpacity="0.28" />
-            <Stop offset="1" stopColor={color} stopOpacity="0.03" />
-          </SvgLinearGradient>
-        </Defs>
-        <Path d={areaPath} fill="url(#balanceGradient)" />
-        <Path d={linePath} fill="none" stroke={color} strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} />
-        <Circle cx={lastPoint.x} cy={lastPoint.y} fill="#ffffff" r={6} />
-        <Circle cx={lastPoint.x} cy={lastPoint.y} fill={color} r={3.4} />
-      </Svg>
+    <View className="flex-row items-center justify-between">
+      <Text className="text-[11px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
+        {title}
+      </Text>
+      <Text className="text-[11px] font-semibold" style={{ color: theme.text }}>
+        {label} - {formatCurrency(value)}
+      </Text>
     </View>
   );
 }
@@ -144,16 +108,54 @@ export default function HomeScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isChartInteracting, setIsChartInteracting] = useState(false);
+  const [selectedPoint, setSelectedPoint] = useState<HomeBalancePoint | null>(null);
   const { resolvedThemeName, theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const cardWidth = Math.min(width - 72, 326);
   const chartWidth = Math.max(width - 82, 260);
   const graphColor = resolvedThemeName === "dark" ? "#78a9ff" : "#3467d6";
   const firstName = session?.user.name.split(" ")[0] || session?.user.name || "Cristian";
-  const currentBalance = weeklyBalance[weeklyBalance.length - 1].value;
-  const weekDelta = currentBalance - weeklyBalance[0].value;
-  const balanceLabel = useMemo(() => formatCurrency(currentBalance), [currentBalance]);
-  const deltaLabel = useMemo(() => formatCurrency(weekDelta), [weekDelta]);
+  const balancePoints = useMemo<HomeBalancePoint[]>(
+    () =>
+      weeklyBalance.map((point, index) => ({
+        date: new Date(`2026-04-${(22 + index).toString().padStart(2, "0")}T00:00:00`),
+        label: point.label,
+        value: point.value,
+      })),
+    [],
+  );
+  const currentBalance = balancePoints[balancePoints.length - 1].value;
+  const highlightedPoint = selectedPoint ?? balancePoints[balancePoints.length - 1];
+  const periodDelta = highlightedPoint.value - balancePoints[0].value;
+  const balanceLabel = useMemo(() => formatCurrency(highlightedPoint.value), [highlightedPoint.value]);
+  const deltaLabel = useMemo(() => formatCurrency(periodDelta), [periodDelta]);
+  const maxPoint = useMemo(
+    () => balancePoints.reduce((currentMax, point) => (point.value > currentMax.value ? point : currentMax)),
+    [balancePoints],
+  );
+  const minPoint = useMemo(
+    () => balancePoints.reduce((currentMin, point) => (point.value < currentMin.value ? point : currentMin)),
+    [balancePoints],
+  );
+  const handlePointSelected = useCallback(
+    (point: GraphPoint) => {
+      const matchingPoint = balancePoints.find(
+        (item) => item.date.getTime() === point.date.getTime() && item.value === point.value,
+      );
+
+      setSelectedPoint(matchingPoint ?? null);
+    },
+    [balancePoints],
+  );
+  const handleGestureStart = useCallback(() => {
+    selectionHaptic();
+    setIsChartInteracting(true);
+  }, []);
+  const handleGestureEnd = useCallback(() => {
+    setSelectedPoint(null);
+    setIsChartInteracting(false);
+  }, []);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -191,6 +193,7 @@ export default function HomeScreen() {
           bounces={false}
           contentContainerClassName="gap-7 pb-12 pt-8"
           contentInsetAdjustmentBehavior="automatic"
+          scrollEnabled={!isChartInteracting}
           showsVerticalScrollIndicator={false}
         >
           <View>
@@ -234,10 +237,34 @@ export default function HomeScreen() {
               </View>
 
               <Text className="mt-1 text-[14px] font-semibold" style={{ color: theme.mutedText }}>
-                Resumen semanal
+                {selectedPoint ? highlightedPoint.label : "Resumen semanal"}
               </Text>
 
-              <BalanceChart color={graphColor} points={weeklyBalance} width={chartWidth} />
+              <GestureHandlerRootView className="mt-5">
+                <View className="h-[208px]" style={{ width: chartWidth }}>
+                  <LineGraph
+                    BottomAxisLabel={() => (
+                      <AxisLabel label={minPoint.label} title="Menor" value={minPoint.value} />
+                    )}
+                    TopAxisLabel={() => (
+                      <AxisLabel label={maxPoint.label} title="Mayor" value={maxPoint.value} />
+                    )}
+                    animated={true}
+                    color={graphColor}
+                    enablePanGesture={true}
+                    gradientFillColors={[`${graphColor}66`, `${graphColor}10`]}
+                    horizontalPadding={16}
+                    lineThickness={4}
+                    onGestureEnd={handleGestureEnd}
+                    onGestureStart={handleGestureStart}
+                    onPointSelected={handlePointSelected}
+                    panGestureDelay={40}
+                    points={balancePoints}
+                    style={{ flex: 1 }}
+                    verticalPadding={20}
+                  />
+                </View>
+              </GestureHandlerRootView>
             </View>
           </View>
 
