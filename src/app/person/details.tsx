@@ -35,6 +35,7 @@ export default function PersonDetailsScreen() {
   const { theme } = useAppTheme();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
   const selectedPerson = getSelectedPerson(personId);
+  const generalHref = personId ? (`/person?personId=${personId}` as const) : "/person";
 
   if (showSessionLoading) {
     return <PersonDetailsSkeleton />;
@@ -51,7 +52,7 @@ export default function PersonDetailsScreen() {
       contentInsetAdjustmentBehavior="automatic"
       style={{ backgroundColor: theme.background }}
     >
-      <PersonScreenHeader title="Detalles" />
+      <PersonScreenHeader backHref={generalHref} title="Detalles" />
       <View className="mt-6">
         <Text className="text-[20px] font-bold" style={{ color: theme.text }}>
           {selectedPerson.nombre}

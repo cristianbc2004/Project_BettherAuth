@@ -19,6 +19,7 @@ export default function PersonGraphicScreen() {
   const { personId } = useLocalSearchParams<{ personId?: string }>();
   const selectedPersonId = personId ? Number(personId) : undefined;
   const initialSelectedPersonId = Number.isFinite(selectedPersonId) ? selectedPersonId : undefined;
+  const generalHref = personId ? (`/person?personId=${personId}` as const) : "/person";
 
   if (showSessionLoading) {
     return <PersonGraphicSkeleton />;
@@ -35,7 +36,7 @@ export default function PersonGraphicScreen() {
       contentInsetAdjustmentBehavior="automatic"
       style={{ backgroundColor: theme.background }}
     >
-      <PersonScreenHeader title="Gráfica de ingresos" />
+      <PersonScreenHeader backHref={generalHref} title="Gráfica de ingresos" />
       <Graphic initialSelectedPersonId={initialSelectedPersonId} />
     </ScrollView>
   );
