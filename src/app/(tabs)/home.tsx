@@ -13,7 +13,7 @@ import {
   walletCards,
   weeklyBalance,
   type WeeklyBalancePoint,
-} from "@/features/finance/services/finance-mock";
+} from "@/features/finance/mocks";
 import { authClient } from "@/features/auth/services/auth-client";
 import { IncomePeopleDrawer } from "@/features/ingresos/components/income-people-drawer";
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";

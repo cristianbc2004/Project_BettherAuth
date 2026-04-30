@@ -4,7 +4,7 @@ import { ScrollView, Text, View } from "react-native";
 import { authClient } from "@/features/auth/services/auth-client";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
 import { PersonGeneralSkeleton } from "@/features/ingresos/components/person/person-skeletons";
-import { mockIngresos } from "@/features/ingresos/services/income-mock";
+import { mockIngresos } from "@/features/ingresos/mocks";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 

@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Text, View } from "react-native";
 
-import type { WalletCard } from "@/features/finance/services/finance-mock";
+import type { WalletCard } from "@/features/finance/mocks";
 
 type WalletCardPreviewProps = {
   card: WalletCard;

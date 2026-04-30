@@ -4,7 +4,7 @@ import { FlatList, Modal, Pressable, Text, View, type ListRenderItem } from "rea
 import Animated, { Easing, FadeIn, FadeInDown, SlideInLeft } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { mockIngresos, type IncomePerson } from "@/features/ingresos/services/income-mock";
+import { mockIngresos, type IncomePerson } from "@/features/ingresos/mocks";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
