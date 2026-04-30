@@ -3,11 +3,9 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
-import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
-import { AppBackButton } from "@/shared/components/ui/app-back-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, type AppLocale, useLanguage } from "@/shared/lib/locale";
@@ -231,10 +229,6 @@ export default function DashboardScreen() {
     .split(",")
     .map((entry) => entry.trim())
     .includes("admin");
-  const sectionEntering = (index: number) =>
-    FadeInDown.duration(480)
-      .delay(index * 130)
-      .easing(Easing.out(Easing.quad));
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -246,17 +240,17 @@ export default function DashboardScreen() {
 
   const firstName = session.user.name.split(" ")[0] || session.user.name;
   const dashboardIcons = {
-    admin: require("../../assets/administrator.png"),
-    dark: require("../../assets/moon.png"),
-    en: require("../../assets/england.png"),
-    es: require("../../assets/spain.png"),
-    light: require("../../assets/sun.png"),
-    notifications: require("../../assets/notifications_blanco.png"),
-    password: require("../../assets/padlock_blanco.png"),
-    system: require("../../assets/phone.png"),
-    twoFactor: require("../../assets/2fa_blanco.png"),
-    out: require("../../assets/logout.png"),
-    language: require("../../assets/language.png"),
+    admin: require("../../../assets/administrator.png"),
+    dark: require("../../../assets/moon.png"),
+    en: require("../../../assets/england.png"),
+    es: require("../../../assets/spain.png"),
+    light: require("../../../assets/sun.png"),
+    notifications: require("../../../assets/notifications_blanco.png"),
+    password: require("../../../assets/padlock_blanco.png"),
+    system: require("../../../assets/phone.png"),
+    twoFactor: require("../../../assets/2fa_blanco.png"),
+    out: require("../../../assets/logout.png"),
+    language: require("../../../assets/language.png"),
   } satisfies Record<string, ImageSourcePropType>;
 
   return (
@@ -270,11 +264,7 @@ export default function DashboardScreen() {
         contentContainerClassName="px-5 pb-10 pt-6"
         showsVerticalScrollIndicator={false}
       >
-        <View className="mb-2 flex-row">
-          <AppBackButton fallbackHref="/home" />
-        </View>
-
-        <Animated.View entering={sectionEntering(0)}>
+        <View>
           <SectionLabel label={t("dashboard.profileSection")} />
           <View
             className="flex-row items-center px-1 py-3"
@@ -298,9 +288,9 @@ export default function DashboardScreen() {
               <Text className="mt-1 text-[11px] uppercase tracking-[1.3px]" style={{ color: theme.mutedText }}>{role}</Text>
             </View>
           </View>
-        </Animated.View>
+        </View>
 
-        <Animated.View entering={sectionEntering(1)}>
+        <View>
           <SectionLabel label={t("dashboard.authenticationSection")} />
           <MenuRow
             icon={dashboardIcons.password}
@@ -318,9 +308,9 @@ export default function DashboardScreen() {
               router.navigate("/two-factor" as never);
             }}
           />
-        </Animated.View>
+        </View>
 
-        <Animated.View entering={sectionEntering(2)}>
+        <View>
           <SectionLabel label={t("dashboard.appSection")} />
           <LanguageSelector
             icons={{
@@ -345,10 +335,10 @@ export default function DashboardScreen() {
             selectedMode={themeMode}
             title={t("dashboard.themeOption")}
           />
-        </Animated.View>
+        </View>
 
         {isAdmin ? (
-          <Animated.View entering={sectionEntering(3)}>
+          <View>
             <SectionLabel label={t("dashboard.adminSection")} />
             <MenuRow
               icon={dashboardIcons.admin}
@@ -358,10 +348,10 @@ export default function DashboardScreen() {
                 router.navigate("/admin" as never);
               }}
             />
-          </Animated.View>
+          </View>
         ) : null}
 
-        <Animated.View entering={sectionEntering(4)}>
+        <View>
           <SectionLabel label={t("dashboard.sessionSection")} />
           <MenuRow
             icon={dashboardIcons.out}
@@ -380,7 +370,7 @@ export default function DashboardScreen() {
             }}
             tone="danger"
           />
-        </Animated.View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

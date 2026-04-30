@@ -8,10 +8,8 @@ import Svg, {
   Path,
   Stop,
 } from "react-native-svg";
-import Animated, { Easing, FadeInDown, FadeInUp } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { FinanceBottomTabs } from "@/features/finance/components/finance-bottom-tabs";
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { TransactionRow } from "@/features/finance/components/transaction-row";
 import {
@@ -156,10 +154,6 @@ export default function HomeScreen() {
   const weekDelta = currentBalance - weeklyBalance[0].value;
   const balanceLabel = useMemo(() => formatCurrency(currentBalance), [currentBalance]);
   const deltaLabel = useMemo(() => formatCurrency(weekDelta), [weekDelta]);
-  const sectionEntering = (index: number) =>
-    FadeInDown.duration(520)
-      .delay(index * 90)
-      .easing(Easing.out(Easing.quad));
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -195,20 +189,20 @@ export default function HomeScreen() {
 
         <ScrollView
           bounces={false}
-          contentContainerClassName="gap-7 pb-32 pt-8"
+          contentContainerClassName="gap-7 pb-12 pt-8"
           contentInsetAdjustmentBehavior="automatic"
           showsVerticalScrollIndicator={false}
         >
-          <Animated.View entering={FadeInUp.duration(520).easing(Easing.out(Easing.quad))}>
+          <View>
             <Text className="text-[31px] font-black leading-9" style={{ color: theme.text }}>
               {getGreeting()}, {firstName}
             </Text>
             <Text className="mt-2 text-[16px] font-medium" style={{ color: theme.mutedText }}>
               Aqui tienes tu resumen semanal
             </Text>
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={sectionEntering(1)}>
+          <View>
             <View
               className="overflow-hidden rounded-[34px] border p-5"
               style={{
@@ -245,9 +239,9 @@ export default function HomeScreen() {
 
               <BalanceChart color={graphColor} points={weeklyBalance} width={chartWidth} />
             </View>
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={sectionEntering(2)}>
+          <View>
             <SectionHeader
               action="Gestionar"
               onActionPress={() => {
@@ -268,9 +262,9 @@ export default function HomeScreen() {
                 <WalletCardPreview card={card} key={card.id} width={cardWidth} />
               ))}
             </ScrollView>
-          </Animated.View>
+          </View>
 
-          <Animated.View className="gap-3" entering={sectionEntering(3)}>
+          <View className="gap-3">
             <SectionHeader
               action="Ver todos"
               onActionPress={() => {
@@ -284,11 +278,9 @@ export default function HomeScreen() {
                 <TransactionRow key={transaction.id} transaction={transaction} />
               ))}
             </View>
-          </Animated.View>
+          </View>
         </ScrollView>
       </View>
-
-      <FinanceBottomTabs activeTab="home" />
 
       <IncomePeopleDrawer
         email={session.user.email}

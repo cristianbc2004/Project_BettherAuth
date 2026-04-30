@@ -1,11 +1,9 @@
 import { Redirect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, Text, View, type ListRenderItem } from "react-native";
-import Animated, { Easing, FadeInUp } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Filter, Search } from "lucide-react-native";
 
-import { FinanceBottomTabs } from "@/features/finance/components/finance-bottom-tabs";
 import { TransactionRow } from "@/features/finance/components/transaction-row";
 import {
   allTransactions,
@@ -61,10 +59,7 @@ export default function MovementsScreen() {
           </View>
         }
         ListHeaderComponent={
-          <Animated.View
-            className="gap-5 pb-5 pt-8"
-            entering={FadeInUp.duration(460).easing(Easing.out(Easing.quad))}
-          >
+          <View className="gap-5 pb-5 pt-8">
             <View>
               <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
                 Actividad
@@ -88,11 +83,11 @@ export default function MovementsScreen() {
                 <Filter color={theme.text} size={21} strokeWidth={2.4} />
               </View>
             </View>
-          </Animated.View>
+          </View>
         }
         ItemSeparatorComponent={renderSeparator}
         bounces={false}
-        contentContainerClassName="px-5 pb-32"
+        contentContainerClassName="px-5 pb-12"
         contentInsetAdjustmentBehavior="automatic"
         data={visibleTransactions}
         initialNumToRender={18}
@@ -106,7 +101,6 @@ export default function MovementsScreen() {
         updateCellsBatchingPeriod={24}
         windowSize={9}
       />
-      <FinanceBottomTabs activeTab="movements" />
     </SafeAreaView>
   );
 }
