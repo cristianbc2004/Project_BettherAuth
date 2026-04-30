@@ -34,21 +34,6 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-function AxisLabel({ label, month, value }: { label: string; month: string; value: number }) {
-  const { theme } = useAppTheme();
-
-  return (
-    <View className="flex-row items-center justify-between">
-      <Text className="text-xs font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
-        {label}
-      </Text>
-      <Text className="text-xs font-semibold" style={{ color: theme.text }}>
-        {month} - {formatCurrency(value)}
-      </Text>
-    </View>
-  );
-}
-
 function PersonFilter({ isActive, label, onPress }: PersonFilterProps) {
   const { theme } = useAppTheme();
 
@@ -171,6 +156,32 @@ export function Graphic({ initialSelectedPersonId }: GraphicProps) {
         {selectedPersonName} - {highlightedPoint.month}
       </Text>
 
+      <View className="mt-5 flex-row items-center justify-between gap-4 px-1">
+        <View className="flex-1">
+          <Text className="text-[11px] font-black uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
+            Minimo
+          </Text>
+          <Text className="mt-1 text-[16px] font-black" style={{ color: theme.text }}>
+            {formatCurrency(min.value)}
+          </Text>
+          <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+            {min.month}
+          </Text>
+        </View>
+
+        <View className="flex-1 items-end">
+          <Text className="text-[11px] font-black uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
+            Maximo
+          </Text>
+          <Text className="mt-1 text-[16px] font-black" style={{ color: theme.text }}>
+            {formatCurrency(max.value)}
+          </Text>
+          <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+            {max.month}
+          </Text>
+        </View>
+      </View>
+
       <ScrollView
         className="mt-5"
         contentContainerClassName="pr-2"
@@ -194,8 +205,6 @@ export function Graphic({ initialSelectedPersonId }: GraphicProps) {
 
       <View className="mt-6 h-[280px]">
         <LineGraph
-          BottomAxisLabel={() => <AxisLabel label="Menor mes" month={min.month} value={min.value} />}
-          TopAxisLabel={() => <AxisLabel label="Mayor mes" month={max.month} value={max.value} />}
           animated={true}
           color={graphColor}
           enablePanGesture={true}

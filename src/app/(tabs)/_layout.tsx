@@ -8,7 +8,7 @@ export default function NativeTabsLayout() {
   return (
     <NativeTabs
       backBehavior="history"
-      backgroundColor={theme.card}
+      backgroundColor={theme.background}
       badgeBackgroundColor={theme.primary}
       iconColor={{ default: theme.mutedText, selected: theme.primary }}
       indicatorColor={theme.primarySoft}
