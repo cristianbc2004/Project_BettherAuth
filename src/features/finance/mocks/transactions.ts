@@ -1,4 +1,3 @@
-import type { ComponentType } from "react";
 import {
   Apple,
   Bus,
@@ -14,94 +13,9 @@ import {
   Zap,
 } from "lucide-react-native";
 
-export type WeeklyBalancePoint = {
-  label: string;
-  value: number;
-};
-
-export type WalletCard = {
-  balance: string;
-  gradient: readonly [string, string, string];
-  id: string;
-  lastDigits: string;
-  name: string;
-  network: string;
-  status: string;
-  textColor: string;
-};
-
-export type Transaction = {
-  amount: string;
-  category: string;
-  icon: ComponentType<any>;
-  id: string;
-  merchant: string;
-  time: string;
-  tone: "expense" | "income";
-};
+import type { Transaction } from "@/features/finance/mocks/types";
 
 const TOTAL_TRANSACTION_COUNT = 1500;
-
-export const financeConfig = {
-  transactionBatchSize: 40,
-  totalTransactionCount: TOTAL_TRANSACTION_COUNT,
-} as const;
-
-export const weeklyBalance: WeeklyBalancePoint[] = [
-  { label: "22 Abr", value: 6810 },
-  { label: "23 Abr", value: 7440 },
-  { label: "24 Abr", value: 6728 },
-  { label: "25 Abr", value: 7685 },
-  { label: "26 Abr", value: 6892 },
-  { label: "27 Abr", value: 7528 },
-  { label: "28 Abr", value: 6614 },
-  { label: "29 Abr", value: 7816 },
-  { label: "30 Abr", value: 6980 },
-  { label: "01 May", value: 7381 },
-];
-
-export const walletCards: WalletCard[] = [
-  {
-    balance: "3.820 EUR",
-    gradient: ["#101827", "#1d3f74", "#6ea8ff"],
-    id: "visa-primary",
-    lastDigits: "4832",
-    name: "Cristian Vega",
-    network: "VISA",
-    status: "Principal",
-    textColor: "#ffffff",
-  },
-  {
-    balance: "1.146 EUR",
-    gradient: ["#f8f0e3", "#dce9e2", "#6d9b84"],
-    id: "digital",
-    lastDigits: "0927",
-    name: "Cristian Vega",
-    network: "DIGITAL",
-    status: "Virtual",
-    textColor: "#17231f",
-  },
-  {
-    balance: "812 EUR",
-    gradient: ["#232321", "#5a544b", "#d8ad60"],
-    id: "savings",
-    lastDigits: "7741",
-    name: "Ahorro personal",
-    network: "VISA",
-    status: "Ahorro",
-    textColor: "#ffffff",
-  },
-  {
-    balance: "2.465 EUR",
-    gradient: ["#221628", "#6b1f4f", "#ff7db4"],
-    id: "travel",
-    lastDigits: "1284",
-    name: "Viajes",
-    network: "MASTERCARD",
-    status: "Travel",
-    textColor: "#ffffff",
-  },
-];
 
 const transactionSeeds = [
   { category: "Cafe y desayuno", icon: Coffee, merchant: "Cafeteria Roma" },
@@ -154,6 +68,11 @@ function buildTransaction(index: number): Transaction {
     tone: isIncome ? "income" : "expense",
   };
 }
+
+export const financeConfig = {
+  transactionBatchSize: 40,
+  totalTransactionCount: TOTAL_TRANSACTION_COUNT,
+} as const;
 
 export const recentTransactions = Array.from({ length: 3 }, (_, index) => buildTransaction(index));
 

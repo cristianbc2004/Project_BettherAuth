@@ -9,7 +9,7 @@ import {
   allTransactions,
   financeConfig,
   type Transaction,
-} from "@/features/finance/services/finance-mock";
+} from "@/features/finance/mocks";
 import { authClient } from "@/features/auth/services/auth-client";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { useAppTheme } from "@/shared/lib/theme-context";

@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import type { Transaction } from "@/features/finance/services/finance-mock";
+import type { Transaction } from "@/features/finance/mocks";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 

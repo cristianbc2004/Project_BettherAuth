@@ -7,7 +7,7 @@ import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
-import { type WalletCard, walletCards } from "@/features/finance/services/finance-mock";
+import { type WalletCard, walletCards } from "@/features/finance/mocks";
 import { authClient } from "@/features/auth/services/auth-client";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic } from "@/shared/lib/haptics";

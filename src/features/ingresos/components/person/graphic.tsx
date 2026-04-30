@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { LineGraph, type GraphPoint } from "react-native-graph";
 
-import { mockIngresos } from "@/features/ingresos/services/income-mock";
+import { mockIngresos } from "@/features/ingresos/mocks";
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
