@@ -4,6 +4,7 @@ import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-na
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { LineGraph, type GraphPoint } from "react-native-graph";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Bell, Menu } from "lucide-react-native";
 
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { TransactionRow } from "@/features/finance/components/transaction-row";
@@ -15,7 +16,7 @@ import {
 } from "@/features/finance/services/finance-mock";
 import { authClient } from "@/features/auth/services/auth-client";
 import { IncomePeopleDrawer } from "@/features/ingresos/components/income-people-drawer";
-import { HomeHeader } from "@/shared/components/ui/home-header";
+import { AnimatedNumber } from "@/shared/components/ui/animated-number";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -30,6 +31,26 @@ type SectionHeaderProps = {
 type HomeBalancePoint = GraphPoint & {
   label: string;
 };
+
+type TopActionButtonProps = {
+  accessibilityLabel: string;
+  children: React.ReactNode;
+  onPress: () => void;
+};
+
+function TopActionButton({ accessibilityLabel, children, onPress }: TopActionButtonProps) {
+  return (
+    <Pressable
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+      className="h-12 w-12 items-center justify-center rounded-full"
+      hitSlop={10}
+      onPress={onPress}
+    >
+      {children}
+    </Pressable>
+  );
+}
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("es-ES", {
@@ -110,11 +131,8 @@ export default function HomeScreen() {
       })),
     [],
   );
-  const currentBalance = balancePoints[balancePoints.length - 1].value;
   const highlightedPoint = selectedPoint ?? balancePoints[balancePoints.length - 1];
   const periodDelta = highlightedPoint.value - balancePoints[0].value;
-  const balanceLabel = useMemo(() => formatCurrency(highlightedPoint.value), [highlightedPoint.value]);
-  const deltaLabel = useMemo(() => formatCurrency(periodDelta), [periodDelta]);
   const handlePointSelected = useCallback(
     (point: GraphPoint) => {
       const matchingPoint = balancePoints.find(
@@ -150,36 +168,48 @@ export default function HomeScreen() {
       <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
 
       <View className="flex-1 px-5 pt-5">
-        <HomeHeader
-          canOpenMenu={isAdmin}
-          onOpenMenu={() => {
-            if (!isAdmin) {
-              return;
-            }
-
-            selectionHaptic();
-            setIsDrawerOpen(true);
-          }}
-          onOpenNotifications={() => {
-            selectionHaptic();
-            router.navigate("/notifications" as never);
-          }}
-        />
-
         <ScrollView
           bounces={false}
-          contentContainerClassName="gap-7 pb-12 pt-8"
+          contentContainerClassName="gap-7 pb-12 pt-4"
           contentInsetAdjustmentBehavior="automatic"
           scrollEnabled={!isChartInteracting}
           showsVerticalScrollIndicator={false}
         >
           <View>
-            <Text className="text-[31px] font-black leading-9" style={{ color: theme.text }}>
-              {getGreeting()}, {firstName}
-            </Text>
-            <Text className="mt-2 text-[16px] font-medium" style={{ color: theme.mutedText }}>
-              Aqui tienes tu resumen semanal
-            </Text>
+            <View className="flex-row items-start justify-between gap-4">
+              <View className="flex-1 pr-3">
+                <Text className="text-[31px] font-black leading-9" style={{ color: theme.text }}>
+                  {getGreeting()}, {firstName}
+                </Text>
+                <Text className="mt-2 text-[16px] font-medium" style={{ color: theme.mutedText }}>
+                  Aqui tienes tu resumen semanal
+                </Text>
+              </View>
+
+              <View className="flex-row items-center gap-2">
+                {isAdmin ? (
+                  <TopActionButton
+                    accessibilityLabel="Open menu"
+                    onPress={() => {
+                      selectionHaptic();
+                      setIsDrawerOpen(true);
+                    }}
+                  >
+                    <Menu color={theme.text} size={28} strokeWidth={2.3} />
+                  </TopActionButton>
+                ) : null}
+
+                <TopActionButton
+                  accessibilityLabel="Open notifications"
+                  onPress={() => {
+                    selectionHaptic();
+                    router.navigate("/notifications" as never);
+                  }}
+                >
+                  <Bell color={theme.text} size={24} strokeWidth={2.1} />
+                </TopActionButton>
+              </View>
+            </View>
           </View>
 
           <View>
@@ -197,19 +227,28 @@ export default function HomeScreen() {
                   <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
                     Balance total
                   </Text>
-                  <Text
+                  <AnimatedNumber
+                    animateOnMount={true}
                     className="mt-3 text-[44px] font-black"
-                    selectable
+                    formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
                     style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
-                  >
-                    {balanceLabel}
-                  </Text>
+                    value={highlightedPoint.value}
+                  />
                 </View>
 
                 <View className="rounded-full px-3 py-2" style={{ backgroundColor: theme.primarySoft }}>
-                  <Text className="text-[12px] font-black" style={{ color: theme.primary }}>
-                    +{deltaLabel}
-                  </Text>
+                  <AnimatedNumber
+                    animateOnMount={true}
+                    className="text-[12px] font-black"
+                    formatValue={(nextValue) => {
+                      const roundedValue = Math.round(nextValue);
+                      const sign = roundedValue > 0 ? "+" : "";
+
+                      return `${sign}${formatCurrency(roundedValue)}`;
+                    }}
+                    style={{ color: theme.primary }}
+                    value={periodDelta}
+                  />
                 </View>
               </View>
 

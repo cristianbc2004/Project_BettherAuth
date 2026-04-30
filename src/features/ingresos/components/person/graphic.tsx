@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { LineGraph, type GraphPoint } from "react-native-graph";
 
 import { mockIngresos } from "@/features/ingresos/services/income-mock";
+import { AnimatedNumber } from "@/shared/components/ui/animated-number";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
@@ -149,9 +150,13 @@ export function Graphic({ initialSelectedPersonId }: GraphicProps) {
       <Text className="text-[13px] font-semibold uppercase tracking-[1.3px]" style={{ color: theme.mutedText }}>
         Ingresos por mes
       </Text>
-      <Text className="mt-2 text-[28px] font-bold" style={{ color: theme.text }}>
-        {formatCurrency(highlightedPoint.value)}
-      </Text>
+      <AnimatedNumber
+        animateOnMount={true}
+        className="mt-2 text-[28px] font-bold"
+        formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
+        style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
+        value={highlightedPoint.value}
+      />
       <Text className="mt-1 text-[16px]" style={{ color: theme.mutedText }}>
         {selectedPersonName} - {highlightedPoint.month}
       </Text>
