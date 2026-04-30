@@ -51,7 +51,7 @@ export default function PersonGeneralScreen() {
       contentInsetAdjustmentBehavior="automatic"
       style={{ backgroundColor: theme.background }}
     >
-      <PersonScreenHeader title="Información general" />
+      <PersonScreenHeader backHref="/home" title="Información general" />
 
       <View className="mt-8">
         <Text className="text-[28px] font-bold" style={{ color: theme.text }}>

@@ -98,17 +98,16 @@ export default function NotificationsScreen() {
         contentContainerClassName="px-5 pb-10 pt-6"
         showsVerticalScrollIndicator={false}
       >
-        <View className="mb-8 flex-row items-center justify-between">
+        <View className="mb-8 flex-row items-center">
           <AppBackButton fallbackHref={"/home" as never} />
 
-          <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>Notifications</Text>
-
-          <View
-            className="h-11 w-11 items-center justify-center rounded-full border"
-            style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}
-          >
-            <Text className="text-xs font-semibold uppercase tracking-[1.1px]" style={{ color: theme.text }}>5 new</Text>
+          <View className="absolute left-0 right-0 items-center">
+            <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>
+              Notifications
+            </Text>
           </View>
+
+          <View className="ml-auto h-11 w-11" />
         </View>
 
         <Text className="mb-4 px-1 text-xs font-medium uppercase tracking-[1.5px]" style={{ color: theme.mutedText }}>
