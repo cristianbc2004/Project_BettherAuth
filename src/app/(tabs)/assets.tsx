@@ -2,13 +2,13 @@ import { Redirect, router } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { ArrowDownLeft, ArrowUpRight, Zap } from "lucide-react-native";
-import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
+import Animated, { Easing, FadeInDown, FadeOutUp, LinearTransition } from "react-native-reanimated";
 
 import { FinanceScreenShell } from "@/features/finance/components/finance-screen-shell";
-import { BizumSendSheet, type BizumSendPayload } from "@/features/finance/components/bizum-send-sheet";
+import { BizumActionSheet, type BizumActionPayload } from "@/features/finance/components/bizum-action-sheet";
 import { authClient } from "@/features/auth/services/auth-client";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
-import { selectionHaptic } from "@/shared/lib/haptics";
+import { selectionHaptic, successHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
@@ -87,14 +87,25 @@ export default function AssetsScreen() {
   const [selectedAction, setSelectedAction] = useState<BizumAction>("send");
   const [isSendSheetVisible, setIsSendSheetVisible] = useState(false);
   const [isSubmittingBizum, setIsSubmittingBizum] = useState(false);
+  const [receivedNotification, setReceivedNotification] = useState<string | null>(null);
   const [highlightedMovementId, setHighlightedMovementId] = useState<string | null>(null);
   const [movements, setMovements] = useState<BizumMovement[]>(bizumMovements);
   const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestReceivedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notificationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
       if (highlightTimeoutRef.current) {
         clearTimeout(highlightTimeoutRef.current);
+      }
+
+      if (requestReceivedTimeoutRef.current) {
+        clearTimeout(requestReceivedTimeoutRef.current);
+      }
+
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
       }
     };
   }, []);
@@ -107,6 +118,12 @@ export default function AssetsScreen() {
     setIsSendSheetVisible(true);
   };
 
+  const openRequestSheet = () => {
+    selectionHaptic();
+    setSelectedAction("request");
+    setIsSendSheetVisible(true);
+  };
+
   const closeSendSheet = () => {
     if (isSubmittingBizum) {
       return;
@@ -115,33 +132,83 @@ export default function AssetsScreen() {
     setIsSendSheetVisible(false);
   };
 
-  const handleSendBizum = (payload: BizumSendPayload) => {
+  const showInsertedMovement = (nextMovement: BizumMovement) => {
+    setMovements((currentMovements) => [nextMovement, ...currentMovements]);
+    setHighlightedMovementId(nextMovement.id);
+
+    if (highlightTimeoutRef.current) {
+      clearTimeout(highlightTimeoutRef.current);
+    }
+
+    highlightTimeoutRef.current = setTimeout(() => {
+      setHighlightedMovementId((currentId) => (currentId === nextMovement.id ? null : currentId));
+    }, 2600);
+  };
+
+  const showReceivedNotification = (message: string) => {
+    setReceivedNotification(message);
+    successHaptic();
+
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current);
+    }
+
+    notificationTimeoutRef.current = setTimeout(() => {
+      setReceivedNotification(null);
+    }, 3200);
+  };
+
+  const handleSendBizum = (payload: BizumActionPayload) => {
     setIsSubmittingBizum(true);
 
     setTimeout(() => {
-      const nextMovementId = `bizum-${Date.now()}`;
-      const nextMovement: BizumMovement = {
+      showInsertedMovement({
         amount: `-${payload.amount.toFixed(2).replace(".", ",")} EUR`,
         date: "Ahora",
-        id: nextMovementId,
+        id: `bizum-${Date.now()}`,
         initials: payload.contact.initials,
         name: payload.contact.alias,
         tone: "outcome",
-      };
+      });
+      setIsSubmittingBizum(false);
+      setIsSendSheetVisible(false);
+    }, 1200);
+  };
 
-      setMovements((currentMovements) => [nextMovement, ...currentMovements]);
-      setHighlightedMovementId(nextMovementId);
+  const handleRequestBizum = (payload: BizumActionPayload) => {
+    setIsSubmittingBizum(true);
+
+    setTimeout(() => {
       setIsSubmittingBizum(false);
       setIsSendSheetVisible(false);
 
-      if (highlightTimeoutRef.current) {
-        clearTimeout(highlightTimeoutRef.current);
+      if (requestReceivedTimeoutRef.current) {
+        clearTimeout(requestReceivedTimeoutRef.current);
       }
 
-      highlightTimeoutRef.current = setTimeout(() => {
-        setHighlightedMovementId((currentId) => (currentId === nextMovementId ? null : currentId));
+      requestReceivedTimeoutRef.current = setTimeout(() => {
+        showReceivedNotification(
+          `Has recibido el Bizum de ${payload.contact.alias} por ${payload.amount.toFixed(2).replace(".", ",")} EUR`,
+        );
+        showInsertedMovement({
+          amount: `+${payload.amount.toFixed(2).replace(".", ",")} EUR`,
+          date: "Ahora",
+          id: `bizum-${Date.now()}`,
+          initials: payload.contact.initials,
+          name: payload.contact.alias,
+          tone: "income",
+        });
       }, 2600);
-    }, 1200);
+    }, 1000);
+  };
+
+  const handleBizumSubmit = (payload: BizumActionPayload) => {
+    if (selectedAction === "request") {
+      handleRequestBizum(payload);
+      return;
+    }
+
+    handleSendBizum(payload);
   };
 
   if (showSessionLoading) {
@@ -220,10 +287,7 @@ export default function AssetsScreen() {
             accessibilityRole="button"
             accessibilityState={{ selected: selectedAction === "request" }}
             className="flex-1 items-center justify-center py-2"
-            onPress={() => {
-              selectionHaptic();
-              setSelectedAction("request");
-            }}
+            onPress={openRequestSheet}
           >
             <View
               className="h-20 w-20 items-center justify-center rounded-full"
@@ -248,6 +312,22 @@ export default function AssetsScreen() {
       </View>
 
       <View className="gap-3">
+        {receivedNotification ? (
+          <Animated.View
+            entering={FadeInDown.duration(280).easing(Easing.out(Easing.cubic))}
+            exiting={FadeOutUp.duration(220).easing(Easing.in(Easing.cubic))}
+            className="rounded-[24px] border px-4 py-3"
+            style={{
+              backgroundColor: theme.primarySoft,
+              borderColor: theme.border,
+            }}
+          >
+            <Text className="text-[14px] font-black leading-5" style={{ color: theme.text }}>
+              {receivedNotification}
+            </Text>
+          </Animated.View>
+        ) : null}
+
         <SectionHeader
           onPress={() => {
             selectionHaptic();
@@ -326,10 +406,11 @@ export default function AssetsScreen() {
         </View>
       </View>
 
-      <BizumSendSheet
+      <BizumActionSheet
         isSubmitting={isSubmittingBizum}
+        mode={selectedAction}
         onClose={closeSendSheet}
-        onSubmit={handleSendBizum}
+        onSubmit={handleBizumSubmit}
         visible={isSendSheetVisible}
       />
     </FinanceScreenShell>
