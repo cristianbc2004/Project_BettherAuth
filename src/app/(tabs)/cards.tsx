@@ -1,6 +1,5 @@
 import { Redirect } from "expo-router";
 import { Text, useWindowDimensions, View } from "react-native";
-import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { CreditCard, Eye, LockKeyhole, Plus } from "lucide-react-native";
 
 import { FinanceScreenShell } from "@/features/finance/components/finance-screen-shell";
@@ -34,21 +33,15 @@ export default function CardsScreen() {
 
   return (
     <FinanceScreenShell
-      activeTab="cards"
       eyebrow="Wallet"
       subtitle="Tarjetas fisicas y digitales con estados claros, acciones rapidas y diseno premium."
       title="Tarjetas"
     >
       <View className="gap-4">
-        {walletCards.map((card, index) => (
-          <Animated.View
-            entering={FadeInDown.duration(480)
-              .delay(index * 110)
-              .easing(Easing.out(Easing.quad))}
-            key={card.id}
-          >
+        {walletCards.map((card) => (
+          <View key={card.id}>
             <WalletCardPreview card={card} width={cardWidth} />
-          </Animated.View>
+          </View>
         ))}
       </View>
 

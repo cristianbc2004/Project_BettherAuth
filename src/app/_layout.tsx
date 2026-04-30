@@ -30,16 +30,12 @@ function AppNavigation() {
         <Stack
           screenOptions={{
             headerShown: false,
-            animation: "fade_from_bottom",
+            animation: "none",
             contentStyle: { backgroundColor: theme.background },
           }}
         >
           <Stack.Screen name="index" options={{ animation: "none" }} />
-          <Stack.Screen name="home" />
-          <Stack.Screen name="movements" />
-          <Stack.Screen name="cards" />
-          <Stack.Screen name="assets" />
-          <Stack.Screen name="dashboard" />
+          <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
           <Stack.Screen name="notifications" />
           <Stack.Screen name="person" />
           <Stack.Screen name="(auth)/sign-in" />
