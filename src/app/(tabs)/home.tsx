@@ -89,21 +89,6 @@ function SectionHeader({ action, onActionPress, title }: SectionHeaderProps) {
   );
 }
 
-function AxisLabel({ label, title, value }: { label: string; title: string; value: number }) {
-  const { theme } = useAppTheme();
-
-  return (
-    <View className="flex-row items-center justify-between">
-      <Text className="text-[11px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
-        {title}
-      </Text>
-      <Text className="text-[11px] font-semibold" style={{ color: theme.text }}>
-        {label} - {formatCurrency(value)}
-      </Text>
-    </View>
-  );
-}
-
 export default function HomeScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
@@ -130,14 +115,6 @@ export default function HomeScreen() {
   const periodDelta = highlightedPoint.value - balancePoints[0].value;
   const balanceLabel = useMemo(() => formatCurrency(highlightedPoint.value), [highlightedPoint.value]);
   const deltaLabel = useMemo(() => formatCurrency(periodDelta), [periodDelta]);
-  const maxPoint = useMemo(
-    () => balancePoints.reduce((currentMax, point) => (point.value > currentMax.value ? point : currentMax)),
-    [balancePoints],
-  );
-  const minPoint = useMemo(
-    () => balancePoints.reduce((currentMin, point) => (point.value < currentMin.value ? point : currentMin)),
-    [balancePoints],
-  );
   const handlePointSelected = useCallback(
     (point: GraphPoint) => {
       const matchingPoint = balancePoints.find(
@@ -243,12 +220,6 @@ export default function HomeScreen() {
               <GestureHandlerRootView className="mt-5">
                 <View className="h-[208px]" style={{ width: chartWidth }}>
                   <LineGraph
-                    BottomAxisLabel={() => (
-                      <AxisLabel label={minPoint.label} title="Menor" value={minPoint.value} />
-                    )}
-                    TopAxisLabel={() => (
-                      <AxisLabel label={maxPoint.label} title="Mayor" value={maxPoint.value} />
-                    )}
                     animated={true}
                     color={graphColor}
                     enablePanGesture={true}

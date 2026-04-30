@@ -1,5 +1,5 @@
 import { Redirect } from "expo-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Pressable, Text, useWindowDimensions, View } from "react-native";
 import { Eye, LockKeyhole } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -21,13 +21,6 @@ const cardActions = [
   { icon: Eye, label: "Ver PIN" },
   { icon: LockKeyhole, label: "Bloquear" },
 ] as const;
-
-function getOrderedCards(cards: WalletCard[], activeCardId: string) {
-  const activeCard = cards.find((card) => card.id === activeCardId) ?? cards[0];
-  const secondaryCards = cards.filter((card) => card.id !== activeCard.id);
-
-  return [activeCard, ...secondaryCards];
-}
 
 function CompactStackCard({
   card,
@@ -92,8 +85,7 @@ export default function CardsScreen() {
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const cardWidth = Math.min(width - 40, 360);
-  const [activeCardId, setActiveCardId] = useState(walletCards[0]?.id ?? "");
-  const orderedCards = useMemo(() => getOrderedCards(walletCards, activeCardId), [activeCardId]);
+  const [orderedCards, setOrderedCards] = useState<WalletCard[]>(walletCards);
   const activeCard = orderedCards[0];
   const stackCards = orderedCards.slice(1);
   const stackHeight =
@@ -180,7 +172,15 @@ export default function CardsScreen() {
                       accessibilityRole="button"
                       onPress={() => {
                         selectionHaptic();
-                        setActiveCardId(card.id);
+                        setOrderedCards((currentCards) => {
+                          const selectedCard = currentCards.find((item) => item.id === card.id);
+
+                          if (!selectedCard) {
+                            return currentCards;
+                          }
+
+                          return [selectedCard, ...currentCards.filter((item) => item.id !== card.id)];
+                        });
                       }}
                     >
                       <CompactStackCard card={card} isTopPreview={index === 0} width={cardWidth} />
