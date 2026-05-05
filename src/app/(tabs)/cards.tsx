@@ -1,13 +1,15 @@
-import { Redirect } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { useState } from "react";
 import { Pressable, Text, useWindowDimensions, View } from "react-native";
-import { Eye, LockKeyhole } from "lucide-react-native";
+import { Eye, LockKeyhole, Plus } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { CardNetworkBadge } from "@/features/finance/components/card-network-badge";
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
-import { type WalletCard, walletCards } from "@/features/finance/mocks";
+import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
+import { type WalletCard } from "@/features/finance/mocks";
 import { authClient } from "@/features/auth/services/auth-client";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic } from "@/shared/lib/haptics";
@@ -67,9 +69,7 @@ function CompactStackCard({
         </View>
 
         <View className="items-end">
-          <Text className="text-[13px] font-black tracking-[1.2px]" style={{ color: card.textColor }}>
-            {card.network}
-          </Text>
+          <CardNetworkBadge color={card.textColor} compact={true} network={card.network} />
           <Text className="mt-1 text-[13px] font-black" style={{ color: card.textColor }}>
             **** {card.lastDigits}
           </Text>
@@ -84,10 +84,14 @@ export default function CardsScreen() {
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
+  const { cards } = useWalletCards();
   const cardWidth = Math.min(width - 40, 360);
-  const [orderedCards, setOrderedCards] = useState<WalletCard[]>(walletCards);
-  const activeCard = orderedCards[0];
-  const stackCards = orderedCards.slice(1);
+  const [orderedCards, setOrderedCards] = useState<WalletCard[]>(cards);
+  const syncedOrderedCards = orderedCards.filter((card) => cards.some((currentCard) => currentCard.id === card.id));
+  const missingCards = cards.filter((card) => !syncedOrderedCards.some((currentCard) => currentCard.id === card.id));
+  const displayedCards = [...missingCards, ...syncedOrderedCards];
+  const activeCard = displayedCards[0];
+  const stackCards = displayedCards.slice(1);
   const stackHeight =
     stackCards.length > 0 ? PREVIEW_CARD_HEIGHT + Math.max(stackCards.length - 1, 0) * STACK_STEP + 12 : 0;
 
@@ -108,15 +112,34 @@ export default function CardsScreen() {
           <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
             Wallet
           </Text>
-          <Text className="mt-3 text-[34px] font-black leading-10" style={{ color: theme.text }}>
+          <View className="mt-3 flex-row items-start justify-between gap-4">
+            <Text className="flex-1 text-[34px] font-black leading-10" style={{ color: theme.text }}>
             Tarjetas
-          </Text>
+            </Text>
+            <Pressable
+              accessibilityLabel="Anadir nueva tarjeta"
+              accessibilityRole="button"
+              className="flex-row items-center rounded-full px-4 py-3"
+              onPress={() => {
+                selectionHaptic();
+                router.push({ pathname: "/targets/add" } as never);
+              }}
+              style={{ backgroundColor: theme.primarySoft }}
+            >
+              <Plus color={theme.primary} size={18} strokeWidth={2.4} />
+              <Text className="ml-2 text-[14px] font-black" style={{ color: theme.primary }}>
+                Nueva
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         <View className="mt-10">
-          <Animated.View layout={LinearTransition.springify().damping(24).stiffness(220)}>
-            <WalletCardPreview card={activeCard} width={cardWidth} />
-          </Animated.View>
+          {activeCard ? (
+            <Animated.View layout={LinearTransition.springify().damping(24).stiffness(220)}>
+              <WalletCardPreview card={activeCard} width={cardWidth} />
+            </Animated.View>
+          ) : null}
 
           <View className="mt-5 flex-row gap-3">
             {cardActions.map((action) => {
@@ -147,7 +170,7 @@ export default function CardsScreen() {
         </View>
 
         <View className="flex-1 justify-end pb-6">
-          <View style={{ height: stackHeight }}>
+          <View style={{ height: stackHeight + PREVIEW_CARD_HEIGHT + 18 }}>
             {stackCards
               .slice()
               .reverse()
@@ -188,6 +211,42 @@ export default function CardsScreen() {
                   </Animated.View>
                 );
               })}
+
+            <Animated.View
+              layout={LinearTransition.springify().damping(24).stiffness(220)}
+              style={{
+                left: 0,
+                position: "absolute",
+                right: 0,
+                top: stackHeight + 18,
+              }}
+            >
+              <Pressable
+                accessibilityLabel="Anadir nueva tarjeta"
+                accessibilityRole="button"
+                className="flex-row items-center rounded-[26px] border border-dashed px-5 py-5"
+                onPress={() => {
+                  selectionHaptic();
+                  router.push({ pathname: "/targets/add" } as never);
+                }}
+                style={{ backgroundColor: theme.card, borderColor: theme.border, width: cardWidth }}
+              >
+                <View
+                  className="h-12 w-12 items-center justify-center rounded-[16px]"
+                  style={{ backgroundColor: theme.primarySoft }}
+                >
+                  <Plus color={theme.primary} size={22} strokeWidth={2.4} />
+                </View>
+                <View className="ml-4 flex-1">
+                  <Text className="text-[16px] font-black" style={{ color: theme.text }}>
+                    Anadir nuevo target
+                  </Text>
+                  <Text className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
+                    Crea una tarjeta con formulario y previsualizacion en esta misma seccion.
+                  </Text>
+                </View>
+              </Pressable>
+            </Animated.View>
           </View>
         </View>
       </View>

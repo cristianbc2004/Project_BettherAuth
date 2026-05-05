@@ -6,7 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
-import { type WalletCard, walletCards } from "@/features/finance/mocks";
+import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
+import { type WalletCard } from "@/features/finance/mocks";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -70,15 +71,16 @@ export default function DetailsTargetScreen() {
   const { cardId } = useLocalSearchParams<{ cardId?: string | string[] }>();
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
+  const { cards } = useWalletCards();
   const [isPinVisible, setIsPinVisible] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const resolvedCardId = Array.isArray(cardId) ? cardId[0] : cardId;
   const selectedCard = useMemo<WalletCard>(
-    () => walletCards.find((card) => card.id === resolvedCardId) ?? walletCards[0],
-    [resolvedCardId],
+    () => cards.find((card) => card.id === resolvedCardId) ?? cards[0],
+    [cards, resolvedCardId],
   );
   const cardWidth = Math.min(width - 40, 360);
-  const displayedPin = isPinVisible ? (mockPins[selectedCard.id] ?? "0000") : "****";
+  const displayedPin = selectedCard ? (isPinVisible ? (mockPins[selectedCard.id] ?? "0000") : "****") : "****";
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -86,6 +88,10 @@ export default function DetailsTargetScreen() {
 
   if (!session?.user) {
     return <Redirect href="/sign-in" />;
+  }
+
+  if (!selectedCard) {
+    return <LoadingScreen />;
   }
 
   return (
