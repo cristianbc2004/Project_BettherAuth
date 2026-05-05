@@ -1,5 +1,5 @@
 import { Redirect, router, useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { ArrowLeft, Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,13 +12,6 @@ import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
-
-const mockPins: Record<string, string> = {
-  digital: "0927",
-  savings: "7741",
-  travel: "1284",
-  "visa-primary": "4832",
-};
 
 type ActionButtonProps = {
   icon: typeof Eye;
@@ -71,7 +64,7 @@ export default function DetailsTargetScreen() {
   const { cardId } = useLocalSearchParams<{ cardId?: string | string[] }>();
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
-  const { cards } = useWalletCards();
+  const { cards, refreshCards } = useWalletCards();
   const [isPinVisible, setIsPinVisible] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const resolvedCardId = Array.isArray(cardId) ? cardId[0] : cardId;
@@ -80,7 +73,13 @@ export default function DetailsTargetScreen() {
     [cards, resolvedCardId],
   );
   const cardWidth = Math.min(width - 40, 360);
-  const displayedPin = selectedCard ? (isPinVisible ? (mockPins[selectedCard.id] ?? "0000") : "****") : "****";
+  const displayedPin = selectedCard ? (isPinVisible ? selectedCard.cvc : "****") : "****";
+
+  useEffect(() => {
+    if (session?.user.id) {
+      void refreshCards();
+    }
+  }, [refreshCards, session?.user.id]);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -139,7 +138,7 @@ export default function DetailsTargetScreen() {
             Detalle del target
           </Text>
           <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-            Aqui puedes ver el PIN y gestionar el estado de tu tarjeta.
+            Aqui puedes ver el CVC y gestionar el estado de tu tarjeta.
           </Text>
         </View>
 
@@ -180,13 +179,13 @@ export default function DetailsTargetScreen() {
           <Text className="mt-3 text-[14px] leading-6" style={{ color: theme.mutedText }}>
             {isPinVisible
               ? "No compartas este codigo con nadie."
-              : "Pulsa en Ver PIN para mostrar el codigo de seguridad."}
+              : "Pulsa en Ver PIN para mostrar el CVC de seguridad."}
           </Text>
         </View>
 
         <View className="flex-row gap-3">
           <InfoTile label="Titular" value={selectedCard.name} />
-          <InfoTile label="Terminacion" value={`**** ${selectedCard.lastDigits}`} />
+          <InfoTile label="Numero" value={`**** ${selectedCard.lastDigits}`} />
         </View>
 
         <View className="flex-row gap-3">

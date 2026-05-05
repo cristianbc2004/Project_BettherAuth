@@ -30,27 +30,16 @@ export function CardNetworkBadge({ color, compact = false, network }: CardNetwor
     );
   }
 
-  if (network === "VISA") {
+  if (network === "VISA" || network === "ORO" || network === "CHASBACK") {
     return (
       <View className="rounded-full px-3 py-2" style={{ backgroundColor: `${color}14` }}>
         <Text
           className={compact ? "text-[11px] font-black italic tracking-[1.5px]" : "text-[13px] font-black italic tracking-[1.8px]"}
           style={{ color }}
         >
-          VISA
+          {network}
         </Text>
       </View>
     );
   }
-
-  return (
-    <View className="rounded-full px-3 py-2" style={{ backgroundColor: `${color}14` }}>
-      <Text
-        className={compact ? "text-[10px] font-black tracking-[1.4px]" : "text-[12px] font-black tracking-[1.8px]"}
-        style={{ color }}
-      >
-        DIGITAL
-      </Text>
-    </View>
-  );
 }

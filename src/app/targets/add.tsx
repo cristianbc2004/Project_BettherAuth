@@ -22,7 +22,6 @@ import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import {
   buildWalletCardPreview,
-  walletCardNetworks,
   walletCardTypes,
   type WalletCardFormValues,
 } from "@/features/finance/lib/wallet-card-utils";
@@ -40,13 +39,15 @@ type SelectorFieldProps<TValue extends string> = {
 };
 
 const addTargetSchema = z.object({
-  balance: z.string().trim().optional(),
-  holderName: z.string().trim().min(2, "Introduce el nombre del titular."),
-  lastDigits: z
+  cvc: z
     .string()
     .trim()
-    .regex(/^\d{4}$/, "La terminacion debe tener 4 numeros."),
-  network: z.enum(walletCardNetworks),
+    .regex(/^\d{3,4}$/, "El CVC debe tener 3 o 4 numeros."),
+  name: z.string().trim().min(2, "Introduce el nombre del target."),
+  numberTarget: z
+    .string()
+    .trim()
+    .regex(/^\d{12,19}$/, "El numero debe tener entre 12 y 19 digitos."),
   type: z.enum(walletCardTypes),
 });
 
@@ -112,11 +113,10 @@ export default function AddTargetScreen() {
   const form = useForm<z.infer<typeof addTargetSchema>>({
     resolver: zodResolver(addTargetSchema),
     defaultValues: {
-      balance: "",
-      holderName: session?.user.name ?? "",
-      lastDigits: "",
-      network: "VISA",
-      type: "Principal",
+      cvc: "",
+      name: session?.user.name ?? "",
+      numberTarget: "",
+      type: "VISA",
     },
     mode: "onChange",
     reValidateMode: "onChange",
@@ -125,10 +125,9 @@ export default function AddTargetScreen() {
   const previewCard = useMemo(
     () =>
       buildWalletCardPreview({
-        balance: previewValues.balance,
-        holderName: previewValues.holderName,
-        lastDigits: previewValues.lastDigits,
-        network: previewValues.network,
+        cvc: previewValues.cvc,
+        name: previewValues.name,
+        numberTarget: previewValues.numberTarget,
         type: previewValues.type,
       }),
     [previewValues],
@@ -143,7 +142,7 @@ export default function AddTargetScreen() {
   const handleSubmit = form.handleSubmit(async (values: WalletCardFormValues) => {
     try {
       setIsSaving(true);
-      const createdCard = addCard(values);
+      const createdCard = await addCard(values);
 
       successHaptic();
       Alert.alert("Tarjeta creada", "Tu nuevo target ya esta disponible en la cartera.");
@@ -216,8 +215,7 @@ export default function AddTargetScreen() {
               Anadir tarjeta
             </Text>
             <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-              Completa el formulario y el diseno cambiara segun la red seleccionada, como VISA o
-              MASTERCARD.
+              Completa el formulario con los datos reales del target guardados en la base de datos.
             </Text>
           </View>
 
@@ -241,24 +239,24 @@ export default function AddTargetScreen() {
                   Datos del target
                 </Text>
                 <Text className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
-                  Hemos eliminado el mock vacio y ahora este alta se hace desde un formulario real.
+                  El alta se guarda directamente en la tabla targets.
                 </Text>
               </View>
             </View>
 
             <Controller
               control={form.control}
-              name="holderName"
+              name="name"
               render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
                 <AuthInput
                   autoCapitalize="words"
                   autoCorrect={false}
                   error={error?.message}
-                  label="Titular"
+                  label="Nombre"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   onFocus={() => scrollToFormPosition(260)}
-                  placeholder="Nombre del titular"
+                  placeholder="Nombre del target"
                   value={value}
                 />
               )}
@@ -266,51 +264,40 @@ export default function AddTargetScreen() {
 
             <Controller
               control={form.control}
-              name="lastDigits"
+              name="numberTarget"
               render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
                 <AuthInput
                   autoCapitalize="none"
                   autoCorrect={false}
                   error={error?.message}
                   keyboardType="number-pad"
-                  label="Terminacion"
+                  label="Numero de target"
+                  maxLength={19}
+                  onBlur={onBlur}
+                  onChangeText={(text) => onChange(text.replace(/\D/g, "").slice(0, 19))}
+                  onFocus={() => scrollToFormPosition(380)}
+                  placeholder="4242424242424242"
+                  value={value}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="cvc"
+              render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+                <AuthInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  error={error?.message}
+                  keyboardType="number-pad"
+                  label="CVC"
                   maxLength={4}
                   onBlur={onBlur}
                   onChangeText={(text) => onChange(text.replace(/\D/g, "").slice(0, 4))}
-                  onFocus={() => scrollToFormPosition(380)}
-                  placeholder="1234"
-                  value={value}
-                />
-              )}
-            />
-
-            <Controller
-              control={form.control}
-              name="balance"
-              render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-                <AuthInput
-                  autoCapitalize="characters"
-                  autoCorrect={false}
-                  error={error?.message}
-                  label="Balance inicial"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
                   onFocus={() => scrollToFormPosition(470)}
-                  placeholder="0 EUR"
+                  placeholder="123"
                   value={value}
-                />
-              )}
-            />
-
-            <Controller
-              control={form.control}
-              name="network"
-              render={({ field: { onChange, value } }) => (
-                <SelectorField
-                  label="Red"
-                  onChange={onChange}
-                  options={walletCardNetworks}
-                  selectedValue={value}
                 />
               )}
             />

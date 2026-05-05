@@ -1,5 +1,5 @@
 import { Redirect, router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, Text, useWindowDimensions, View } from "react-native";
 import { Eye, LockKeyhole, Plus } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -84,7 +84,7 @@ export default function CardsScreen() {
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
-  const { cards } = useWalletCards();
+  const { cards, isLoading, refreshCards } = useWalletCards();
   const cardWidth = Math.min(width - 40, 360);
   const [orderedCards, setOrderedCards] = useState<WalletCard[]>(cards);
   const syncedOrderedCards = orderedCards.filter((card) => cards.some((currentCard) => currentCard.id === card.id));
@@ -94,6 +94,12 @@ export default function CardsScreen() {
   const stackCards = displayedCards.slice(1);
   const stackHeight =
     stackCards.length > 0 ? PREVIEW_CARD_HEIGHT + Math.max(stackCards.length - 1, 0) * STACK_STEP + 12 : 0;
+
+  useEffect(() => {
+    if (session?.user.id) {
+      void refreshCards();
+    }
+  }, [refreshCards, session?.user.id]);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -114,7 +120,7 @@ export default function CardsScreen() {
           </Text>
           <View className="mt-3 flex-row items-start justify-between gap-4">
             <Text className="flex-1 text-[34px] font-black leading-10" style={{ color: theme.text }}>
-            Tarjetas
+              Tarjetas
             </Text>
             <Pressable
               accessibilityLabel="Anadir nueva tarjeta"
@@ -128,18 +134,39 @@ export default function CardsScreen() {
             >
               <Plus color={theme.primary} size={18} strokeWidth={2.4} />
               <Text className="ml-2 text-[14px] font-black" style={{ color: theme.primary }}>
-                Nueva
+                Anadir
               </Text>
             </Pressable>
           </View>
         </View>
 
         <View className="mt-10">
-          {activeCard ? (
+          {isLoading ? (
+            <View
+              className="h-[188px] items-center justify-center rounded-[30px]"
+              style={{ backgroundColor: theme.card, width: cardWidth }}
+            >
+              <Text className="text-[15px] font-black" style={{ color: theme.mutedText }}>
+                Cargando targets...
+              </Text>
+            </View>
+          ) : activeCard ? (
             <Animated.View layout={LinearTransition.springify().damping(24).stiffness(220)}>
               <WalletCardPreview card={activeCard} width={cardWidth} />
             </Animated.View>
-          ) : null}
+          ) : (
+            <View
+              className="h-[188px] items-center justify-center rounded-[30px] border border-dashed px-6"
+              style={{ backgroundColor: theme.card, borderColor: theme.border, width: cardWidth }}
+            >
+              <Text className="text-center text-[17px] font-black" style={{ color: theme.text }}>
+                No hay targets guardados
+              </Text>
+              <Text className="mt-2 text-center text-[14px] leading-5" style={{ color: theme.mutedText }}>
+                Anade tu primer target para verlo aqui.
+              </Text>
+            </View>
+          )}
 
           <View className="mt-5 flex-row gap-3">
             {cardActions.map((action) => {
@@ -170,7 +197,7 @@ export default function CardsScreen() {
         </View>
 
         <View className="flex-1 justify-end pb-6">
-          <View style={{ height: stackHeight + PREVIEW_CARD_HEIGHT + 18 }}>
+          <View style={{ height: stackHeight }}>
             {stackCards
               .slice()
               .reverse()
@@ -211,42 +238,6 @@ export default function CardsScreen() {
                   </Animated.View>
                 );
               })}
-
-            <Animated.View
-              layout={LinearTransition.springify().damping(24).stiffness(220)}
-              style={{
-                left: 0,
-                position: "absolute",
-                right: 0,
-                top: stackHeight + 18,
-              }}
-            >
-              <Pressable
-                accessibilityLabel="Anadir nueva tarjeta"
-                accessibilityRole="button"
-                className="flex-row items-center rounded-[26px] border border-dashed px-5 py-5"
-                onPress={() => {
-                  selectionHaptic();
-                  router.push({ pathname: "/targets/add" } as never);
-                }}
-                style={{ backgroundColor: theme.card, borderColor: theme.border, width: cardWidth }}
-              >
-                <View
-                  className="h-12 w-12 items-center justify-center rounded-[16px]"
-                  style={{ backgroundColor: theme.primarySoft }}
-                >
-                  <Plus color={theme.primary} size={22} strokeWidth={2.4} />
-                </View>
-                <View className="ml-4 flex-1">
-                  <Text className="text-[16px] font-black" style={{ color: theme.text }}>
-                    Anadir nuevo target
-                  </Text>
-                  <Text className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
-                    Crea una tarjeta con formulario y previsualizacion en esta misma seccion.
-                  </Text>
-                </View>
-              </Pressable>
-            </Animated.View>
           </View>
         </View>
       </View>
