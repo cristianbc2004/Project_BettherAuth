@@ -119,7 +119,7 @@ export default function HomeScreen() {
   const { cards, refreshCards } = useWalletCards();
   const { resolvedThemeName, theme } = useAppTheme();
   const { width } = useWindowDimensions();
-  const cardWidth = Math.min(width - 72, 326);
+  const cardWidth = width - 40;
   const chartWidth = Math.max(width - 82, 260);
   const graphColor = resolvedThemeName === "dark" ? "#78a9ff" : "#3467d6";
   const firstName = session?.user.name.split(" ")[0] || session?.user.name || "Cristian";
@@ -295,8 +295,8 @@ export default function HomeScreen() {
               title="Tus tarjetas"
             />
             <ScrollView
-              className="mt-4 -mr-5"
-              contentContainerClassName="pr-5"
+              className="mt-4"
+              contentContainerClassName="pr-4"
               decelerationRate="fast"
               horizontal
               showsHorizontalScrollIndicator={false}
