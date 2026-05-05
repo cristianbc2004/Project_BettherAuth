@@ -24,6 +24,7 @@ function AppNavigation() {
         <Stack.Screen name="index" options={{ animation: "none" }} />
         <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
         <Stack.Screen name="targets/add" />
+        <Stack.Screen name="home-graphic" />
         <Stack.Screen name="notifications" />
         <Stack.Screen name="person" />
         <Stack.Screen name="(auth)/sign-in" />

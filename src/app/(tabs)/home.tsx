@@ -220,8 +220,18 @@ export default function HomeScreen() {
           </View>
 
           <View>
-            <View
+            <Pressable
+              accessibilityHint="Abre la vista detallada de la grafica"
+              accessibilityLabel="Abrir grafica detallada"
+              accessibilityRole="button"
               className="overflow-hidden rounded-[34px] border p-5"
+              onPress={() => {
+                if (isChartInteracting) {
+                  return;
+                }
+                selectionHaptic();
+                router.push("/home-graphic" as never);
+              }}
               style={{
                 backgroundColor: theme.card,
                 borderColor: theme.border,
@@ -282,7 +292,10 @@ export default function HomeScreen() {
                   />
                 </View>
               </GestureHandlerRootView>
-            </View>
+              <Text className="mt-3 text-[12px] font-semibold" style={{ color: theme.mutedText }}>
+                Toca la grafica para ver el detalle por rango
+              </Text>
+            </Pressable>
           </View>
 
           <View>
