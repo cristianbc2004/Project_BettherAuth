@@ -5,9 +5,14 @@ import { ArrowDownLeft, ArrowUpRight, Zap } from "lucide-react-native";
 import Animated, { Easing, FadeInDown, FadeOutUp, LinearTransition } from "react-native-reanimated";
 
 import { FinanceScreenShell } from "@/features/finance/components/finance-screen-shell";
-import { BizumActionSheet, type BizumActionPayload } from "@/features/finance/components/bizum-action-sheet";
+import {
+  BizumActionSheet,
+  type BizumActionPayload,
+  type BizumContact,
+} from "@/features/finance/components/bizum-action-sheet";
 import { authClient } from "@/features/auth/services/auth-client";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { appConfig } from "@/shared/lib/app-config";
 import { selectionHaptic, successHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
@@ -23,40 +28,56 @@ type BizumMovement = {
 
 type BizumAction = "send" | "request";
 
-const bizumMovements: BizumMovement[] = [
-  {
-    amount: "+13 EUR",
-    date: "21/02/2026",
-    id: "bizum-1",
-    initials: "PA",
-    name: "Paco AM",
-    tone: "income",
-  },
-  {
-    amount: "-10 EUR",
-    date: "Ayer",
-    id: "bizum-2",
-    initials: "LR",
-    name: "Luis RA",
-    tone: "outcome",
-  },
-  {
-    amount: "+5 EUR",
-    date: "Hoy",
-    id: "bizum-3",
-    initials: "PZ",
-    name: "Pepe ZC",
-    tone: "income",
-  },
-  {
-    amount: "-24 EUR",
-    date: "Hoy",
-    id: "bizum-4",
-    initials: "ML",
-    name: "Marta LO",
-    tone: "outcome",
-  },
-];
+type BizumMovementResponse = {
+  amount: string;
+  createdAt: string;
+  id: string;
+  initials: string;
+  name: string;
+  tone: "income" | "outcome";
+};
+
+type BizumGetResponse = {
+  availableBalanceCents: number;
+  contacts: BizumContact[];
+  movements: BizumMovementResponse[];
+};
+
+type BizumPostResponse = {
+  availableBalanceCents: number;
+  request?: { amountCents: number; id: string };
+  transfer?: BizumMovementResponse;
+};
+
+function getAuthCookie() {
+  return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
+}
+
+async function fetchBizumRequest(path = "/api/bizum", init?: RequestInit) {
+  return fetch(`${appConfig.authApiUrl}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      cookie: getAuthCookie(),
+      ...init?.headers,
+    },
+  });
+}
+
+function formatMovementDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Ahora";
+  }
+
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "2-digit",
+  }).format(date);
+}
 
 function SectionHeader({ onPress, title }: { onPress: () => void; title: string }) {
   const { theme } = useAppTheme();
@@ -87,21 +108,58 @@ export default function AssetsScreen() {
   const [selectedAction, setSelectedAction] = useState<BizumAction>("send");
   const [isSendSheetVisible, setIsSendSheetVisible] = useState(false);
   const [isSubmittingBizum, setIsSubmittingBizum] = useState(false);
+  const [isBizumDataLoading, setIsBizumDataLoading] = useState(true);
+  const [bizumError, setBizumError] = useState<string | null>(null);
   const [receivedNotification, setReceivedNotification] = useState<string | null>(null);
   const [highlightedMovementId, setHighlightedMovementId] = useState<string | null>(null);
-  const [movements, setMovements] = useState<BizumMovement[]>(bizumMovements);
+  const [availableBalanceCents, setAvailableBalanceCents] = useState(0);
+  const [contacts, setContacts] = useState<BizumContact[]>([]);
+  const [movements, setMovements] = useState<BizumMovement[]>([]);
   const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const requestReceivedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const notificationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!session?.user.id) {
+      return;
+    }
+
+    const loadBizumData = async () => {
+      try {
+        setIsBizumDataLoading(true);
+        const response = await fetchBizumRequest();
+
+        if (!response.ok) {
+          setBizumError("No se pudo cargar Bizum. Intentalo de nuevo.");
+          return;
+        }
+
+        const payload = (await response.json()) as BizumGetResponse;
+        setAvailableBalanceCents(payload.availableBalanceCents ?? 0);
+        setContacts(payload.contacts ?? []);
+        setMovements(
+          (payload.movements ?? []).map((movement) => ({
+            amount: movement.amount,
+            date: formatMovementDate(movement.createdAt),
+            id: movement.id,
+            initials: movement.initials,
+            name: movement.name,
+            tone: movement.tone,
+          })),
+        );
+      } catch {
+        setBizumError("No se pudo cargar Bizum. Intentalo de nuevo.");
+      } finally {
+        setIsBizumDataLoading(false);
+      }
+    };
+
+    void loadBizumData();
+  }, [session?.user.id]);
 
   useEffect(() => {
     return () => {
       if (highlightTimeoutRef.current) {
         clearTimeout(highlightTimeoutRef.current);
-      }
-
-      if (requestReceivedTimeoutRef.current) {
-        clearTimeout(requestReceivedTimeoutRef.current);
       }
 
       if (notificationTimeoutRef.current) {
@@ -111,15 +169,21 @@ export default function AssetsScreen() {
   }, []);
 
   const movementCountLabel = useMemo(() => `${movements.length} movimientos recientes`, [movements.length]);
+  const availableBalanceLabel = useMemo(
+    () => `${(availableBalanceCents / 100).toFixed(2).replace(".", ",")} EUR disponibles`,
+    [availableBalanceCents],
+  );
 
   const openSendSheet = () => {
     selectionHaptic();
+    setBizumError(null);
     setSelectedAction("send");
     setIsSendSheetVisible(true);
   };
 
   const openRequestSheet = () => {
     selectionHaptic();
+    setBizumError(null);
     setSelectedAction("request");
     setIsSendSheetVisible(true);
   };
@@ -130,6 +194,7 @@ export default function AssetsScreen() {
     }
 
     setIsSendSheetVisible(false);
+    setBizumError(null);
   };
 
   const showInsertedMovement = (nextMovement: BizumMovement) => {
@@ -158,57 +223,63 @@ export default function AssetsScreen() {
     }, 3200);
   };
 
-  const handleSendBizum = (payload: BizumActionPayload) => {
-    setIsSubmittingBizum(true);
+  const handleBizumSubmit = async (payload: BizumActionPayload) => {
+    const amountCents = Math.round(payload.amount * 100);
 
-    setTimeout(() => {
-      showInsertedMovement({
-        amount: `-${payload.amount.toFixed(2).replace(".", ",")} EUR`,
-        date: "Ahora",
-        id: `bizum-${Date.now()}`,
-        initials: payload.contact.initials,
-        name: payload.contact.alias,
-        tone: "outcome",
-      });
-      setIsSubmittingBizum(false);
-      setIsSendSheetVisible(false);
-    }, 1200);
-  };
-
-  const handleRequestBizum = (payload: BizumActionPayload) => {
-    setIsSubmittingBizum(true);
-
-    setTimeout(() => {
-      setIsSubmittingBizum(false);
-      setIsSendSheetVisible(false);
-
-      if (requestReceivedTimeoutRef.current) {
-        clearTimeout(requestReceivedTimeoutRef.current);
-      }
-
-      requestReceivedTimeoutRef.current = setTimeout(() => {
-        showReceivedNotification(
-          `Has recibido el Bizum de ${payload.contact.alias} por ${payload.amount.toFixed(2).replace(".", ",")} EUR`,
-        );
-        showInsertedMovement({
-          amount: `+${payload.amount.toFixed(2).replace(".", ",")} EUR`,
-          date: "Ahora",
-          id: `bizum-${Date.now()}`,
-          initials: payload.contact.initials,
-          name: payload.contact.alias,
-          tone: "income",
-        });
-      }, 2600);
-    }, 1000);
-  };
-
-  const handleBizumSubmit = (payload: BizumActionPayload) => {
-    if (selectedAction === "request") {
-      handleRequestBizum(payload);
+    if (selectedAction === "send" && amountCents > availableBalanceCents) {
+      setBizumError("No tienes saldo suficiente para enviar ese Bizum.");
       return;
     }
 
-    handleSendBizum(payload);
+    setBizumError(null);
+    setIsSubmittingBizum(true);
+
+    try {
+      const [response] = await Promise.all([
+        fetchBizumRequest("/api/bizum", {
+          body: JSON.stringify({
+            action: selectedAction,
+            amount: payload.amount,
+            concept: payload.concept,
+            contactUserId: payload.contact.id,
+          }),
+          method: "POST",
+        }),
+        new Promise((resolve) => setTimeout(resolve, 1000)),
+      ]);
+
+      if (!response.ok) {
+        const errorPayload = (await response.json().catch(() => null)) as { error?: string } | null;
+        setBizumError(errorPayload?.error ?? "No se pudo completar la operacion.");
+        return;
+      }
+
+      const result = (await response.json()) as BizumPostResponse;
+      setAvailableBalanceCents(result.availableBalanceCents ?? availableBalanceCents);
+
+      if (selectedAction === "send" && result.transfer) {
+        showInsertedMovement({
+          amount: result.transfer.amount,
+          date: "Ahora",
+          id: result.transfer.id,
+          initials: result.transfer.initials,
+          name: result.transfer.name,
+          tone: result.transfer.tone,
+        });
+      }
+
+      if (selectedAction === "request") {
+        showReceivedNotification(
+          `Solicitud enviada a ${payload.contact.name} por ${payload.amount.toFixed(2).replace(".", ",")} EUR`,
+        );
+      }
+
+      setIsSendSheetVisible(false);
+    } catch {
+      setBizumError("No se pudo completar la operacion.");
+    } finally {
+      setIsSubmittingBizum(false);
+    }
   };
 
   if (showSessionLoading) {
@@ -249,7 +320,10 @@ export default function AssetsScreen() {
               Gestiona tu Bizum
             </Text>
             <Text className="mt-1 text-[13px]" style={{ color: theme.mutedText }}>
-              {movementCountLabel}
+              {availableBalanceLabel}
+            </Text>
+            <Text className="mt-1 text-[13px]" style={{ color: theme.mutedText }}>
+              {isBizumDataLoading ? "Cargando movimientos..." : movementCountLabel}
             </Text>
           </View>
         </View>
@@ -312,6 +386,22 @@ export default function AssetsScreen() {
       </View>
 
       <View className="gap-3">
+        {bizumError && !isSendSheetVisible ? (
+          <Animated.View
+            entering={FadeInDown.duration(220).easing(Easing.out(Easing.cubic))}
+            exiting={FadeOutUp.duration(180).easing(Easing.in(Easing.cubic))}
+            className="rounded-[24px] border px-4 py-3"
+            style={{
+              backgroundColor: theme.primarySoft,
+              borderColor: theme.border,
+            }}
+          >
+            <Text className="text-[14px] font-black leading-5" style={{ color: theme.text }}>
+              {bizumError}
+            </Text>
+          </Animated.View>
+        ) : null}
+
         {receivedNotification ? (
           <Animated.View
             entering={FadeInDown.duration(280).easing(Easing.out(Easing.cubic))}
@@ -407,9 +497,12 @@ export default function AssetsScreen() {
       </View>
 
       <BizumActionSheet
+        contacts={contacts}
+        errorMessage={bizumError}
         isSubmitting={isSubmittingBizum}
         mode={selectedAction}
         onClose={closeSendSheet}
+        onDismissError={() => setBizumError(null)}
         onSubmit={handleBizumSubmit}
         visible={isSendSheetVisible}
       />
