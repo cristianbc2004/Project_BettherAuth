@@ -21,6 +21,7 @@ model User {
   banExpires       DateTime?
   accounts         Account[]
   sessions         Session[]
+  targets          Target[]
   twoFactor        TwoFactor?
 
   @@map("users")
@@ -85,3 +86,27 @@ model TwoFactor {
 
   @@map("twoFactor")
 }
+
+model Target {
+  id           String   @id @default(cuid())
+  userId       String
+  type         CardType
+  numberTarget String   @unique
+  cvc          String
+  name         String
+  block        Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("targets")
+}
+
+enum CardType {
+  VISA
+  MASTERCARD
+  CHASBACK
+  ORO
+}
+
