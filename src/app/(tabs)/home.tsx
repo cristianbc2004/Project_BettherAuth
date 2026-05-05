@@ -183,39 +183,39 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View>
-            <View className="flex-row items-start justify-between gap-4">
-              <View className="flex-1 pr-3">
-                <Text className="text-[31px] font-black leading-9" style={{ color: theme.text }}>
-                  {getGreeting()}, {firstName}
-                </Text>
-                <Text className="mt-2 text-[16px] font-medium" style={{ color: theme.mutedText }}>
-                  Aqui tienes tu resumen semanal
-                </Text>
-              </View>
-
-              <View className="flex-row items-center gap-2">
-                {isAdmin ? (
-                  <TopActionButton
-                    accessibilityLabel="Open menu"
-                    onPress={() => {
-                      selectionHaptic();
-                      setIsDrawerOpen(true);
-                    }}
-                  >
-                    <Menu color={theme.text} size={28} strokeWidth={2.3} />
-                  </TopActionButton>
-                ) : null}
-
+            <View className="flex-row items-center justify-between">
+              {isAdmin ? (
                 <TopActionButton
-                  accessibilityLabel="Open notifications"
+                  accessibilityLabel="Open menu"
                   onPress={() => {
                     selectionHaptic();
-                    router.navigate("/notifications" as never);
+                    setIsDrawerOpen(true);
                   }}
                 >
-                  <Bell color={theme.text} size={24} strokeWidth={2.1} />
+                  <Menu color={theme.text} size={28} strokeWidth={2.3} />
                 </TopActionButton>
-              </View>
+              ) : (
+                <View className="h-12 w-12" />
+              )}
+
+              <TopActionButton
+                accessibilityLabel="Open notifications"
+                onPress={() => {
+                  selectionHaptic();
+                  router.navigate("/notifications" as never);
+                }}
+              >
+                <Bell color={theme.text} size={24} strokeWidth={2.1} />
+              </TopActionButton>
+            </View>
+
+            <View className="mt-5 pr-3">
+              <Text className="text-[31px] font-black leading-9" style={{ color: theme.text }}>
+                {getGreeting()}, {firstName}
+              </Text>
+              <Text className="mt-2 text-[16px] font-medium" style={{ color: theme.mutedText }}>
+                Aqui tienes tu resumen semanal
+              </Text>
             </View>
           </View>
 
