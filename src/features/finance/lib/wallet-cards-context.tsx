@@ -1,79 +1,101 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
   type PropsWithChildren,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
 
-import { initialWalletCards, type WalletCard } from "@/features/finance/mocks";
-import { buildWalletCardPreview, type WalletCardFormValues } from "@/features/finance/lib/wallet-card-utils";
+import { authClient } from "@/features/auth/services/auth-client";
+import { type WalletCard } from "@/features/finance/mocks";
+import { mapTargetToWalletCard, type WalletCardFormValues } from "@/features/finance/lib/wallet-card-utils";
+import { appConfig } from "@/shared/lib/app-config";
 
-const WALLET_CARDS_STORAGE_KEY = "@better_auth_dashboard_wallet_cards";
+type TargetResponse = {
+  block: boolean;
+  cvc: string;
+  id: string;
+  name: string;
+  numberTarget: string;
+  type: WalletCard["network"];
+};
 
 type WalletCardsContextValue = {
-  addCard: (values: WalletCardFormValues) => WalletCard;
+  addCard: (values: WalletCardFormValues) => Promise<WalletCard>;
   cards: WalletCard[];
+  isLoading: boolean;
+  refreshCards: () => Promise<void>;
 };
 
 const WalletCardsContext = createContext<WalletCardsContextValue | null>(null);
 
+function getAuthCookie() {
+  return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
+}
+
+async function fetchTargetsRequest(init?: RequestInit) {
+  return fetch(`${appConfig.authApiUrl}/api/targets`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      cookie: getAuthCookie(),
+      ...init?.headers,
+    },
+  });
+}
+
 export function WalletCardsProvider({ children }: PropsWithChildren) {
-  const [cards, setCards] = useState<WalletCard[]>(initialWalletCards);
-  const [hasHydrated, setHasHydrated] = useState(false);
+  const [cards, setCards] = useState<WalletCard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadCards = async () => {
-      try {
-        const savedCards = await AsyncStorage.getItem(WALLET_CARDS_STORAGE_KEY);
+  const refreshCards = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetchTargetsRequest();
 
-        if (!savedCards) {
-          return;
-        }
-
-        const parsedCards = JSON.parse(savedCards) as WalletCard[];
-
-        if (Array.isArray(parsedCards) && parsedCards.length > 0) {
-          setCards(parsedCards);
-        }
-      } catch {
-        setCards(initialWalletCards);
-      } finally {
-        setHasHydrated(true);
+      if (!response.ok) {
+        setCards([]);
+        return;
       }
-    };
 
-    void loadCards();
+      const payload = (await response.json()) as { targets?: TargetResponse[] };
+      setCards((payload.targets ?? []).map(mapTargetToWalletCard));
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    if (!hasHydrated) {
-      return;
-    }
-
-    void AsyncStorage.setItem(WALLET_CARDS_STORAGE_KEY, JSON.stringify(cards)).catch(() => {
-      // Persistence failure should not block wallet interactions.
-    });
-  }, [cards, hasHydrated]);
+    void refreshCards();
+  }, [refreshCards]);
 
   const value = useMemo<WalletCardsContextValue>(
     () => ({
-      addCard: (values) => {
-        const previewCard = buildWalletCardPreview(values);
-        const createdCard: WalletCard = {
-          ...previewCard,
-          id: `${values.network.toLowerCase()}-${Date.now()}`,
-        };
+      addCard: async (values) => {
+        const response = await fetchTargetsRequest({
+          body: JSON.stringify(values),
+          method: "POST",
+        });
+
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "No se pudo crear la tarjeta.");
+        }
+
+        const payload = (await response.json()) as { target: TargetResponse };
+        const createdCard = mapTargetToWalletCard(payload.target);
 
         setCards((currentCards) => [createdCard, ...currentCards]);
 
         return createdCard;
       },
       cards,
+      isLoading,
+      refreshCards,
     }),
-    [cards],
+    [cards, isLoading, refreshCards],
   );
 
   return <WalletCardsContext.Provider value={value}>{children}</WalletCardsContext.Provider>;

@@ -1,5 +1,5 @@
 import { Redirect, router } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { LineGraph, type GraphPoint } from "react-native-graph";
@@ -116,7 +116,7 @@ export default function HomeScreen() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isChartInteracting, setIsChartInteracting] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<HomeBalancePoint | null>(null);
-  const { cards } = useWalletCards();
+  const { cards, refreshCards } = useWalletCards();
   const { resolvedThemeName, theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const cardWidth = Math.min(width - 72, 326);
@@ -152,6 +152,12 @@ export default function HomeScreen() {
     setSelectedPoint(null);
     setIsChartInteracting(false);
   }, []);
+
+  useEffect(() => {
+    if (session?.user.id) {
+      void refreshCards();
+    }
+  }, [refreshCards, session?.user.id]);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
