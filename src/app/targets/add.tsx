@@ -1,0 +1,358 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Redirect, router } from "expo-router";
+import { Controller, useForm } from "react-hook-form";
+import { ArrowLeft, Check, CreditCard } from "lucide-react-native";
+import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { z } from "zod";
+
+import { AuthInput } from "@/features/auth/components/auth-input";
+import { authClient } from "@/features/auth/services/auth-client";
+import { WalletCardPreview } from "@/features/finance/components/finance-card";
+import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
+import {
+  buildWalletCardPreview,
+  walletCardNetworks,
+  walletCardTypes,
+  type WalletCardFormValues,
+} from "@/features/finance/lib/wallet-card-utils";
+import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
+import { selectionHaptic, successHaptic, warningHaptic } from "@/shared/lib/haptics";
+import { useAppTheme } from "@/shared/lib/theme-context";
+import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+
+type SelectorFieldProps<TValue extends string> = {
+  label: string;
+  onChange: (value: TValue) => void;
+  options: readonly TValue[];
+  selectedValue: TValue;
+};
+
+const addTargetSchema = z.object({
+  balance: z.string().trim().optional(),
+  holderName: z.string().trim().min(2, "Introduce el nombre del titular."),
+  lastDigits: z
+    .string()
+    .trim()
+    .regex(/^\d{4}$/, "La terminacion debe tener 4 numeros."),
+  network: z.enum(walletCardNetworks),
+  type: z.enum(walletCardTypes),
+});
+
+function SelectorField<TValue extends string>({
+  label,
+  onChange,
+  options,
+  selectedValue,
+}: SelectorFieldProps<TValue>) {
+  const { theme } = useAppTheme();
+
+  return (
+    <View className="mb-5">
+      <Text className="mb-3 text-sm font-medium" style={{ color: theme.text }}>
+        {label}
+      </Text>
+      <View
+        className="flex-row rounded-[24px] border p-1"
+        style={{ backgroundColor: theme.inputBackground, borderColor: theme.border }}
+      >
+        {options.map((option, index) => {
+          const isSelected = option === selectedValue;
+
+          return (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: isSelected }}
+              className="min-h-[56px] flex-1 items-center justify-center rounded-[20px] px-3"
+              hitSlop={8}
+              key={option}
+              onPress={() => {
+                selectionHaptic();
+                onChange(option);
+              }}
+              pressRetentionOffset={16}
+              style={{
+                backgroundColor: isSelected ? theme.primary : "transparent",
+                marginLeft: index === 0 ? 0 : 6,
+              }}
+            >
+              <Text
+                className="text-center text-[14px] font-black"
+                style={{ color: isSelected ? theme.textOnPrimary : theme.mutedText }}
+              >
+                {option}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+export default function AddTargetScreen() {
+  const { data: session, isPending } = authClient.useSession();
+  const showSessionLoading = useSessionLoadingDelay(isPending);
+  const { addCard } = useWalletCards();
+  const { theme } = useAppTheme();
+  const { width } = useWindowDimensions();
+  const [isSaving, setIsSaving] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const form = useForm<z.infer<typeof addTargetSchema>>({
+    resolver: zodResolver(addTargetSchema),
+    defaultValues: {
+      balance: "",
+      holderName: session?.user.name ?? "",
+      lastDigits: "",
+      network: "VISA",
+      type: "Principal",
+    },
+    mode: "onChange",
+    reValidateMode: "onChange",
+  });
+  const previewValues = form.watch();
+  const previewCard = useMemo(
+    () =>
+      buildWalletCardPreview({
+        balance: previewValues.balance,
+        holderName: previewValues.holderName,
+        lastDigits: previewValues.lastDigits,
+        network: previewValues.network,
+        type: previewValues.type,
+      }),
+    [previewValues],
+  );
+  const cardWidth = Math.min(width - 40, 360);
+  const scrollToFormPosition = useCallback((y: number) => {
+    requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollTo({ animated: true, y });
+    });
+  }, []);
+
+  const handleSubmit = form.handleSubmit(async (values: WalletCardFormValues) => {
+    try {
+      setIsSaving(true);
+      const createdCard = addCard(values);
+
+      successHaptic();
+      Alert.alert("Tarjeta creada", "Tu nuevo target ya esta disponible en la cartera.");
+      router.replace({
+        params: { cardId: createdCard.id },
+        pathname: "/details-target",
+      } as never);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo crear la tarjeta.";
+      warningHaptic();
+      Alert.alert("Error", message);
+    } finally {
+      setIsSaving(false);
+    }
+  });
+
+  if (showSessionLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (!session?.user) {
+    return <Redirect href="/sign-in" />;
+  }
+
+  return (
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
+      <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+        keyboardVerticalOffset={Platform.OS === "ios" ? 16 : 0}
+      >
+        <ScrollView
+          ref={scrollViewRef}
+          bounces={false}
+          contentContainerClassName="gap-6 px-5 pb-12 pt-5"
+          contentContainerStyle={{ paddingBottom: 220 }}
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+          keyboardShouldPersistTaps="always"
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="flex-row items-center justify-between">
+            <Pressable
+              accessibilityLabel="Volver"
+              accessibilityRole="button"
+              className="h-12 w-12 items-center justify-center rounded-full"
+              onPress={() => {
+                selectionHaptic();
+                router.back();
+              }}
+              style={{ backgroundColor: theme.card }}
+            >
+              <ArrowLeft color={theme.text} size={22} strokeWidth={2.4} />
+            </Pressable>
+
+            <View className="rounded-full px-4 py-3" style={{ backgroundColor: theme.primarySoft }}>
+              <Text className="text-[13px] font-black uppercase tracking-[1.5px]" style={{ color: theme.primary }}>
+                Nuevo target
+              </Text>
+            </View>
+          </View>
+
+          <View>
+            <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
+              Tarjetas
+            </Text>
+            <Text className="mt-3 text-[34px] font-black leading-10" style={{ color: theme.text }}>
+              Anadir tarjeta
+            </Text>
+            <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
+              Completa el formulario y el diseno cambiara segun la red seleccionada, como VISA o
+              MASTERCARD.
+            </Text>
+          </View>
+
+          <View>
+            <WalletCardPreview card={previewCard} width={cardWidth} />
+          </View>
+
+          <View
+            className="rounded-[30px] border p-5"
+            style={{ backgroundColor: theme.card, borderColor: theme.border }}
+          >
+            <View className="mb-5 flex-row items-center">
+              <View
+                className="h-11 w-11 items-center justify-center rounded-[16px]"
+                style={{ backgroundColor: theme.primarySoft }}
+              >
+                <CreditCard color={theme.primary} size={20} strokeWidth={2.4} />
+              </View>
+              <View className="ml-3 flex-1">
+                <Text className="text-[18px] font-black" style={{ color: theme.text }}>
+                  Datos del target
+                </Text>
+                <Text className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
+                  Hemos eliminado el mock vacio y ahora este alta se hace desde un formulario real.
+                </Text>
+              </View>
+            </View>
+
+            <Controller
+              control={form.control}
+              name="holderName"
+              render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+                <AuthInput
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  error={error?.message}
+                  label="Titular"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  onFocus={() => scrollToFormPosition(260)}
+                  placeholder="Nombre del titular"
+                  value={value}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="lastDigits"
+              render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+                <AuthInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  error={error?.message}
+                  keyboardType="number-pad"
+                  label="Terminacion"
+                  maxLength={4}
+                  onBlur={onBlur}
+                  onChangeText={(text) => onChange(text.replace(/\D/g, "").slice(0, 4))}
+                  onFocus={() => scrollToFormPosition(380)}
+                  placeholder="1234"
+                  value={value}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="balance"
+              render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+                <AuthInput
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                  error={error?.message}
+                  label="Balance inicial"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  onFocus={() => scrollToFormPosition(470)}
+                  placeholder="0 EUR"
+                  value={value}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="network"
+              render={({ field: { onChange, value } }) => (
+                <SelectorField
+                  label="Red"
+                  onChange={onChange}
+                  options={walletCardNetworks}
+                  selectedValue={value}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="type"
+              render={({ field: { onChange, value } }) => (
+                <SelectorField
+                  label="Tipo de target"
+                  onChange={onChange}
+                  options={walletCardTypes}
+                  selectedValue={value}
+                />
+              )}
+            />
+
+            <Pressable
+              accessibilityRole="button"
+              className="mt-1 flex-row items-center rounded-[22px] px-4 py-4"
+              onPress={() => {
+                selectionHaptic();
+                void handleSubmit();
+              }}
+              style={{ backgroundColor: theme.primarySoft }}
+            >
+              <Check color={theme.primary} size={18} strokeWidth={2.5} />
+              <Text className="ml-3 text-[14px] font-black" style={{ color: theme.primary }}>
+                Revisar y guardar en tu wallet
+              </Text>
+            </Pressable>
+
+            <AuthSubmitButton
+              isPending={isSaving}
+              label="Guardar target"
+              onPress={() => {
+                void handleSubmit();
+              }}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}

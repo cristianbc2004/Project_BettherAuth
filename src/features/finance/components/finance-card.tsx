@@ -1,6 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Text, View } from "react-native";
 
+import { CardNetworkBadge } from "@/features/finance/components/card-network-badge";
 import type { WalletCard } from "@/features/finance/mocks";
 
 type WalletCardPreviewProps = {
@@ -46,17 +47,12 @@ export function WalletCardPreview({ card, width }: WalletCardPreviewProps) {
             {card.balance}
           </Text>
         </View>
-        <Text className="text-[19px] font-black tracking-[1.4px]" style={{ color: card.textColor }}>
-          {card.network}
-        </Text>
+        <CardNetworkBadge color={card.textColor} network={card.network} />
       </View>
 
       <View className="mt-9 flex-row items-center justify-between">
         <ChipPlate color={card.textColor} />
-        <View className="flex-row">
-          <View className="h-7 w-7 rounded-full" style={{ backgroundColor: `${card.textColor}55` }} />
-          <View className="-ml-3 h-7 w-7 rounded-full" style={{ backgroundColor: `${card.textColor}33` }} />
-        </View>
+        <CardNetworkBadge color={card.textColor} compact={true} network={card.network} />
       </View>
 
       <View className="mt-auto flex-row items-end justify-between">

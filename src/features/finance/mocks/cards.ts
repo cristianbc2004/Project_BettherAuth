@@ -1,6 +1,6 @@
 import type { WalletCard } from "@/features/finance/mocks/types";
 
-export const walletCards: WalletCard[] = [
+export const initialWalletCards: WalletCard[] = [
   {
     balance: "3.820 EUR",
     gradient: ["#101827", "#1d3f74", "#6ea8ff"],

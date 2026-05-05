@@ -5,6 +5,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
+import { WalletCardsProvider } from "@/features/finance/lib/wallet-cards-context";
 import { LanguageProvider } from "@/shared/lib/locale";
 import { AppThemeProvider, useAppTheme } from "@/shared/lib/theme-context";
 
@@ -36,6 +37,7 @@ function AppNavigation() {
         >
           <Stack.Screen name="index" options={{ animation: "none" }} />
           <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
+          <Stack.Screen name="targets/add" />
           <Stack.Screen name="notifications" />
           <Stack.Screen name="person" />
           <Stack.Screen name="(auth)/sign-in" />
@@ -59,7 +61,9 @@ function AppNavigation() {
 export default function RootLayout() {
   return (
     <AppThemeProvider>
-      <AppNavigation />
+      <WalletCardsProvider>
+        <AppNavigation />
+      </WalletCardsProvider>
     </AppThemeProvider>
   );
 }

@@ -10,10 +10,10 @@ import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { TransactionRow } from "@/features/finance/components/transaction-row";
 import {
   recentTransactions,
-  walletCards,
   weeklyBalance,
   type WeeklyBalancePoint,
 } from "@/features/finance/mocks";
+import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { authClient } from "@/features/auth/services/auth-client";
 import { IncomePeopleDrawer } from "@/features/ingresos/components/income-people-drawer";
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
@@ -116,6 +116,7 @@ export default function HomeScreen() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isChartInteracting, setIsChartInteracting] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<HomeBalancePoint | null>(null);
+  const { cards } = useWalletCards();
   const { resolvedThemeName, theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const cardWidth = Math.min(width - 72, 326);
@@ -295,7 +296,7 @@ export default function HomeScreen() {
               showsHorizontalScrollIndicator={false}
               snapToInterval={cardWidth + 16}
             >
-              {walletCards.map((card) => (
+              {cards.map((card) => (
                 <Pressable
                   accessibilityLabel={`Abrir tarjeta ${card.status}`}
                   accessibilityRole="button"

@@ -5,13 +5,15 @@ export type WeeklyBalancePoint = {
   value: number;
 };
 
+export type WalletCardNetwork = "DIGITAL" | "MASTERCARD" | "VISA";
+
 export type WalletCard = {
   balance: string;
   gradient: readonly [string, string, string];
   id: string;
   lastDigits: string;
   name: string;
-  network: string;
+  network: WalletCardNetwork;
   status: string;
   textColor: string;
 };
