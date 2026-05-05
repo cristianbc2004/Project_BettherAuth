@@ -311,7 +311,7 @@ export default function HomeScreen() {
                     selectionHaptic();
                     router.push({
                       params: { cardId: card.id },
-                      pathname: "/details-target",
+                      pathname: "/targets/details",
                     } as never);
                   }}
                 >
