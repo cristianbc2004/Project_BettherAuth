@@ -148,7 +148,7 @@ export default function AddTargetScreen() {
       Alert.alert("Tarjeta creada", "Tu nuevo target ya esta disponible en la cartera.");
       router.replace({
         params: { cardId: createdCard.id },
-        pathname: "/details-target",
+        pathname: "/targets/details",
       } as never);
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudo crear la tarjeta.";

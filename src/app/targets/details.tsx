@@ -1,6 +1,6 @@
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { ArrowLeft, Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -9,23 +9,32 @@ import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { type WalletCard } from "@/features/finance/mocks";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
-import { selectionHaptic } from "@/shared/lib/haptics";
+import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 type ActionButtonProps = {
+  disabled?: boolean;
   icon: typeof Eye;
   label: string;
   onPress: () => void;
   tone?: "default" | "danger";
 };
 
-function ActionButton({ icon: Icon, label, onPress, tone = "default" }: ActionButtonProps) {
+function ActionButton({ disabled = false, icon: Icon, label, onPress, tone = "default" }: ActionButtonProps) {
   const { theme } = useAppTheme();
   const isDanger = tone === "danger";
 
   return (
-    <Pressable accessibilityLabel={label} accessibilityRole="button" className="flex-1 px-2 py-2" onPress={onPress}>
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      className="flex-1 px-2 py-2"
+      disabled={disabled}
+      onPress={onPress}
+      style={{ opacity: disabled ? 0.6 : 1 }}
+    >
       <View
         className="h-12 w-12 items-center justify-center rounded-[16px]"
         style={{ backgroundColor: isDanger ? `${theme.danger}18` : theme.backgroundMuted }}
@@ -64,9 +73,9 @@ export default function DetailsTargetScreen() {
   const { cardId } = useLocalSearchParams<{ cardId?: string | string[] }>();
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
-  const { cards, refreshCards } = useWalletCards();
+  const { cards, refreshCards, updateCardBlock } = useWalletCards();
   const [isPinVisible, setIsPinVisible] = useState(false);
-  const [isBlocked, setIsBlocked] = useState(false);
+  const [isBlockPending, setIsBlockPending] = useState(false);
   const resolvedCardId = Array.isArray(cardId) ? cardId[0] : cardId;
   const selectedCard = useMemo<WalletCard>(
     () => cards.find((card) => card.id === resolvedCardId) ?? cards[0],
@@ -74,6 +83,7 @@ export default function DetailsTargetScreen() {
   );
   const cardWidth = Math.min(width - 40, 360);
   const displayedPin = selectedCard ? (isPinVisible ? selectedCard.cvc : "****") : "****";
+  const isBlocked = selectedCard?.isBlocked ?? false;
 
   useEffect(() => {
     if (session?.user.id) {
@@ -157,10 +167,20 @@ export default function DetailsTargetScreen() {
           />
           <ActionButton
             icon={isBlocked ? ShieldCheck : LockKeyhole}
-            label={isBlocked ? "Desbloquear" : "Bloquear"}
-            onPress={() => {
-              selectionHaptic();
-              setIsBlocked((currentValue) => !currentValue);
+            disabled={isBlockPending}
+            label={isBlockPending ? "Guardando" : isBlocked ? "Desbloquear" : "Bloquear"}
+            onPress={async () => {
+              try {
+                selectionHaptic();
+                setIsBlockPending(true);
+                await updateCardBlock(selectedCard.id, !isBlocked);
+              } catch (error) {
+                const message = error instanceof Error ? error.message : "No se pudo actualizar el target.";
+                warningHaptic();
+                Alert.alert("Error", message);
+              } finally {
+                setIsBlockPending(false);
+              }
             }}
             tone={isBlocked ? "default" : "danger"}
           />

@@ -27,6 +27,7 @@ type WalletCardsContextValue = {
   cards: WalletCard[];
   isLoading: boolean;
   refreshCards: () => Promise<void>;
+  updateCardBlock: (cardId: string, block: boolean) => Promise<WalletCard>;
 };
 
 const WalletCardsContext = createContext<WalletCardsContextValue | null>(null);
@@ -35,8 +36,8 @@ function getAuthCookie() {
   return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
 }
 
-async function fetchTargetsRequest(init?: RequestInit) {
-  return fetch(`${appConfig.authApiUrl}/api/targets`, {
+async function fetchTargetsRequest(path = "/api/targets", init?: RequestInit) {
+  return fetch(`${appConfig.authApiUrl}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -74,7 +75,7 @@ export function WalletCardsProvider({ children }: PropsWithChildren) {
   const value = useMemo<WalletCardsContextValue>(
     () => ({
       addCard: async (values) => {
-        const response = await fetchTargetsRequest({
+        const response = await fetchTargetsRequest("/api/targets", {
           body: JSON.stringify(values),
           method: "POST",
         });
@@ -94,6 +95,26 @@ export function WalletCardsProvider({ children }: PropsWithChildren) {
       cards,
       isLoading,
       refreshCards,
+      updateCardBlock: async (cardId, block) => {
+        const response = await fetchTargetsRequest(`/api/targets/${cardId}`, {
+          body: JSON.stringify({ block }),
+          method: "PATCH",
+        });
+
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "No se pudo actualizar el target.");
+        }
+
+        const payload = (await response.json()) as { target: TargetResponse };
+        const updatedCard = mapTargetToWalletCard(payload.target);
+
+        setCards((currentCards) =>
+          currentCards.map((card) => (card.id === updatedCard.id ? updatedCard : card)),
+        );
+
+        return updatedCard;
+      },
     }),
     [cards, isLoading, refreshCards],
   );
