@@ -19,10 +19,15 @@ model User {
   banned           Boolean    @default(false)
   banReason        String?
   banExpires       DateTime?
+  totalBalanceCents Int       @default(0)
   accounts         Account[]
   sessions         Session[]
   targets          Target[]
   twoFactor        TwoFactor?
+  bizumSentTransfers      BizumTransfer[] @relation("BizumTransferSender")
+  bizumReceivedTransfers  BizumTransfer[] @relation("BizumTransferReceiver")
+  bizumRequestedPayments  BizumRequest[]  @relation("BizumRequestRequester")
+  bizumPendingPayments    BizumRequest[]  @relation("BizumRequestPayer")
 
   @@map("users")
 }
@@ -95,9 +100,12 @@ model Target {
   cvc          String
   name         String
   block        Boolean  @default(false)
+  balanceCents Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outgoingBizumTransfers BizumTransfer[] @relation("BizumTransferSenderCard")
+  incomingBizumTransfers BizumTransfer[] @relation("BizumTransferReceiverCard")
 
   @@index([userId])
   @@map("targets")
@@ -111,6 +119,10 @@ model BizumTransfer {
 
   senderCardId    String?
   receiverCardId  String?
+  senderUser      User     @relation("BizumTransferSender", fields: [senderUserId], references: [id], onDelete: Restrict)
+  receiverUser    User     @relation("BizumTransferReceiver", fields: [receiverUserId], references: [id], onDelete: Restrict)
+  senderCard      Target?  @relation("BizumTransferSenderCard", fields: [senderCardId], references: [id], onDelete: SetNull)
+  receiverCard    Target?  @relation("BizumTransferReceiverCard", fields: [receiverCardId], references: [id], onDelete: SetNull)
 
   amountCents     Int
   currency        String   @default("EUR")
@@ -127,9 +139,15 @@ model BizumTransfer {
 
   failureReason   String?
   metadata        Json?
+  request         BizumRequest?
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([senderUserId])
+  @@index([receiverUserId])
+  @@index([senderCardId])
+  @@index([receiverCardId])
 }
 
 model BizumRequest {
@@ -137,6 +155,8 @@ model BizumRequest {
 
   requesterUserId  String
   payerUserId      String
+  requesterUser    User     @relation("BizumRequestRequester", fields: [requesterUserId], references: [id], onDelete: Restrict)
+  payerUser        User     @relation("BizumRequestPayer", fields: [payerUserId], references: [id], onDelete: Restrict)
 
   amountCents      Int
   currency         String   @default("EUR")
@@ -149,11 +169,16 @@ model BizumRequest {
   cancelledAt      DateTime?
 
   transferId       String?
+  transfer         BizumTransfer? @relation(fields: [transferId], references: [id], onDelete: SetNull)
 
   referenceCode    String   @unique
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  @@unique([transferId])
+  @@index([requesterUserId])
+  @@index([payerUserId])
 }
 
 enum CardType {
