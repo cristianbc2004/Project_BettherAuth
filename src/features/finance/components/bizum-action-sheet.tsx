@@ -20,10 +20,10 @@ import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
 export type BizumContact = {
-  alias: string;
+  detail: string;
   id: string;
   initials: string;
-  phone: string;
+  name: string;
 };
 
 export type BizumActionPayload = {
@@ -35,19 +35,15 @@ export type BizumActionPayload = {
 export type BizumSheetMode = "request" | "send";
 
 type BizumActionSheetProps = {
+  contacts: BizumContact[];
+  errorMessage?: string | null;
   isSubmitting: boolean;
   mode: BizumSheetMode;
   onClose: () => void;
+  onDismissError?: () => void;
   onSubmit: (payload: BizumActionPayload) => void;
   visible: boolean;
 };
-
-const bizumContacts: BizumContact[] = [
-  { alias: "Marta Lozano", id: "marta-lozano", initials: "ML", phone: "+34 611 203 144" },
-  { alias: "Paco Alvarez", id: "paco-alvarez", initials: "PA", phone: "+34 644 501 926" },
-  { alias: "Luis Romero", id: "luis-romero", initials: "LR", phone: "+34 688 114 320" },
-  { alias: "Paula Zamora", id: "paula-zamora", initials: "PZ", phone: "+34 622 775 418" },
-];
 
 function formatAmountPreview(value: string) {
   if (!value) {
@@ -63,7 +59,16 @@ function formatAmountPreview(value: string) {
   return `${normalized.toFixed(2).replace(".", ",")} EUR`;
 }
 
-export function BizumActionSheet({ isSubmitting, mode, onClose, onSubmit, visible }: BizumActionSheetProps) {
+export function BizumActionSheet({
+  contacts,
+  errorMessage,
+  isSubmitting,
+  mode,
+  onClose,
+  onDismissError,
+  onSubmit,
+  visible,
+}: BizumActionSheetProps) {
   const { resolvedThemeName, theme } = useAppTheme();
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -103,12 +108,25 @@ export function BizumActionSheet({ isSubmitting, mode, onClose, onSubmit, visibl
     }
   }, [isSubmitting, visible]);
 
+  useEffect(() => {
+    if (!selectedContactId) {
+      return;
+    }
+
+    const stillExists = contacts.some((contact) => contact.id === selectedContactId);
+
+    if (!stillExists) {
+      setSelectedContactId(null);
+    }
+  }, [contacts, selectedContactId]);
+
   const selectedContact = useMemo(
-    () => bizumContacts.find((contact) => contact.id === selectedContactId) ?? null,
-    [selectedContactId],
+    () => contacts.find((contact) => contact.id === selectedContactId) ?? null,
+    [contacts, selectedContactId],
   );
 
-  const isFormValid = Boolean(selectedContact) && Number(amount.replace(",", ".")) > 0;
+  const parsedAmount = Number(amount.replace(",", "."));
+  const isFormValid = Boolean(selectedContact) && Number.isFinite(parsedAmount) && parsedAmount > 0;
   const copy =
     mode === "send"
       ? {
@@ -134,7 +152,7 @@ export function BizumActionSheet({ isSubmitting, mode, onClose, onSubmit, visibl
 
     selectionHaptic();
     onSubmit({
-      amount: Number(amount.replace(",", ".")),
+      amount: parsedAmount,
       concept: concept.trim(),
       contact: selectedContact,
     });
@@ -272,10 +290,10 @@ export function BizumActionSheet({ isSubmitting, mode, onClose, onSubmit, visibl
                             </View>
                             <View className="flex-1">
                               <Text className="text-[15px] font-black" style={{ color: theme.text }}>
-                                {selectedContact.alias}
+                                {selectedContact.name}
                               </Text>
                               <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
-                                {selectedContact.phone}
+                                {selectedContact.detail}
                               </Text>
                             </View>
                           </>
@@ -285,7 +303,7 @@ export function BizumActionSheet({ isSubmitting, mode, onClose, onSubmit, visibl
                               Elige un contacto
                             </Text>
                             <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
-                              Recientes y favoritos disponibles
+                              Lista real de usuarios registrados
                             </Text>
                           </View>
                         )}
@@ -306,24 +324,25 @@ export function BizumActionSheet({ isSubmitting, mode, onClose, onSubmit, visibl
                           borderColor: theme.border,
                         }}
                       >
-                        {bizumContacts.map((contact, index) => {
+                        {contacts.map((contact, index) => {
                           const isSelected = selectedContactId === contact.id;
 
                           return (
                             <Pressable
                               key={contact.id}
-                              accessibilityLabel={`Seleccionar a ${contact.alias}`}
+                              accessibilityLabel={`Seleccionar a ${contact.name}`}
                               accessibilityRole="button"
                               className="flex-row items-center px-4 py-3.5"
                               onPress={() => {
                                 selectionHaptic();
+                                onDismissError?.();
                                 setSelectedContactId(contact.id);
                                 setIsComboboxOpen(false);
                               }}
                               style={{
                                 backgroundColor: isSelected ? theme.primarySoft : "transparent",
                                 borderBottomColor: theme.border,
-                                borderBottomWidth: index < bizumContacts.length - 1 ? StyleSheet.hairlineWidth : 0,
+                                borderBottomWidth: index < contacts.length - 1 ? StyleSheet.hairlineWidth : 0,
                               }}
                             >
                               <View
@@ -339,16 +358,28 @@ export function BizumActionSheet({ isSubmitting, mode, onClose, onSubmit, visibl
                               </View>
                               <View className="flex-1">
                                 <Text className="text-[14px] font-black" style={{ color: theme.text }}>
-                                  {contact.alias}
+                                  {contact.name}
                                 </Text>
                                 <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
-                                  {contact.phone}
+                                  {contact.detail}
                                 </Text>
                               </View>
                               {isSelected ? <Check color={theme.primary} size={18} strokeWidth={2.8} /> : null}
                             </Pressable>
                           );
                         })}
+                      </View>
+                    ) : contacts.length === 0 ? (
+                      <View
+                        className="rounded-[20px] border px-4 py-3"
+                        style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}
+                      >
+                        <Text className="text-[13px] font-black" style={{ color: theme.text }}>
+                          No hay usuarios disponibles
+                        </Text>
+                        <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+                          Crea otro usuario para probar envios o solicitudes de Bizum.
+                        </Text>
                       </View>
                     ) : null}
                   </View>
@@ -370,6 +401,7 @@ export function BizumActionSheet({ isSubmitting, mode, onClose, onSubmit, visibl
                         onBlur={() => setIsAmountFocused(false)}
                         onChangeText={(value) => {
                           const sanitizedValue = value.replace(/[^0-9,.-]/g, "").replace(".", ",");
+                          onDismissError?.();
                           setAmount(sanitizedValue);
                         }}
                         onFocus={() => setIsAmountFocused(true)}
@@ -424,6 +456,17 @@ export function BizumActionSheet({ isSubmitting, mode, onClose, onSubmit, visibl
                       />
                     </View>
                   </View>
+
+                  {errorMessage ? (
+                    <View
+                      className="rounded-[18px] border px-3 py-2.5"
+                      style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}
+                    >
+                      <Text className="text-[13px] font-black" style={{ color: theme.text }}>
+                        {errorMessage}
+                      </Text>
+                    </View>
+                  ) : null}
                 </ScrollView>
 
                 <View className="border-t pt-3" style={{ borderColor: theme.border }}>
