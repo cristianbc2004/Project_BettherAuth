@@ -1,10 +1,10 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { useMemo } from "react";
 
-import { useDeferredAppTheme } from "@/shared/lib/theme-context";
+import { useAppTheme } from "@/shared/lib/theme-context";
 
 export default function NativeTabsLayout() {
-  const { theme } = useDeferredAppTheme();
+  const { theme } = useAppTheme();
   const iconColor = useMemo(
     () => ({ default: theme.mutedText, selected: theme.primary }),
     [theme.mutedText, theme.primary],
