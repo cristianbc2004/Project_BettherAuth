@@ -4,36 +4,44 @@ import "@/shared/lib/i18n";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useMemo } from "react";
 
 import { WalletCardsProvider } from "@/features/finance/lib/wallet-cards-context";
 import { LanguageProvider } from "@/shared/lib/locale";
-import { AppThemeProvider, useAppTheme } from "@/shared/lib/theme-context";
+import { AppThemeProvider, useDeferredAppTheme } from "@/shared/lib/theme-context";
 
 function AppNavigation() {
-  const { resolvedThemeName, theme } = useAppTheme();
+  const { resolvedThemeName, theme } = useDeferredAppTheme();
   const baseNavigationTheme = resolvedThemeName === "dark" ? DarkTheme : DefaultTheme;
-  const navigationTheme = {
-    ...baseNavigationTheme,
-    colors: {
-      ...baseNavigationTheme.colors,
-      background: theme.background,
-      card: theme.card,
-      border: theme.border,
-      primary: theme.primary,
-      text: theme.text,
-    },
-  };
+  const navigationTheme = useMemo(
+    () => ({
+      ...baseNavigationTheme,
+      colors: {
+        ...baseNavigationTheme.colors,
+        background: theme.background,
+        card: theme.card,
+        border: theme.border,
+        primary: theme.primary,
+        text: theme.text,
+      },
+    }),
+    [baseNavigationTheme, theme.background, theme.border, theme.card, theme.primary, theme.text],
+  );
+  const screenOptions = useMemo(
+    () => ({
+      headerShown: false,
+      animation: "none" as const,
+      contentStyle: { backgroundColor: theme.background },
+    }),
+    [theme.background],
+  );
 
   return (
     <LanguageProvider>
       <ThemeProvider value={navigationTheme}>
         <StatusBar style={resolvedThemeName === "dark" ? "light" : "dark"} />
         <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: "none",
-            contentStyle: { backgroundColor: theme.background },
-          }}
+          screenOptions={screenOptions}
         >
           <Stack.Screen name="index" options={{ animation: "none" }} />
           <Stack.Screen name="(tabs)" options={{ animation: "none" }} />

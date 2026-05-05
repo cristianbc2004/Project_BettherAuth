@@ -1,29 +1,38 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
+import { useMemo } from "react";
 
-import { useAppTheme } from "@/shared/lib/theme-context";
+import { useDeferredAppTheme } from "@/shared/lib/theme-context";
 
 export default function NativeTabsLayout() {
-  const { theme } = useAppTheme();
+  const { theme } = useDeferredAppTheme();
+  const iconColor = useMemo(
+    () => ({ default: theme.mutedText, selected: theme.primary }),
+    [theme.mutedText, theme.primary],
+  );
+  const labelStyle = useMemo(
+    () => ({
+      default: {
+        color: theme.mutedText,
+        fontSize: 11,
+        fontWeight: "600" as const,
+      },
+      selected: {
+        color: theme.primary,
+        fontSize: 11,
+        fontWeight: "700" as const,
+      },
+    }),
+    [theme.mutedText, theme.primary],
+  );
 
   return (
     <NativeTabs
       backBehavior="history"
       backgroundColor={theme.background}
       badgeBackgroundColor={theme.primary}
-      iconColor={{ default: theme.mutedText, selected: theme.primary }}
+      iconColor={iconColor}
       indicatorColor={theme.primarySoft}
-      labelStyle={{
-        default: {
-          color: theme.mutedText,
-          fontSize: 11,
-          fontWeight: "600",
-        },
-        selected: {
-          color: theme.primary,
-          fontSize: 11,
-          fontWeight: "700",
-        },
-      }}
+      labelStyle={labelStyle}
       labelVisibilityMode="labeled"
       rippleColor={theme.primarySoft}
     >

@@ -1,5 +1,4 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useColorScheme as useNativeWindColorScheme } from "nativewind";
 import {
   createContext,
   useCallback,
@@ -9,12 +8,13 @@ import {
   useMemo,
   useState,
 } from "react";
-import { InteractionManager, useColorScheme } from "react-native";
+import { AppState, Appearance } from "react-native";
 
 import { type AppTheme, type ThemeMode, type ThemeName, themes } from "@/shared/lib/theme-tokens";
 
 const THEME_STORAGE_KEY = "@better_auth_dashboard_theme";
 const themeModes: ThemeMode[] = ["system", "light", "dark"];
+type ScheduledFrame = ReturnType<typeof setTimeout> | number;
 
 type AppThemeContextValue = {
   resolvedThemeName: ThemeName;
@@ -30,14 +30,39 @@ function isThemeMode(value: string | null): value is ThemeMode {
   return value === "system" || value === "light" || value === "dark";
 }
 
+type SystemColorScheme = "dark" | "light" | "unspecified" | null | undefined;
+
+function resolveSystemTheme(colorScheme: SystemColorScheme): ThemeName {
+  return colorScheme === "dark" ? "dark" : "light";
+}
+
+function scheduleThemeFrame(callback: () => void): ScheduledFrame {
+  if (typeof requestAnimationFrame === "function") {
+    return requestAnimationFrame(() => {
+      callback();
+    });
+  }
+
+  return setTimeout(callback, 0);
+}
+
+function cancelThemeFrame(frame: ScheduledFrame) {
+  if (typeof cancelAnimationFrame === "function" && typeof frame === "number") {
+    cancelAnimationFrame(frame);
+    return;
+  }
+
+  clearTimeout(frame);
+}
+
 export function AppThemeProvider({ children }: PropsWithChildren) {
-  const systemColorScheme = useColorScheme();
-  const { setColorScheme } = useNativeWindColorScheme();
   const [themeMode, setThemeModeState] = useState<ThemeMode>("system");
+  const [systemThemeName, setSystemThemeName] = useState<ThemeName>(() =>
+    resolveSystemTheme(Appearance.getColorScheme()),
+  );
 
   // "system" is a preference, but the app still needs a concrete palette to render.
-  const resolvedThemeName: ThemeName =
-    themeMode === "system" ? (systemColorScheme === "dark" ? "dark" : "light") : themeMode;
+  const resolvedThemeName: ThemeName = themeMode === "system" ? systemThemeName : themeMode;
   const theme = themes[resolvedThemeName];
 
   useEffect(() => {
@@ -48,7 +73,10 @@ export function AppThemeProvider({ children }: PropsWithChildren) {
 
         if (isThemeMode(savedTheme)) {
           setThemeModeState(savedTheme);
+          return;
         }
+
+        setThemeModeState("system");
       } catch {
         setThemeModeState("system");
       }
@@ -58,20 +86,32 @@ export function AppThemeProvider({ children }: PropsWithChildren) {
   }, []);
 
   useEffect(() => {
-    // Keep NativeWind's dark: classes aligned with the selected app theme mode.
-    setColorScheme(themeMode);
-  }, [setColorScheme, themeMode]);
+    const syncSystemTheme = (colorScheme: SystemColorScheme) => {
+      setSystemThemeName(resolveSystemTheme(colorScheme));
+    };
+
+    const appearanceSubscription = Appearance.addChangeListener((state) => {
+      syncSystemTheme(state.colorScheme);
+    });
+    const appStateSubscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        syncSystemTheme(Appearance.getColorScheme());
+      }
+    });
+
+    return () => {
+      appearanceSubscription.remove();
+      appStateSubscription.remove();
+    };
+  }, []);
 
   const persistThemeMode = useCallback((mode: ThemeMode) => {
-    InteractionManager.runAfterInteractions(() => {
-      void AsyncStorage.setItem(THEME_STORAGE_KEY, mode).catch(() => {
-        // Persistence failure should not block the in-memory theme update.
-      });
+    void AsyncStorage.setItem(THEME_STORAGE_KEY, mode).catch(() => {
+      // Persistence failure should not block the in-memory theme update.
     });
   }, []);
 
   const setThemeMode = useCallback((mode: ThemeMode) => {
-    // Update immediately for responsive UI, then persist after the current interaction finishes.
     setThemeModeState((currentMode) => (currentMode === mode ? currentMode : mode));
     persistThemeMode(mode);
   }, [persistThemeMode]);
@@ -109,4 +149,21 @@ export function useAppTheme() {
   }
 
   return context;
+}
+
+export function useDeferredAppTheme() {
+  const context = useAppTheme();
+  const [deferredContext, setDeferredContext] = useState(context);
+
+  useEffect(() => {
+    const frame = scheduleThemeFrame(() => {
+      setDeferredContext(context);
+    });
+
+    return () => {
+      cancelThemeFrame(frame);
+    };
+  }, [context]);
+
+  return deferredContext;
 }

@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "scheme": "better-auth-dashboard",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/logo.png",
       "resizeMode": "contain",

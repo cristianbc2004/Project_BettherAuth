@@ -9,6 +9,12 @@ const modeLabels = {
   system: "System",
 } as const;
 
+function scheduleSelectionHaptic() {
+  requestAnimationFrame(() => {
+    selectionHaptic();
+  });
+}
+
 export function ThemeToggle() {
   const { theme, themeMode, toggleThemeMode } = useAppTheme();
 
@@ -26,8 +32,8 @@ export function ThemeToggle() {
         className="rounded-full px-3 py-2"
         hitSlop={8}
         onPress={() => {
-          selectionHaptic();
           void toggleThemeMode();
+          scheduleSelectionHaptic();
         }}
         style={{ backgroundColor: theme.primarySoft }}
       >

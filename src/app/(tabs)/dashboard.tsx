@@ -10,20 +10,25 @@ import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, type AppLocale, useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
-import type { ThemeMode } from "@/shared/lib/theme-tokens";
+import type { AppTheme, ThemeMode } from "@/shared/lib/theme-tokens";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+
+function scheduleSelectionHaptic() {
+  requestAnimationFrame(() => {
+    selectionHaptic();
+  });
+}
 
 type MenuRowProps = {
   detail?: string;
   icon?: ImageSourcePropType;
   label: string;
   onPress: () => void;
+  theme: AppTheme;
   tone?: "default" | "danger";
 };
 
-function MenuRow({ detail, icon, label, onPress, tone = "default" }: MenuRowProps) {
-  const { theme } = useAppTheme();
-
+function MenuRow({ detail, icon, label, onPress, theme, tone = "default" }: MenuRowProps) {
   return (
     <Pressable
       className="flex-row items-center border-b px-1 py-4"
@@ -62,9 +67,7 @@ function MenuRow({ detail, icon, label, onPress, tone = "default" }: MenuRowProp
   );
 }
 
-function SectionLabel({ label }: { label: string }) {
-  const { theme } = useAppTheme();
-
+function SectionLabel({ label, theme }: { label: string; theme: AppTheme }) {
   return (
     <Text
       className="mb-4 mt-8 px-1 text-xs font-medium uppercase tracking-[1.5px]"
@@ -79,17 +82,17 @@ type ThemeModeSelectorProps = {
   icons: Record<"dark" | "light" | "system", ImageSourcePropType>;
   onSelect: (mode: ThemeMode) => void;
   selectedMode: ThemeMode;
+  theme: AppTheme;
   title: string;
 };
 
 type OptionSelectorFrameProps = {
   children: ReactNode;
+  theme: AppTheme;
   title: string;
 };
 
-function OptionSelectorFrame({ children, title }: OptionSelectorFrameProps) {
-  const { theme } = useAppTheme();
-
+function OptionSelectorFrame({ children, theme, title }: OptionSelectorFrameProps) {
   return (
     <View
       className="mb-5 px-1 py-2"
@@ -102,8 +105,7 @@ function OptionSelectorFrame({ children, title }: OptionSelectorFrameProps) {
   );
 }
 
-function ThemeModeSelector({ icons, onSelect, selectedMode, title }: ThemeModeSelectorProps) {
-  const { theme } = useAppTheme();
+function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: ThemeModeSelectorProps) {
   const { t } = useTranslation();
   const options: Array<{ label: string; mode: ThemeMode }> = [
     { label: t("dashboard.themeLight"), mode: "light" },
@@ -112,7 +114,7 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, title }: ThemeModeSe
   ];
 
   return (
-    <OptionSelectorFrame title={title}>
+    <OptionSelectorFrame theme={theme} title={title}>
       <View className="flex-row gap-3">
         {options.map((option) => {
           const isSelected = selectedMode === option.mode;
@@ -124,8 +126,8 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, title }: ThemeModeSe
               className="flex-1 items-center rounded-[18px] px-3 py-3"
               key={option.mode}
               onPress={() => {
-                selectionHaptic();
                 onSelect(option.mode);
+                scheduleSelectionHaptic();
               }}
               style={{
                 backgroundColor: isSelected ? theme.primarySoft : theme.backgroundMuted,
@@ -156,11 +158,11 @@ type LanguageSelectorProps = {
   icons: Record<AppLocale, ImageSourcePropType>;
   onSelect: (locale: AppLocale) => void;
   selectedLocale: AppLocale;
+  theme: AppTheme;
   title: string;
 };
 
-function LanguageSelector({ icons, onSelect, selectedLocale, title }: LanguageSelectorProps) {
-  const { theme } = useAppTheme();
+function LanguageSelector({ icons, onSelect, selectedLocale, theme, title }: LanguageSelectorProps) {
   const { t } = useTranslation();
   const options: Array<{ label: string; locale: AppLocale }> = [
     { label: t("dashboard.languageSpanish"), locale: "es" },
@@ -168,7 +170,7 @@ function LanguageSelector({ icons, onSelect, selectedLocale, title }: LanguageSe
   ];
 
   return (
-    <OptionSelectorFrame title={title}>
+    <OptionSelectorFrame theme={theme} title={title}>
       <View className="flex-row gap-3">
         {options.map((option) => {
           const isSelected = selectedLocale === option.locale;
@@ -265,7 +267,7 @@ export default function DashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View>
-          <SectionLabel label={t("dashboard.profileSection")} />
+          <SectionLabel label={t("dashboard.profileSection")} theme={theme} />
           <View
             className="flex-row items-center px-1 py-3"
             style={{
@@ -291,7 +293,7 @@ export default function DashboardScreen() {
         </View>
 
         <View>
-          <SectionLabel label={t("dashboard.authenticationSection")} />
+          <SectionLabel label={t("dashboard.authenticationSection")} theme={theme} />
           <MenuRow
             icon={dashboardIcons.password}
             label={t("dashboard.changePasswordOption")}
@@ -299,6 +301,7 @@ export default function DashboardScreen() {
               selectionHaptic();
               router.navigate("/change-password" as never);
             }}
+            theme={theme}
           />
           <MenuRow
             icon={dashboardIcons.twoFactor}
@@ -307,11 +310,12 @@ export default function DashboardScreen() {
               selectionHaptic();
               router.navigate("/two-factor" as never);
             }}
+            theme={theme}
           />
         </View>
 
         <View>
-          <SectionLabel label={t("dashboard.appSection")} />
+          <SectionLabel label={t("dashboard.appSection")} theme={theme} />
           <LanguageSelector
             icons={{
               en: dashboardIcons.en,
@@ -321,6 +325,7 @@ export default function DashboardScreen() {
               void setLocale(nextLocale);
             }}
             selectedLocale={locale}
+            theme={theme}
             title={t("dashboard.languageOption")}
           />
           <ThemeModeSelector
@@ -333,13 +338,14 @@ export default function DashboardScreen() {
               void setThemeMode(mode);
             }}
             selectedMode={themeMode}
+            theme={theme}
             title={t("dashboard.themeOption")}
           />
         </View>
 
         {isAdmin ? (
           <View>
-            <SectionLabel label={t("dashboard.adminSection")} />
+            <SectionLabel label={t("dashboard.adminSection")} theme={theme} />
             <MenuRow
               icon={dashboardIcons.admin}
               label={t("dashboard.adminPanelOption")}
@@ -347,12 +353,13 @@ export default function DashboardScreen() {
                 selectionHaptic();
                 router.navigate("/admin" as never);
               }}
+              theme={theme}
             />
           </View>
         ) : null}
 
         <View>
-          <SectionLabel label={t("dashboard.sessionSection")} />
+          <SectionLabel label={t("dashboard.sessionSection")} theme={theme} />
           <MenuRow
             icon={dashboardIcons.out}
             label={t("dashboard.signOut")}
@@ -368,6 +375,7 @@ export default function DashboardScreen() {
                 },
               });
             }}
+            theme={theme}
             tone="danger"
           />
         </View>
