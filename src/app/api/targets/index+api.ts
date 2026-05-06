@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { auth } from "@/features/auth/services/auth";
+import { extractAuditRequestMeta, registrarAuditoria } from "@/shared/lib/auditoria";
 import { prisma } from "@/shared/lib/prisma";
 
 const targetTypes = ["VISA", "MASTERCARD", "CHASBACK", "ORO"] as const;
@@ -17,18 +18,42 @@ const targetSchema = z.object({
   type: z.enum(targetTypes),
 });
 
-async function getAuthenticatedUserId(request: Request) {
+async function getAuthenticatedUser(request: Request) {
   const session = await auth.api.getSession({
     headers: request.headers,
   });
 
-  return session?.user.id ?? null;
+  if (!session?.user.id) {
+    return null;
+  }
+
+  const user = await prisma.user.findUnique({
+    select: {
+      id: true,
+      name: true,
+      role: true,
+    },
+    where: {
+      id: session.user.id,
+    },
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    role: user.role,
+    sessionId: session.session.id,
+  };
 }
 
 export async function GET(request: Request) {
-  const userId = await getAuthenticatedUserId(request);
+  const authenticatedUser = await getAuthenticatedUser(request);
 
-  if (!userId) {
+  if (!authenticatedUser) {
     return Response.json({ error: "No autorizado." }, { status: 401 });
   }
 
@@ -43,22 +68,33 @@ export async function GET(request: Request) {
       numberTarget: true,
       type: true,
     },
-    where: { userId },
+    where: { userId: authenticatedUser.id },
   });
 
   return Response.json({ targets });
 }
 
 export async function POST(request: Request) {
-  const userId = await getAuthenticatedUserId(request);
+  const auditMeta = extractAuditRequestMeta(request);
+  const authenticatedUser = await getAuthenticatedUser(request);
 
-  if (!userId) {
+  if (!authenticatedUser) {
     return Response.json({ error: "No autorizado." }, { status: 401 });
   }
 
   const result = targetSchema.safeParse(await request.json().catch(() => null));
 
   if (!result.success) {
+    await registrarAuditoria({
+      ...auditMeta,
+      action: "CARD_CREATE",
+      errorMensaje: result.error.issues[0]?.message ?? "Datos invalidos.",
+      status: "FAILED",
+      table: "targets",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
     return Response.json({ error: result.error.issues[0]?.message ?? "Datos invalidos." }, { status: 400 });
   }
 
@@ -70,7 +106,7 @@ export async function POST(request: Request) {
         name: result.data.name,
         numberTarget: result.data.numberTarget,
         type: result.data.type,
-        userId,
+        userId: authenticatedUser.id,
       },
       select: {
         balanceCents: true,
@@ -83,8 +119,34 @@ export async function POST(request: Request) {
       },
     });
 
+    await registrarAuditoria({
+      ...auditMeta,
+      action: "CARD_CREATE",
+      newvaluePayload: {
+        balanceCents: target.balanceCents,
+        targetId: target.id,
+        type: target.type,
+      },
+      sessionId: authenticatedUser.sessionId,
+      status: "SUCCESS",
+      table: "targets",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
+
     return Response.json({ target }, { status: 201 });
   } catch {
+    await registrarAuditoria({
+      ...auditMeta,
+      action: "CARD_CREATE",
+      errorMensaje: "Ya existe un target con ese numero.",
+      status: "FAILED",
+      table: "targets",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
     return Response.json({ error: "Ya existe un target con ese numero." }, { status: 409 });
   }
 }
