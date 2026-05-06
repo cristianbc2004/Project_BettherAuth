@@ -14,14 +14,7 @@ import { StatusMessage } from "@/shared/components/ui/status-message";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
-
-type AdminUser = {
-  id: string;
-  name: string;
-  email: string;
-  role?: string | null;
-  banned?: boolean | null;
-};
+import type { AdminUser } from "@/shared/types/admin";
 
 export default function DeleteUserScreen() {
   const { data: session, isPending } = authClient.useSession();

@@ -9,4 +9,4 @@ export const mockIngresos = {
 } as const;
 
 export { incomeChart, incomeGeneral, incomePeople };
-export type { IncomePerson, MonthlyIncomePoint } from "@/features/ingresos/mocks/types";
+export type { IncomePerson, MonthlyIncomePoint } from "@/shared/types/ingresos";

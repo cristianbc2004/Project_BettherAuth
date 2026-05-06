@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 
-import type { WalletCardNetwork } from "@/features/finance/mocks";
+import type { WalletCardNetwork } from "@/shared/types/finance";
 
 type CardNetworkBadgeProps = {
   color: string;

@@ -13,7 +13,7 @@ import {
   Zap,
 } from "lucide-react-native";
 
-import type { Transaction } from "@/features/finance/mocks/types";
+import type { Transaction } from "@/shared/types/finance";
 
 const TOTAL_TRANSACTION_COUNT = 1500;
 

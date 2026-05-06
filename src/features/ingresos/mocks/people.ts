@@ -1,4 +1,4 @@
-import type { IncomePerson } from "@/features/ingresos/mocks/types";
+import type { IncomePerson } from "@/shared/types/ingresos";
 
 export const incomePeople: IncomePerson[] = [
   {
