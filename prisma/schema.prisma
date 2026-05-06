@@ -217,6 +217,26 @@ model Notification {
   @@map("notifications")
 }
 
+model Auditoria {
+  id              String   @id @default(cuid())
+  userId          String?
+  userName        String?
+  userRol         String?
+  action          String
+  table           String
+  oldvaluePayload Json?
+  newvaluePayload Json?
+  timestamp       DateTime @default(now())
+  ipAddress       String?
+  userAgent       String?
+  status          String
+  errorMensaje    String?
+  targetUserId    String?
+  sessionId       String?
+  endpoint        String?
+  source          String?
+}
+
 enum CardType {
   VISA
   MASTERCARD
