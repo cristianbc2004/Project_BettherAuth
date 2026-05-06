@@ -202,7 +202,7 @@ export default function HomeScreen() {
                 accessibilityLabel="Open notifications"
                 onPress={() => {
                   selectionHaptic();
-                  router.navigate("/notifications" as never);
+                  router.navigate("/notification" as never);
                 }}
               >
                 <Bell color={theme.text} size={24} strokeWidth={2.1} />

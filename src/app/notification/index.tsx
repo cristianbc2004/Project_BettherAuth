@@ -1,6 +1,7 @@
-import { type ComponentType, useEffect, useState } from "react";
+import { useCallback, type ComponentType, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { Redirect } from "expo-router";
+import { Redirect, router } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { ArrowDownLeft, ArrowRightLeft, Bell, CircleAlert, Send, Wallet } from "lucide-react-native";
 import Animated, { Easing, FadeInDown, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,17 +10,25 @@ import { authClient } from "@/features/auth/services/auth-client";
 import { AppBackButton } from "@/shared/components/ui/app-back-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { appConfig } from "@/shared/lib/app-config";
+import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
+type NotificationActionPayload = {
+  bizumRequestId?: string;
+};
+
 type NotificationItem = {
   accent: string;
+  actionPayload?: NotificationActionPayload | null;
+  bizumRequestId?: string | null;
   body?: string | null;
   icon: ComponentType<any>;
   iconAccent: string;
   id: string;
   title: string;
   timestamp: string;
+  type: NotificationType;
   unread: boolean;
 };
 
@@ -27,6 +36,8 @@ type NotificationType = "TRANSFER" | "BIZUM_REQUEST" | "BIZUM_SENT" | "BIZUM_REC
 
 type NotificationsGetResponse = {
   notifications: Array<{
+    actionPayload?: NotificationActionPayload | null;
+    bizumRequestId?: string | null;
     body?: string | null;
     createdAt: string;
     emisorName?: string | null;
@@ -66,37 +77,58 @@ function mapNotificationToItem(notification: NotificationsGetResponse["notificat
 
   return {
     accent: accents.accent,
+    actionPayload: notification.actionPayload,
+    bizumRequestId: notification.bizumRequestId,
     body: notification.body,
     icon: accents.icon,
     iconAccent: accents.iconAccent,
     id: notification.id,
     timestamp: notification.timestamp,
     title: notification.title,
+    type: notification.type,
     unread: notification.isUnread,
   };
 }
 
-function NotificationRow({ accent, body, icon, iconAccent, timestamp, title, unread }: NotificationItem) {
+function resolveBizumRequestId(item: NotificationItem) {
+  if (item.bizumRequestId) {
+    return item.bizumRequestId;
+  }
+
+  return item.actionPayload?.bizumRequestId ?? null;
+}
+
+function NotificationRow({
+  accent,
+  body,
+  icon,
+  iconAccent,
+  onPress,
+  timestamp,
+  title,
+  unread,
+}: NotificationItem & { onPress?: () => void }) {
   const { theme } = useAppTheme();
   const Icon = icon;
 
   return (
-    <Pressable className="flex-row items-center px-2 py-5">
-      <View
-        className="mr-4 h-14 w-14 items-center justify-center rounded-full"
-        style={{ backgroundColor: accent }}
-      >
+    <Pressable className="flex-row items-center px-2 py-5" disabled={!onPress} onPress={onPress}>
+      <View className="mr-4 h-14 w-14 items-center justify-center rounded-full" style={{ backgroundColor: accent }}>
         <Icon color={iconAccent} size={22} strokeWidth={2.4} />
       </View>
 
       <View className="flex-1">
-        <Text className="text-[17px] font-semibold" style={{ color: theme.text }}>{title}</Text>
+        <Text className="text-[17px] font-semibold" style={{ color: theme.text }}>
+          {title}
+        </Text>
         {body ? (
           <Text className="mt-1 text-[13px] leading-5" numberOfLines={2} style={{ color: theme.mutedText }}>
             {body}
           </Text>
         ) : null}
-        <Text className="mt-1 text-sm" style={{ color: theme.mutedText }}>{timestamp}</Text>
+        <Text className="mt-1 text-sm" style={{ color: theme.mutedText }}>
+          {timestamp}
+        </Text>
       </View>
 
       {unread ? <View className="ml-3 h-3 w-3 rounded-full" style={{ backgroundColor: theme.primary }} /> : null}
@@ -112,35 +144,37 @@ export default function NotificationsScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
-  useEffect(() => {
-    if (!session?.user.id) {
-      return;
-    }
+  const loadNotifications = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage(null);
 
-    // Carga inicial de notificaciones al tener sesion disponible.
-    const loadNotifications = async () => {
-      try {
-        setIsLoading(true);
-        setErrorMessage(null);
-
-        const response = await fetchNotifications();
-        if (!response.ok) {
-          setErrorMessage("No se pudieron cargar las notificaciones.");
-          return;
-        }
-
-        const payload = (await response.json()) as NotificationsGetResponse;
-        // Adapta la respuesta del backend al shape usado por la UI.
-        setNotifications((payload.notifications ?? []).map(mapNotificationToItem));
-      } catch {
+      const response = await fetchNotifications();
+      if (!response.ok) {
         setErrorMessage("No se pudieron cargar las notificaciones.");
-      } finally {
-        setIsLoading(false);
+        return;
       }
-    };
 
-    void loadNotifications();
-  }, [session?.user.id]);
+      const payload = (await response.json()) as NotificationsGetResponse;
+      // Adapta la respuesta del backend al shape usado por la UI.
+      setNotifications((payload.notifications ?? []).map(mapNotificationToItem));
+    } catch {
+      setErrorMessage("No se pudieron cargar las notificaciones.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!session?.user.id) {
+        return;
+      }
+
+      // Carga inicial y recarga al volver de la modal de pago.
+      void loadNotifications();
+    }, [loadNotifications, session?.user.id]),
+  );
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -156,11 +190,7 @@ export default function NotificationsScreen() {
         <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
       </View>
 
-      <ScrollView
-        bounces={false}
-        contentContainerClassName="px-5 pb-10 pt-6"
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView bounces={false} contentContainerClassName="px-5 pb-10 pt-6" showsVerticalScrollIndicator={false}>
         <View className="mb-8 flex-row items-center">
           <AppBackButton fallbackHref={"/home" as never} />
 
@@ -214,19 +244,31 @@ export default function NotificationsScreen() {
 
         {notifications.length > 0 ? (
           <View>
-            {notifications.map((item, index) => (
-              <Animated.View
-                entering={FadeInDown.duration(460)
-                  .delay(index * 120)
-                  .easing(Easing.out(Easing.quad))}
-                key={item.id}
-              >
-                <NotificationRow {...item} />
-                {index < notifications.length - 1 ? (
-                  <View className="mx-2 h-px" style={{ backgroundColor: theme.border }} />
-                ) : null}
-              </Animated.View>
-            ))}
+            {notifications.map((item, index) => {
+              const requestId = item.type === "BIZUM_REQUEST" ? resolveBizumRequestId(item) : null;
+              const rowOnPress =
+                requestId && item.type === "BIZUM_REQUEST"
+                  ? () => {
+                      selectionHaptic();
+                      router.push({
+                        pathname: "/notification/pay-request",
+                        params: { requestId },
+                      } as never);
+                    }
+                  : undefined;
+
+              return (
+                <Animated.View
+                  entering={FadeInDown.duration(460)
+                    .delay(index * 120)
+                    .easing(Easing.out(Easing.quad))}
+                  key={item.id}
+                >
+                  <NotificationRow {...item} onPress={rowOnPress} />
+                  {index < notifications.length - 1 ? <View className="mx-2 h-px" style={{ backgroundColor: theme.border }} /> : null}
+                </Animated.View>
+              );
+            })}
           </View>
         ) : null}
       </ScrollView>
