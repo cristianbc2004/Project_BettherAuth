@@ -1,10 +1,16 @@
+import { Redirect } from "expo-router";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { useMemo } from "react";
 
+import { authClient } from "@/features/auth/services/auth-client";
+import { StartupSplashScreen } from "@/shared/components/ui/startup-splash-screen";
+import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
 export default function NativeTabsLayout() {
+  const { data: session, isPending } = authClient.useSession();
   const { theme } = useAppTheme();
+  const showSessionLoading = useSessionLoadingDelay(isPending);
   const iconColor = useMemo(
     () => ({ default: theme.mutedText, selected: theme.primary }),
     [theme.mutedText, theme.primary],
@@ -24,6 +30,14 @@ export default function NativeTabsLayout() {
     }),
     [theme.mutedText, theme.primary],
   );
+
+  if (showSessionLoading) {
+    return <StartupSplashScreen />;
+  }
+
+  if (!session?.user) {
+    return <Redirect href="/sign-in" />;
+  }
 
   return (
     <NativeTabs
