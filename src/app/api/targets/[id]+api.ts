@@ -45,6 +45,7 @@ export async function PATCH(request: Request, { id }: { id: string }) {
       block: result.data.block,
     },
     select: {
+      balanceCents: true,
       block: true,
       cvc: true,
       id: true,
