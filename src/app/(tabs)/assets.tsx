@@ -1,6 +1,7 @@
 import { Redirect, router } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { ArrowDownLeft, ArrowUpRight, Zap } from "lucide-react-native";
 import Animated, { Easing, FadeInDown, FadeOutUp, LinearTransition } from "react-native-reanimated";
 
@@ -118,43 +119,50 @@ export default function AssetsScreen() {
   const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const notificationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
+  const loadBizumData = useCallback(async () => {
     if (!session?.user.id) {
       return;
     }
 
-    const loadBizumData = async () => {
-      try {
-        setIsBizumDataLoading(true);
-        const response = await fetchBizumRequest();
+    try {
+      setIsBizumDataLoading(true);
+      const response = await fetchBizumRequest();
 
-        if (!response.ok) {
-          setBizumError("No se pudo cargar Bizum. Intentalo de nuevo.");
-          return;
-        }
-
-        const payload = (await response.json()) as BizumGetResponse;
-        setAvailableBalanceCents(payload.availableBalanceCents ?? 0);
-        setContacts(payload.contacts ?? []);
-        setMovements(
-          (payload.movements ?? []).map((movement) => ({
-            amount: movement.amount,
-            date: formatMovementDate(movement.createdAt),
-            id: movement.id,
-            initials: movement.initials,
-            name: movement.name,
-            tone: movement.tone,
-          })),
-        );
-      } catch {
+      if (!response.ok) {
         setBizumError("No se pudo cargar Bizum. Intentalo de nuevo.");
-      } finally {
-        setIsBizumDataLoading(false);
+        return;
       }
-    };
 
-    void loadBizumData();
+      const payload = (await response.json()) as BizumGetResponse;
+      setAvailableBalanceCents(payload.availableBalanceCents ?? 0);
+      setContacts(payload.contacts ?? []);
+      setMovements(
+        (payload.movements ?? []).map((movement) => ({
+          amount: movement.amount,
+          date: formatMovementDate(movement.createdAt),
+          id: movement.id,
+          initials: movement.initials,
+          name: movement.name,
+          tone: movement.tone,
+        })),
+      );
+    } catch {
+      setBizumError("No se pudo cargar Bizum. Intentalo de nuevo.");
+    } finally {
+      setIsBizumDataLoading(false);
+    }
   }, [session?.user.id]);
+
+  useEffect(() => {
+    void loadBizumData();
+  }, [loadBizumData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Al volver de pagar una solicitud, refrescamos saldo y ultimos movimientos.
+      void loadBizumData();
+    }, [loadBizumData]),
+  );
 
   useEffect(() => {
     return () => {
