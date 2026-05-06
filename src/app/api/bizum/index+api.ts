@@ -39,6 +39,7 @@ function toMoneyLabel(cents: number) {
 }
 
 async function getAuthenticatedUser(request: Request) {
+  // Recupera la sesion y devuelve el usuario autenticado con datos minimos.
   const session = await auth.api.getSession({
     headers: request.headers,
   });
@@ -94,6 +95,7 @@ export async function GET(request: Request) {
     return Response.json({ error: "No autorizado." }, { status: 401 });
   }
 
+  // Carga en paralelo los contactos reales, los movimientos y los saldos del usuario.
   const [contacts, transfers, balances] = await Promise.all([
     prisma.user.findMany({
       orderBy: { name: "asc" },
@@ -177,6 +179,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "No autorizado." }, { status: 401 });
   }
 
+  // Valida y normaliza el payload de entrada para acciones send/request.
   const result = createBizumSchema.safeParse(await request.json().catch(() => null));
 
   if (!result.success) {
@@ -208,18 +211,49 @@ export async function POST(request: Request) {
   }
 
   if (action === "request") {
-    const bizumRequest = await prisma.bizumRequest.create({
-      data: {
-        amountCents,
-        concept: concept || null,
-        payerUserId: contactUser.id,
-        referenceCode: buildReferenceCode("BQR"),
-        requesterUserId: authenticatedUser.id,
-      },
-      select: {
-        amountCents: true,
-        id: true,
-      },
+    // Pedir Bizum no mueve dinero: crea BizumRequest y notificacion BIZUM_REQUEST.
+    const requestConcept = concept.trim();
+    const bizumRequest = await prisma.$transaction(async (tx) => {
+      const createdRequest = await tx.bizumRequest.create({
+        data: {
+          amountCents,
+          concept: requestConcept || null,
+          payerUserId: contactUser.id,
+          referenceCode: buildReferenceCode("BQR"),
+          requesterUserId: authenticatedUser.id,
+        },
+        select: {
+          amountCents: true,
+          id: true,
+        },
+      });
+
+      const requesterName = authenticatedUser.name.trim() || "Un usuario";
+      const amountLabel = toMoneyLabel(amountCents);
+      const requestBody = requestConcept
+        ? `${requesterName} te solicita ${amountLabel}. Concepto: ${requestConcept}`
+        : `${requesterName} te solicita ${amountLabel}.`;
+
+      await tx.notification.create({
+        data: {
+          actionPayload: {
+            amountCents,
+            amountLabel,
+            bizumRequestId: createdRequest.id,
+            concept: requestConcept || null,
+            requesterUserId: authenticatedUser.id,
+          },
+          actionRoute: "/notifications",
+          bizumRequestId: createdRequest.id,
+          body: requestBody,
+          title: "Nueva solicitud de Bizum",
+          type: "BIZUM_REQUEST",
+          userDestinationId: contactUser.id,
+          userEmisorId: authenticatedUser.id,
+        },
+      });
+
+      return createdRequest;
     });
 
     return Response.json(
@@ -268,6 +302,7 @@ export async function POST(request: Request) {
   });
 
   const transfer = await prisma.$transaction(async (tx) => {
+    // Enviar Bizum si mueve saldo entre tarjetas y actualiza balances agregados.
     const createdTransfer = await tx.bizumTransfer.create({
       data: {
         amountCents,

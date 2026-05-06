@@ -43,6 +43,7 @@ function getAuthCookie() {
 }
 
 async function fetchNotifications() {
+  // Consulta al endpoint real de notificaciones (no usa mock local).
   return fetch(`${appConfig.authApiUrl}/api/notifications`, {
     headers: {
       "Content-Type": "application/json",
@@ -52,6 +53,7 @@ async function fetchNotifications() {
 }
 
 function mapNotificationToItem(notification: NotificationsGetResponse["notifications"][number]): NotificationItem {
+  // Mapea el tipo de notificacion a icono y paleta visual consistente.
   const accentByType: Record<NotificationType, { accent: string; icon: ComponentType<any>; iconAccent: string }> = {
     ALERT: { accent: "#3f2b1b", icon: CircleAlert, iconAccent: "#f0b245" },
     BIZUM_RECEIVED: { accent: "#203946", icon: Wallet, iconAccent: "#4dc4ff" },
@@ -115,6 +117,7 @@ export default function NotificationsScreen() {
       return;
     }
 
+    // Carga inicial de notificaciones al tener sesion disponible.
     const loadNotifications = async () => {
       try {
         setIsLoading(true);
@@ -127,6 +130,7 @@ export default function NotificationsScreen() {
         }
 
         const payload = (await response.json()) as NotificationsGetResponse;
+        // Adapta la respuesta del backend al shape usado por la UI.
         setNotifications((payload.notifications ?? []).map(mapNotificationToItem));
       } catch {
         setErrorMessage("No se pudieron cargar las notificaciones.");
@@ -174,6 +178,7 @@ export default function NotificationsScreen() {
         </Text>
 
         {isLoading ? (
+          // Estado de carga mientras se resuelve la peticion.
           <Animated.View entering={FadeInDown.duration(260)} exiting={FadeOut.duration(180)}>
             <Text className="px-2 text-sm" style={{ color: theme.mutedText }}>
               Cargando notificaciones...
@@ -182,6 +187,7 @@ export default function NotificationsScreen() {
         ) : null}
 
         {errorMessage ? (
+          // Estado de error para fallos de red o respuesta no exitosa.
           <Animated.View
             entering={FadeInDown.duration(260).easing(Easing.out(Easing.quad))}
             className="mb-3 rounded-[18px] border px-3 py-2.5"
@@ -194,6 +200,7 @@ export default function NotificationsScreen() {
         ) : null}
 
         {!isLoading && notifications.length === 0 && !errorMessage ? (
+          // Estado vacio cuando no existe actividad en Notification.
           <View className="rounded-[20px] border px-4 py-4" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
             <Bell color={theme.mutedText} size={20} strokeWidth={2.4} />
             <Text className="mt-3 text-[15px] font-black" style={{ color: theme.text }}>
