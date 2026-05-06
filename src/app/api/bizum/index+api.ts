@@ -389,6 +389,32 @@ export async function POST(request: Request) {
       }),
     ]);
 
+    const senderName = authenticatedUser.name.trim() || "Un usuario";
+    const amountLabel = toMoneyLabel(amountCents);
+    const sendConcept = concept.trim();
+    const sendBody = sendConcept
+      ? `${senderName} te envio ${amountLabel}. Concepto: ${sendConcept}`
+      : `${senderName} te envio ${amountLabel}.`;
+
+    await tx.notification.create({
+      data: {
+        actionPayload: {
+          amountCents,
+          amountLabel,
+          concept: sendConcept || null,
+          senderUserId: authenticatedUser.id,
+          transferId: createdTransfer.id,
+        },
+        actionRoute: "/notifications",
+        body: sendBody,
+        title: "Bizum recibido",
+        transferId: createdTransfer.id,
+        type: "BIZUM_RECEIVED",
+        userDestinationId: contactUser.id,
+        userEmisorId: authenticatedUser.id,
+      },
+    });
+
     return {
       transfer: createdTransfer,
       updatedSenderBalanceCents: senderAvailableBalance._sum.balanceCents ?? 0,
