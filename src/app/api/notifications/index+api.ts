@@ -41,12 +41,16 @@ export async function GET(request: Request) {
   return Response.json({
     // Respuesta adaptada al formato que consume la pantalla de notificaciones.
     notifications: notifications.map((notification) => ({
+      actionPayload: notification.actionPayload,
+      actionRoute: notification.actionRoute,
+      bizumRequestId: notification.bizumRequestId,
       body: notification.body,
       createdAt: notification.createdAt.toISOString(),
       emisorName: notification.userEmisor?.name ?? null,
       id: notification.id,
       isUnread: notification.status === "UNREAD",
       timestamp: formatNotificationDate(notification.createdAt),
+      transferId: notification.transferId,
       title: notification.title,
       type: notification.type,
     })),
