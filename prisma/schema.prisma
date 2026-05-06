@@ -222,7 +222,7 @@ model Auditoria {
   userId          String?
   userName        String?
   userRol         String?
-  action          String
+  action          AuditAction
   table           String
   oldvaluePayload Json?
   newvaluePayload Json?
@@ -235,6 +235,20 @@ model Auditoria {
   sessionId       String?
   endpoint        String?
   source          String?
+}
+
+enum AuditAction {
+  ADMIN_LIST
+  ADMIN_CREATE
+  ADMIN_DELETE
+  BIZUM_REQUEST_CREATE
+  BIZUM_TRANSFER_SEND
+  CARD_CREATE
+  AUTH_LOGIN
+  PASSWORD_RESET
+  PASSWORD_CHANGE
+  AUTH_REGISTER
+  TWO_FACTOR_ENABLE
 }
 
 enum CardType {
