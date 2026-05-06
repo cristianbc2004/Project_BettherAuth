@@ -4,6 +4,7 @@ export const walletCardTypes = ["VISA", "MASTERCARD", "CHASBACK", "ORO"] as cons
 
 export type WalletCardFormValues = {
   cvc: string;
+  initialBalanceCents: number;
   name: string;
   numberTarget: string;
   type: WalletCardNetwork;
@@ -28,13 +29,42 @@ const networkStyles: Record<WalletCardNetwork, Pick<WalletCard, "gradient" | "te
   },
 };
 
+export function normalizeAmountInput(value: string) {
+  const compactValue = value.trim().replace(",", ".");
+  const digitsAndDotOnly = compactValue.replace(/[^\d.]/g, "");
+  const [wholePartRaw, ...decimalParts] = digitsAndDotOnly.split(".");
+  const wholePart = wholePartRaw.replace(/^0+(?=\d)/, "") || "0";
+  const decimals = decimalParts.join("").slice(0, 2);
+
+  if (!digitsAndDotOnly.includes(".")) {
+    return wholePart;
+  }
+
+  return `${wholePart}.${decimals}`;
+}
+
+export function parseAmountInputToCents(value: string) {
+  const normalizedValue = normalizeAmountInput(value);
+  const amount = Number.parseFloat(normalizedValue);
+
+  if (!Number.isFinite(amount) || amount < 0) {
+    return null;
+  }
+
+  return Math.round(amount * 100);
+}
+
+export function formatEurosFromCents(cents: number) {
+  return `${(Math.max(0, cents) / 100).toFixed(2).replace(".", ",")} EUR`;
+}
+
 export function buildWalletCardPreview(values: WalletCardFormValues): WalletCard {
   const style = networkStyles[values.type];
   const normalizedName = values.name.trim() || "Nuevo target";
   const normalizedNumber = values.numberTarget.replace(/\D/g, "");
 
   return {
-    balance: "Target activo",
+    balance: formatEurosFromCents(values.initialBalanceCents),
     cvc: values.cvc,
     gradient: style.gradient,
     id: `preview-${values.type.toLowerCase()}`,
@@ -49,6 +79,7 @@ export function buildWalletCardPreview(values: WalletCardFormValues): WalletCard
 }
 
 export function mapTargetToWalletCard(target: {
+  balanceCents: number;
   block: boolean;
   cvc: string;
   id: string;
@@ -58,6 +89,7 @@ export function mapTargetToWalletCard(target: {
 }): WalletCard {
   const card = buildWalletCardPreview({
     cvc: target.cvc,
+    initialBalanceCents: target.balanceCents,
     name: target.name,
     numberTarget: target.numberTarget,
     type: target.type,
@@ -65,7 +97,9 @@ export function mapTargetToWalletCard(target: {
 
   return {
     ...card,
-    balance: target.block ? "Target bloqueado" : "Target activo",
+    balance: target.block
+      ? `Bloqueada - ${formatEurosFromCents(target.balanceCents)}`
+      : formatEurosFromCents(target.balanceCents),
     id: target.id,
     isBlocked: target.block,
   };

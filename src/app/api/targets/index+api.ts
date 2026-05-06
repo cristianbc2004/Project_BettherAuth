@@ -7,6 +7,7 @@ const targetTypes = ["VISA", "MASTERCARD", "CHASBACK", "ORO"] as const;
 
 const targetSchema = z.object({
   cvc: z.string().trim().regex(/^\d{3,4}$/, "El CVC debe tener 3 o 4 numeros."),
+  initialBalanceCents: z.number().int().min(0, "El saldo inicial no puede ser negativo.").max(1_000_000_000).optional().default(0),
   name: z.string().trim().min(2, "Introduce el nombre del target."),
   numberTarget: z
     .string()
@@ -34,6 +35,7 @@ export async function GET(request: Request) {
   const targets = await prisma.target.findMany({
     orderBy: { createdAt: "desc" },
     select: {
+      balanceCents: true,
       block: true,
       cvc: true,
       id: true,
@@ -63,6 +65,7 @@ export async function POST(request: Request) {
   try {
     const target = await prisma.target.create({
       data: {
+        balanceCents: result.data.initialBalanceCents,
         cvc: result.data.cvc,
         name: result.data.name,
         numberTarget: result.data.numberTarget,
@@ -70,6 +73,7 @@ export async function POST(request: Request) {
         userId,
       },
       select: {
+        balanceCents: true,
         block: true,
         cvc: true,
         id: true,

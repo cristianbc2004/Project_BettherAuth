@@ -22,6 +22,9 @@ import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import {
   buildWalletCardPreview,
+  formatEurosFromCents,
+  normalizeAmountInput,
+  parseAmountInputToCents,
   walletCardTypes,
   type WalletCardFormValues,
 } from "@/features/finance/lib/wallet-card-utils";
@@ -43,6 +46,11 @@ const addTargetSchema = z.object({
     .string()
     .trim()
     .regex(/^\d{3,4}$/, "El CVC debe tener 3 o 4 numeros."),
+  initialBalance: z
+    .string()
+    .trim()
+    .min(1, "Introduce el saldo inicial.")
+    .refine((value) => parseAmountInputToCents(value) !== null, "Introduce un importe valido."),
   name: z.string().trim().min(2, "Introduce el nombre del target."),
   numberTarget: z
     .string()
@@ -114,6 +122,7 @@ export default function AddTargetScreen() {
     resolver: zodResolver(addTargetSchema),
     defaultValues: {
       cvc: "",
+      initialBalance: "0",
       name: session?.user.name ?? "",
       numberTarget: "",
       type: "VISA",
@@ -123,13 +132,17 @@ export default function AddTargetScreen() {
   });
   const previewValues = form.watch();
   const previewCard = useMemo(
-    () =>
-      buildWalletCardPreview({
+    () => {
+      const parsedBalance = parseAmountInputToCents(previewValues.initialBalance ?? "");
+
+      return buildWalletCardPreview({
         cvc: previewValues.cvc,
+        initialBalanceCents: parsedBalance ?? 0,
         name: previewValues.name,
         numberTarget: previewValues.numberTarget,
         type: previewValues.type,
-      }),
+      });
+    },
     [previewValues],
   );
   const cardWidth = Math.min(width - 40, 360);
@@ -139,10 +152,24 @@ export default function AddTargetScreen() {
     });
   }, []);
 
-  const handleSubmit = form.handleSubmit(async (values: WalletCardFormValues) => {
+  const handleSubmit = form.handleSubmit(async (values) => {
     try {
       setIsSaving(true);
-      const createdCard = await addCard(values);
+      const initialBalanceCents = parseAmountInputToCents(values.initialBalance);
+
+      if (initialBalanceCents === null) {
+        form.setError("initialBalance", { message: "Introduce un importe valido." });
+        return;
+      }
+
+      const payload: WalletCardFormValues = {
+        cvc: values.cvc,
+        initialBalanceCents,
+        name: values.name,
+        numberTarget: values.numberTarget,
+        type: values.type,
+      };
+      const createdCard = await addCard(payload);
 
       successHaptic();
       Alert.alert("Tarjeta creada", "Tu nuevo target ya esta disponible en la cartera.");
@@ -284,6 +311,29 @@ export default function AddTargetScreen() {
 
             <Controller
               control={form.control}
+              name="initialBalance"
+              render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+                <AuthInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  error={error?.message}
+                  keyboardType="decimal-pad"
+                  label="Saldo inicial (EUR)"
+                  onBlur={onBlur}
+                  onChangeText={(text) => onChange(normalizeAmountInput(text))}
+                  onFocus={() => scrollToFormPosition(470)}
+                  placeholder="0,00"
+                  value={value}
+                />
+              )}
+            />
+
+            <Text className="mb-5 text-[13px] leading-5" style={{ color: theme.mutedText }}>
+              Saldo inicial actual: {formatEurosFromCents(parseAmountInputToCents(previewValues.initialBalance ?? "") ?? 0)}
+            </Text>
+
+            <Controller
+              control={form.control}
               name="cvc"
               render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
                 <AuthInput
@@ -295,7 +345,7 @@ export default function AddTargetScreen() {
                   maxLength={4}
                   onBlur={onBlur}
                   onChangeText={(text) => onChange(text.replace(/\D/g, "").slice(0, 4))}
-                  onFocus={() => scrollToFormPosition(470)}
+                  onFocus={() => scrollToFormPosition(560)}
                   placeholder="123"
                   value={value}
                 />

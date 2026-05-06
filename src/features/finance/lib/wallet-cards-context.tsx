@@ -14,6 +14,7 @@ import { mapTargetToWalletCard, type WalletCardFormValues } from "@/features/fin
 import { appConfig } from "@/shared/lib/app-config";
 
 type TargetResponse = {
+  balanceCents: number;
   block: boolean;
   cvc: string;
   id: string;

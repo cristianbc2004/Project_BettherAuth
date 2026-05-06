@@ -28,6 +28,8 @@ model User {
   bizumReceivedTransfers  BizumTransfer[] @relation("BizumTransferReceiver")
   bizumRequestedPayments  BizumRequest[]  @relation("BizumRequestRequester")
   bizumPendingPayments    BizumRequest[]  @relation("BizumRequestPayer")
+  notificationsReceived   Notification[]  @relation("UserNotificationsReceived")
+  notificationsSent       Notification[]  @relation("UserNotificationsSent")
 
   @@map("users")
 }
@@ -140,6 +142,7 @@ model BizumTransfer {
   failureReason   String?
   metadata        Json?
   request         BizumRequest?
+  notifications   Notification[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -170,6 +173,7 @@ model BizumRequest {
 
   transferId       String?
   transfer         BizumTransfer? @relation(fields: [transferId], references: [id], onDelete: SetNull)
+  notifications    Notification[]
 
   referenceCode    String   @unique
 
@@ -181,10 +185,56 @@ model BizumRequest {
   @@index([payerUserId])
 }
 
+model Notification {
+  id                String    @id @default(cuid())
+  userDestinationId String
+  userEmisorId      String?
+
+  type              NotificationType
+  status            NotificationStatus @default(UNREAD)
+
+  title             String
+  body              String?
+  actionRoute       String?   // ejemplo: "/bizum/pay?requestId=..."
+  actionPayload     Json?     // datos extra para navegación
+
+  transferId        String?
+  bizumRequestId    String?
+
+  readAt            DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  userDestination   User      @relation("UserNotificationsReceived", fields: [userDestinationId], references: [id], onDelete: Cascade)
+  userEmisor        User?     @relation("UserNotificationsSent", fields: [userEmisorId], references: [id], onDelete: SetNull)
+  transfer          BizumTransfer? @relation(fields: [transferId], references: [id], onDelete: SetNull)
+  bizumRequest      BizumRequest?  @relation(fields: [bizumRequestId], references: [id], onDelete: SetNull)
+
+  @@index([userDestinationId, createdAt])
+  @@index([userDestinationId, status, createdAt])
+  @@index([transferId])
+  @@index([bizumRequestId])
+  @@map("notifications")
+}
+
 enum CardType {
   VISA
   MASTERCARD
   CHASBACK
   ORO
+}
+
+enum NotificationType {
+  TRANSFER
+  BIZUM_REQUEST
+  BIZUM_SENT
+  BIZUM_RECEIVED
+  ALERT
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
 }
 
