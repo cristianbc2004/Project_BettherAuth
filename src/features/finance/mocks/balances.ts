@@ -1,4 +1,4 @@
-import type { WeeklyBalancePoint } from "@/features/finance/mocks/types";
+import type { WeeklyBalancePoint } from "@/shared/types/finance";
 
 export const weeklyBalance: WeeklyBalancePoint[] = [
   { label: "22 Abr", value: 6810 },

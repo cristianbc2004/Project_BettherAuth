@@ -1,4 +1,4 @@
-import type { WalletCard, WalletCardNetwork } from "@/features/finance/mocks";
+import type { WalletCard, WalletCardNetwork } from "@/shared/types/finance";
 
 export const walletCardTypes = ["VISA", "MASTERCARD", "CHASBACK", "ORO"] as const satisfies readonly WalletCardNetwork[];
 

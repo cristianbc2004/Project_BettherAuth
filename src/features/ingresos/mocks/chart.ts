@@ -1,4 +1,4 @@
-import type { MonthlyIncomePoint } from "@/features/ingresos/mocks/types";
+import type { MonthlyIncomePoint } from "@/shared/types/ingresos";
 
 export const incomeChart: MonthlyIncomePoint[] = [
   {

@@ -2,7 +2,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Text, View } from "react-native";
 
 import { CardNetworkBadge } from "@/features/finance/components/card-network-badge";
-import type { WalletCard } from "@/features/finance/mocks";
+import type { WalletCard } from "@/shared/types/finance";
 
 type WalletCardPreviewProps = {
   card: WalletCard;
