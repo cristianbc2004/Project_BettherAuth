@@ -2,6 +2,7 @@ import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { ArrowLeft, Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react-native";
+import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -84,6 +85,8 @@ export default function DetailsTargetScreen() {
   const cardWidth = Math.min(width - 40, 360);
   const displayedPin = selectedCard ? (isPinVisible ? selectedCard.cvc : "****") : "****";
   const isBlocked = selectedCard?.isBlocked ?? false;
+  const sectionEnter = (delay: number) =>
+    FadeInDown.duration(300).delay(delay).easing(Easing.out(Easing.cubic));
 
   useEffect(() => {
     if (session?.user.id) {
@@ -113,7 +116,7 @@ export default function DetailsTargetScreen() {
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-row items-center justify-between">
+        <Animated.View entering={sectionEnter(30)} className="flex-row items-center justify-between">
           <Pressable
             accessibilityLabel="Volver"
             accessibilityRole="button"
@@ -138,9 +141,9 @@ export default function DetailsTargetScreen() {
               {isBlocked ? "Bloqueada" : "Activa"}
             </Text>
           </View>
-        </View>
+        </Animated.View>
 
-        <View>
+        <Animated.View entering={sectionEnter(90)}>
           <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
             Tarjeta
           </Text>
@@ -150,13 +153,13 @@ export default function DetailsTargetScreen() {
           <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
             Aqui puedes ver el CVC y gestionar el estado de tu tarjeta.
           </Text>
-        </View>
+        </Animated.View>
 
-        <View>
+        <Animated.View entering={sectionEnter(150)}>
           <WalletCardPreview card={selectedCard} width={cardWidth} />
-        </View>
+        </Animated.View>
 
-        <View className="flex-row gap-3">
+        <Animated.View entering={sectionEnter(210)} className="flex-row gap-3">
           <ActionButton
             icon={isPinVisible ? EyeOff : Eye}
             label={isPinVisible ? "Ocultar PIN" : "Ver PIN"}
@@ -184,9 +187,9 @@ export default function DetailsTargetScreen() {
             }}
             tone={isBlocked ? "default" : "danger"}
           />
-        </View>
+        </Animated.View>
 
-        <View className="px-2 py-2">
+        <Animated.View entering={sectionEnter(270)} className="px-2 py-2">
           <Text className="text-[12px] font-black uppercase tracking-[1.8px]" style={{ color: theme.mutedText }}>
             PIN
           </Text>
@@ -201,17 +204,17 @@ export default function DetailsTargetScreen() {
               ? "No compartas este codigo con nadie."
               : "Pulsa en Ver PIN para mostrar el CVC de seguridad."}
           </Text>
-        </View>
+        </Animated.View>
 
-        <View className="flex-row gap-3">
+        <Animated.View entering={sectionEnter(330)} className="flex-row gap-3">
           <InfoTile label="Titular" value={selectedCard.name} />
           <InfoTile label="Numero" value={`**** ${selectedCard.lastDigits}`} />
-        </View>
+        </Animated.View>
 
-        <View className="flex-row gap-3">
+        <Animated.View entering={sectionEnter(390)} className="flex-row gap-3">
           <InfoTile label="Red" value={selectedCard.network} />
           <InfoTile label="Tipo" value={selectedCard.status} />
-        </View>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
