@@ -50,6 +50,11 @@ export default function PersonTabsLayout() {
         <NativeTabs.Trigger.Icon md="bar_chart" />
         <NativeTabs.Trigger.Label>Grafica</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="map">
+        <NativeTabs.Trigger.Icon md="map" />
+        <NativeTabs.Trigger.Label>Mapa</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }
