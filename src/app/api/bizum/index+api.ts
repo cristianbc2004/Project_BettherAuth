@@ -50,6 +50,7 @@ async function getAuthenticatedUser(request: Request) {
   const user = await prisma.user.findUnique({
     select: {
       id: true,
+      name: true,
     },
     where: {
       id: session.user.id,
