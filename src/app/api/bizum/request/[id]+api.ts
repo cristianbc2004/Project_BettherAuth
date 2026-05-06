@@ -1,4 +1,5 @@
 import { auth } from "@/features/auth/services/auth";
+import { extractAuditRequestMeta, registrarAuditoria } from "@/shared/lib/auditoria";
 import { prisma } from "@/shared/lib/prisma";
 
 function getInitials(name: string) {
@@ -42,6 +43,7 @@ async function getAuthenticatedUser(request: Request) {
     select: {
       id: true,
       name: true,
+      role: true,
     },
     where: {
       id: session.user.id,
@@ -121,6 +123,7 @@ export async function GET(request: Request, { id }: { id: string }) {
 }
 
 export async function POST(request: Request, { id }: { id: string }) {
+  const auditMeta = extractAuditRequestMeta(request);
   const authenticatedUser = await getAuthenticatedUser(request);
 
   if (!authenticatedUser) {
@@ -142,10 +145,33 @@ export async function POST(request: Request, { id }: { id: string }) {
   });
 
   if (!bizumRequest || bizumRequest.payerUserId !== authenticatedUser.id) {
+    await registrarAuditoria({
+      ...auditMeta,
+      action: "BIZUM_TRANSFER_SEND",
+      errorMensaje: "Solicitud no encontrada.",
+      newvaluePayload: { bizumRequestId: id },
+      status: "FAILED",
+      table: "bizumRequest",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
     return Response.json({ error: "Solicitud no encontrada." }, { status: 404 });
   }
 
   if (bizumRequest.acceptedAt || bizumRequest.rejectedAt || bizumRequest.cancelledAt || bizumRequest.transferId) {
+    await registrarAuditoria({
+      ...auditMeta,
+      action: "BIZUM_TRANSFER_SEND",
+      errorMensaje: "La solicitud ya no esta disponible para pago.",
+      newvaluePayload: { bizumRequestId: bizumRequest.id },
+      status: "FAILED",
+      table: "bizumRequest",
+      targetUserId: bizumRequest.requesterUserId,
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
     return Response.json({ error: "La solicitud ya no esta disponible para pago." }, { status: 400 });
   }
 
@@ -166,6 +192,21 @@ export async function POST(request: Request, { id }: { id: string }) {
   const payerCard = payerCards.find((card) => card.balanceCents >= bizumRequest.amountCents);
 
   if (!payerCard) {
+    await registrarAuditoria({
+      ...auditMeta,
+      action: "BIZUM_TRANSFER_SEND",
+      errorMensaje: "Saldo insuficiente para pagar la solicitud.",
+      newvaluePayload: {
+        amountCents: bizumRequest.amountCents,
+        bizumRequestId: bizumRequest.id,
+      },
+      status: "FAILED",
+      table: "bizumTransfer",
+      targetUserId: bizumRequest.requesterUserId,
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
     return Response.json({ error: "Saldo insuficiente para pagar la solicitud." }, { status: 400 });
   }
 
@@ -300,6 +341,22 @@ export async function POST(request: Request, { id }: { id: string }) {
       payerAvailableBalanceCents: payerAvailableBalance._sum.balanceCents ?? 0,
       transferId: createdTransfer.id,
     };
+  });
+
+  await registrarAuditoria({
+    ...auditMeta,
+    action: "BIZUM_TRANSFER_SEND",
+    newvaluePayload: {
+      amountCents: bizumRequest.amountCents,
+      bizumRequestId: bizumRequest.id,
+      transferId: payment.transferId,
+    },
+    status: "SUCCESS",
+    table: "bizumTransfer",
+    targetUserId: bizumRequest.requesterUserId,
+    userId: authenticatedUser.id,
+    userName: authenticatedUser.name,
+    userRol: authenticatedUser.role,
   });
 
   return Response.json({

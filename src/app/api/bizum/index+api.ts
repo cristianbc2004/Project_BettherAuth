@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { auth } from "@/features/auth/services/auth";
+import { extractAuditRequestMeta, registrarAuditoria } from "@/shared/lib/auditoria";
 import { prisma } from "@/shared/lib/prisma";
 
 const createBizumSchema = z.object({
@@ -52,6 +53,7 @@ async function getAuthenticatedUser(request: Request) {
     select: {
       id: true,
       name: true,
+      role: true,
     },
     where: {
       id: session.user.id,
@@ -173,6 +175,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const auditMeta = extractAuditRequestMeta(request);
   const authenticatedUser = await getAuthenticatedUser(request);
 
   if (!authenticatedUser) {
@@ -183,6 +186,16 @@ export async function POST(request: Request) {
   const result = createBizumSchema.safeParse(await request.json().catch(() => null));
 
   if (!result.success) {
+    await registrarAuditoria({
+      ...auditMeta,
+      action: "BIZUM_TRANSFER_SEND",
+      errorMensaje: result.error.issues[0]?.message ?? "Datos invalidos.",
+      status: "FAILED",
+      table: "bizumTransfer",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
     return Response.json({ error: result.error.issues[0]?.message ?? "Datos invalidos." }, { status: 400 });
   }
 
@@ -191,6 +204,16 @@ export async function POST(request: Request) {
   const senderBalances = await getUserBalances(authenticatedUser.id);
 
   if (contactUserId === authenticatedUser.id) {
+    await registrarAuditoria({
+      ...auditMeta,
+      action: action === "request" ? "BIZUM_REQUEST_CREATE" : "BIZUM_TRANSFER_SEND",
+      errorMensaje: "No puedes hacer Bizum a tu propio usuario.",
+      status: "FAILED",
+      table: action === "request" ? "bizumRequest" : "bizumTransfer",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
     return Response.json({ error: "No puedes hacer Bizum a tu propio usuario." }, { status: 400 });
   }
 
@@ -207,6 +230,17 @@ export async function POST(request: Request) {
   });
 
   if (!contactUser) {
+    await registrarAuditoria({
+      ...auditMeta,
+      action: action === "request" ? "BIZUM_REQUEST_CREATE" : "BIZUM_TRANSFER_SEND",
+      errorMensaje: "El usuario seleccionado no existe.",
+      newvaluePayload: { contactUserId },
+      status: "FAILED",
+      table: action === "request" ? "bizumRequest" : "bizumTransfer",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
     return Response.json({ error: "El usuario seleccionado no existe." }, { status: 404 });
   }
 
@@ -256,6 +290,21 @@ export async function POST(request: Request) {
       return createdRequest;
     });
 
+    await registrarAuditoria({
+      ...auditMeta,
+      action: "BIZUM_REQUEST_CREATE",
+      newvaluePayload: {
+        amountCents,
+        concept: requestConcept || null,
+      },
+      status: "SUCCESS",
+      table: "bizumRequest",
+      targetUserId: contactUser.id,
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
+
     return Response.json(
       {
         availableBalanceCents: senderBalances.availableBalanceCents,
@@ -285,6 +334,21 @@ export async function POST(request: Request) {
   const senderCard = senderCards.find((card) => card.balanceCents >= amountCents);
 
   if (!senderCard) {
+    await registrarAuditoria({
+      ...auditMeta,
+      action: "BIZUM_TRANSFER_SEND",
+      errorMensaje: "Saldo insuficiente para enviar este Bizum.",
+      newvaluePayload: {
+        amountCents,
+        contactUserId: contactUser.id,
+      },
+      status: "FAILED",
+      table: "bizumTransfer",
+      targetUserId: contactUser.id,
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
     return Response.json({ error: "Saldo insuficiente para enviar este Bizum." }, { status: 400 });
   }
 
@@ -419,6 +483,22 @@ export async function POST(request: Request) {
       transfer: createdTransfer,
       updatedSenderBalanceCents: senderAvailableBalance._sum.balanceCents ?? 0,
     };
+  });
+
+  await registrarAuditoria({
+    ...auditMeta,
+    action: "BIZUM_TRANSFER_SEND",
+    newvaluePayload: {
+      amountCents,
+      concept: concept || null,
+      transferId: transfer.transfer.id,
+    },
+    status: "SUCCESS",
+    table: "bizumTransfer",
+    targetUserId: contactUser.id,
+    userId: authenticatedUser.id,
+    userName: authenticatedUser.name,
+    userRol: authenticatedUser.role,
   });
 
   return Response.json(
