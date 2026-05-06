@@ -1,67 +1,80 @@
-import type { ComponentType } from "react";
+import { type ComponentType, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { Apple, ArrowRightLeft, BadgeCheck, RefreshCcw, ShieldCheck } from "lucide-react-native";
-import Animated, { Easing, FadeInDown } from "react-native-reanimated";
+import { Redirect } from "expo-router";
+import { ArrowDownLeft, ArrowRightLeft, Bell, CircleAlert, Send, Wallet } from "lucide-react-native";
+import Animated, { Easing, FadeInDown, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { authClient } from "@/features/auth/services/auth-client";
 import { AppBackButton } from "@/shared/components/ui/app-back-button";
+import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { appConfig } from "@/shared/lib/app-config";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 type NotificationItem = {
   accent: string;
+  body?: string | null;
   icon: ComponentType<any>;
   iconAccent: string;
   id: string;
   title: string;
   timestamp: string;
-  unread?: boolean;
+  unread: boolean;
 };
 
-const notifications: NotificationItem[] = [
-  {
-    id: "Apple payment",
-    icon: Apple,
-    title: "Apple payment",
-    timestamp: "Today | 03:23 AM",
-    accent: "#40245f",
-    iconAccent: "#f47ca8",
-    unread: true,
-  },
-  {
-    id: "new transaction",
-    icon: ArrowRightLeft,
-    title: "new transaction",
-    timestamp: "Tuesday | 05:23 PM",
-    accent: "#1f3640",
-    iconAccent: "#67dbc8",
-  },
-  {
-    id: "two-factor-enabled",
-    icon: ShieldCheck,
-    title: "Two-factor enabled",
-    timestamp: "Friday | 05:00 PM",
-    accent: "#2e2950",
-    iconAccent: "#8d7cff",
-  },
-  {
-    id: "subscription renewal",
-    icon: RefreshCcw,
-    title: "subscription renewal",
-    timestamp: "12 Dec 2024 | 04:00 PM",
-    accent: "#42311f",
-    iconAccent: "#f0b245",
-  },
-  {
-    id: "accepted payment",
-    icon: BadgeCheck,
-    title: "accepted payment",
-    timestamp: "02 Dec 2024 | 02:00 PM",
-    accent: "#203946",
-    iconAccent: "#4dc4ff",
-  },
-];
+type NotificationType = "TRANSFER" | "BIZUM_REQUEST" | "BIZUM_SENT" | "BIZUM_RECEIVED" | "ALERT";
 
-function NotificationRow({ accent, icon, iconAccent, timestamp, title, unread }: NotificationItem) {
+type NotificationsGetResponse = {
+  notifications: Array<{
+    body?: string | null;
+    createdAt: string;
+    emisorName?: string | null;
+    id: string;
+    isUnread: boolean;
+    timestamp: string;
+    title: string;
+    type: NotificationType;
+  }>;
+};
+
+function getAuthCookie() {
+  return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
+}
+
+async function fetchNotifications() {
+  return fetch(`${appConfig.authApiUrl}/api/notifications`, {
+    headers: {
+      "Content-Type": "application/json",
+      cookie: getAuthCookie(),
+    },
+  });
+}
+
+function mapNotificationToItem(notification: NotificationsGetResponse["notifications"][number]): NotificationItem {
+  const accentByType: Record<NotificationType, { accent: string; icon: ComponentType<any>; iconAccent: string }> = {
+    ALERT: { accent: "#3f2b1b", icon: CircleAlert, iconAccent: "#f0b245" },
+    BIZUM_RECEIVED: { accent: "#203946", icon: Wallet, iconAccent: "#4dc4ff" },
+    BIZUM_REQUEST: { accent: "#2e2950", icon: ArrowDownLeft, iconAccent: "#8d7cff" },
+    BIZUM_SENT: { accent: "#1f3640", icon: Send, iconAccent: "#67dbc8" },
+    TRANSFER: { accent: "#1f3640", icon: ArrowRightLeft, iconAccent: "#67dbc8" },
+  };
+
+  const accents = accentByType[notification.type] ?? accentByType.ALERT;
+
+  return {
+    accent: accents.accent,
+    body: notification.body,
+    icon: accents.icon,
+    iconAccent: accents.iconAccent,
+    id: notification.id,
+    timestamp: notification.timestamp,
+    title: notification.title,
+    unread: notification.isUnread,
+  };
+}
+
+function NotificationRow({ accent, body, icon, iconAccent, timestamp, title, unread }: NotificationItem) {
   const { theme } = useAppTheme();
   const Icon = icon;
 
@@ -76,6 +89,11 @@ function NotificationRow({ accent, icon, iconAccent, timestamp, title, unread }:
 
       <View className="flex-1">
         <Text className="text-[17px] font-semibold" style={{ color: theme.text }}>{title}</Text>
+        {body ? (
+          <Text className="mt-1 text-[13px] leading-5" numberOfLines={2} style={{ color: theme.mutedText }}>
+            {body}
+          </Text>
+        ) : null}
         <Text className="mt-1 text-sm" style={{ color: theme.mutedText }}>{timestamp}</Text>
       </View>
 
@@ -85,7 +103,48 @@ function NotificationRow({ accent, icon, iconAccent, timestamp, title, unread }:
 }
 
 export default function NotificationsScreen() {
+  const { data: session, isPending } = authClient.useSession();
+  const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+  useEffect(() => {
+    if (!session?.user.id) {
+      return;
+    }
+
+    const loadNotifications = async () => {
+      try {
+        setIsLoading(true);
+        setErrorMessage(null);
+
+        const response = await fetchNotifications();
+        if (!response.ok) {
+          setErrorMessage("No se pudieron cargar las notificaciones.");
+          return;
+        }
+
+        const payload = (await response.json()) as NotificationsGetResponse;
+        setNotifications((payload.notifications ?? []).map(mapNotificationToItem));
+      } catch {
+        setErrorMessage("No se pudieron cargar las notificaciones.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadNotifications();
+  }, [session?.user.id]);
+
+  if (showSessionLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (!session?.user) {
+    return <Redirect href="/sign-in" />;
+  }
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
@@ -114,21 +173,55 @@ export default function NotificationsScreen() {
           Latest activity
         </Text>
 
-        <View>
-          {notifications.map((item, index) => (
-            <Animated.View
-              entering={FadeInDown.duration(460)
-                .delay(index * 120)
-                .easing(Easing.out(Easing.quad))}
-              key={item.id}
-            >
-              <NotificationRow {...item} />
-              {index < notifications.length - 1 ? (
-                <View className="mx-2 h-px" style={{ backgroundColor: theme.border }} />
-              ) : null}
-            </Animated.View>
-          ))}
-        </View>
+        {isLoading ? (
+          <Animated.View entering={FadeInDown.duration(260)} exiting={FadeOut.duration(180)}>
+            <Text className="px-2 text-sm" style={{ color: theme.mutedText }}>
+              Cargando notificaciones...
+            </Text>
+          </Animated.View>
+        ) : null}
+
+        {errorMessage ? (
+          <Animated.View
+            entering={FadeInDown.duration(260).easing(Easing.out(Easing.quad))}
+            className="mb-3 rounded-[18px] border px-3 py-2.5"
+            style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}
+          >
+            <Text className="text-[13px] font-black" style={{ color: theme.text }}>
+              {errorMessage}
+            </Text>
+          </Animated.View>
+        ) : null}
+
+        {!isLoading && notifications.length === 0 && !errorMessage ? (
+          <View className="rounded-[20px] border px-4 py-4" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+            <Bell color={theme.mutedText} size={20} strokeWidth={2.4} />
+            <Text className="mt-3 text-[15px] font-black" style={{ color: theme.text }}>
+              No tienes notificaciones
+            </Text>
+            <Text className="mt-1 text-[13px] leading-5" style={{ color: theme.mutedText }}>
+              Cuando alguien te mande una solicitud de Bizum, aparecera aqui.
+            </Text>
+          </View>
+        ) : null}
+
+        {notifications.length > 0 ? (
+          <View>
+            {notifications.map((item, index) => (
+              <Animated.View
+                entering={FadeInDown.duration(460)
+                  .delay(index * 120)
+                  .easing(Easing.out(Easing.quad))}
+                key={item.id}
+              >
+                <NotificationRow {...item} />
+                {index < notifications.length - 1 ? (
+                  <View className="mx-2 h-px" style={{ backgroundColor: theme.border }} />
+                ) : null}
+              </Animated.View>
+            ))}
+          </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
