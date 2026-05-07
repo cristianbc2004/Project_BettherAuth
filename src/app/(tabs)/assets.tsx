@@ -1,5 +1,5 @@
 import { Redirect, router } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { ArrowDownLeft, ArrowUpRight, Zap } from "lucide-react-native";
@@ -7,14 +7,12 @@ import Animated, { Easing, FadeInDown, FadeOutUp, LinearTransition } from "react
 
 import { FinanceScreenShell } from "@/features/finance/components/finance-screen-shell";
 import {
-  BizumActionSheet,
-  type BizumActionPayload,
-  type BizumContact,
-} from "@/features/finance/components/bizum-action-sheet";
+  fetchBizumRequest,
+  type BizumGetResponse,
+} from "@/features/finance/lib/bizum-api";
 import { authClient } from "@/features/auth/services/auth-client";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
-import { appConfig } from "@/shared/lib/app-config";
-import { selectionHaptic, successHaptic } from "@/shared/lib/haptics";
+import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
@@ -26,49 +24,6 @@ type BizumMovement = {
   name: string;
   tone: "income" | "outcome";
 };
-
-type BizumAction = "send" | "request";
-
-type BizumMovementResponse = {
-  amount: string;
-  createdAt: string;
-  id: string;
-  initials: string;
-  name: string;
-  tone: "income" | "outcome";
-};
-
-type BizumGetResponse = {
-  availableBalanceCents: number;
-  contacts: BizumContact[];
-  movements: BizumMovementResponse[];
-};
-
-type BizumPostResponse = {
-  availableBalanceCents: number;
-  request?: { amountCents: number; id: string };
-  transfer?: BizumMovementResponse;
-};
-
-function getAuthCookie() {
-  return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
-}
-
-function buildIdempotencyKey(scope: "bizum-send") {
-  const random = Math.random().toString(36).slice(2, 12);
-  return `${scope}-${Date.now()}-${random}`;
-}
-
-async function fetchBizumRequest(path = "/api/bizum", init?: RequestInit) {
-  return fetch(`${appConfig.authApiUrl}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      cookie: getAuthCookie(),
-      ...init?.headers,
-    },
-  });
-}
 
 function formatMovementDate(value: string) {
   const date = new Date(value);
@@ -111,18 +66,10 @@ export default function AssetsScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
-  const [selectedAction, setSelectedAction] = useState<BizumAction>("send");
-  const [isSendSheetVisible, setIsSendSheetVisible] = useState(false);
-  const [isSubmittingBizum, setIsSubmittingBizum] = useState(false);
   const [isBizumDataLoading, setIsBizumDataLoading] = useState(true);
   const [bizumError, setBizumError] = useState<string | null>(null);
-  const [receivedNotification, setReceivedNotification] = useState<string | null>(null);
-  const [highlightedMovementId, setHighlightedMovementId] = useState<string | null>(null);
   const [availableBalanceCents, setAvailableBalanceCents] = useState(0);
-  const [contacts, setContacts] = useState<BizumContact[]>([]);
   const [movements, setMovements] = useState<BizumMovement[]>([]);
-  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const notificationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadBizumData = useCallback(async () => {
     if (!session?.user.id) {
@@ -140,7 +87,6 @@ export default function AssetsScreen() {
 
       const payload = (await response.json()) as BizumGetResponse;
       setAvailableBalanceCents(payload.availableBalanceCents ?? 0);
-      setContacts(payload.contacts ?? []);
       setMovements(
         (payload.movements ?? []).map((movement) => ({
           amount: movement.amount,
@@ -169,18 +115,6 @@ export default function AssetsScreen() {
     }, [loadBizumData]),
   );
 
-  useEffect(() => {
-    return () => {
-      if (highlightTimeoutRef.current) {
-        clearTimeout(highlightTimeoutRef.current);
-      }
-
-      if (notificationTimeoutRef.current) {
-        clearTimeout(notificationTimeoutRef.current);
-      }
-    };
-  }, []);
-
   const movementCountLabel = useMemo(() => `${movements.length} movimientos recientes`, [movements.length]);
   const availableBalanceLabel = useMemo(
     () => `${(availableBalanceCents / 100).toFixed(2).replace(".", ",")} EUR disponibles`,
@@ -190,112 +124,13 @@ export default function AssetsScreen() {
   const openSendSheet = () => {
     selectionHaptic();
     setBizumError(null);
-    setSelectedAction("send");
-    setIsSendSheetVisible(true);
+    router.push("/bizum/send" as never);
   };
 
   const openRequestSheet = () => {
     selectionHaptic();
     setBizumError(null);
-    setSelectedAction("request");
-    setIsSendSheetVisible(true);
-  };
-
-  const closeSendSheet = () => {
-    if (isSubmittingBizum) {
-      return;
-    }
-
-    setIsSendSheetVisible(false);
-    setBizumError(null);
-  };
-
-  const showInsertedMovement = (nextMovement: BizumMovement) => {
-    setMovements((currentMovements) => [nextMovement, ...currentMovements]);
-    setHighlightedMovementId(nextMovement.id);
-
-    if (highlightTimeoutRef.current) {
-      clearTimeout(highlightTimeoutRef.current);
-    }
-
-    highlightTimeoutRef.current = setTimeout(() => {
-      setHighlightedMovementId((currentId) => (currentId === nextMovement.id ? null : currentId));
-    }, 2600);
-  };
-
-  const showReceivedNotification = (message: string) => {
-    setReceivedNotification(message);
-    successHaptic();
-
-    if (notificationTimeoutRef.current) {
-      clearTimeout(notificationTimeoutRef.current);
-    }
-
-    notificationTimeoutRef.current = setTimeout(() => {
-      setReceivedNotification(null);
-    }, 3200);
-  };
-
-  const handleBizumSubmit = async (payload: BizumActionPayload) => {
-    const amountCents = Math.round(payload.amount * 100);
-
-    if (selectedAction === "send" && amountCents > availableBalanceCents) {
-      setBizumError("No tienes saldo suficiente para enviar ese Bizum.");
-      return;
-    }
-
-    setBizumError(null);
-    setIsSubmittingBizum(true);
-
-    try {
-      const idempotencyKey =
-        selectedAction === "send" ? buildIdempotencyKey("bizum-send") : null;
-      const [response] = await Promise.all([
-        fetchBizumRequest("/api/bizum", {
-          body: JSON.stringify({
-            action: selectedAction,
-            amount: payload.amount,
-            concept: payload.concept,
-            contactUserId: payload.contact.id,
-          }),
-          headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
-          method: "POST",
-        }),
-        new Promise((resolve) => setTimeout(resolve, 1000)),
-      ]);
-
-      if (!response.ok) {
-        const errorPayload = (await response.json().catch(() => null)) as { error?: string } | null;
-        setBizumError(errorPayload?.error ?? "No se pudo completar la operacion.");
-        return;
-      }
-
-      const result = (await response.json()) as BizumPostResponse;
-      setAvailableBalanceCents(result.availableBalanceCents ?? availableBalanceCents);
-
-      if (selectedAction === "send" && result.transfer) {
-        showInsertedMovement({
-          amount: result.transfer.amount,
-          date: "Ahora",
-          id: result.transfer.id,
-          initials: result.transfer.initials,
-          name: result.transfer.name,
-          tone: result.transfer.tone,
-        });
-      }
-
-      if (selectedAction === "request") {
-        showReceivedNotification(
-          `Solicitud enviada a ${payload.contact.name} por ${payload.amount.toFixed(2).replace(".", ",")} EUR`,
-        );
-      }
-
-      setIsSendSheetVisible(false);
-    } catch {
-      setBizumError("No se pudo completar la operacion.");
-    } finally {
-      setIsSubmittingBizum(false);
-    }
+    router.push("/bizum/request" as never);
   };
 
   if (showSessionLoading) {
@@ -348,26 +183,18 @@ export default function AssetsScreen() {
           <Pressable
             accessibilityLabel="Enviar Bizum"
             accessibilityRole="button"
-            accessibilityState={{ selected: selectedAction === "send" }}
             className="flex-1 items-center justify-center py-2"
             onPress={openSendSheet}
           >
             <View
               className="h-20 w-20 items-center justify-center rounded-full"
               style={{
-                backgroundColor: selectedAction === "send" ? theme.primary : theme.backgroundMuted,
+                backgroundColor: theme.backgroundMuted,
               }}
             >
-              <ArrowUpRight
-                color={selectedAction === "send" ? "#ffffff" : theme.text}
-                size={30}
-                strokeWidth={2.8}
-              />
+              <ArrowUpRight color={theme.text} size={30} strokeWidth={2.8} />
             </View>
-            <Text
-              className="mt-4 text-[18px] font-black"
-              style={{ color: selectedAction === "send" ? theme.primary : theme.text }}
-            >
+            <Text className="mt-4 text-[18px] font-black" style={{ color: theme.text }}>
               Enviar
             </Text>
           </Pressable>
@@ -375,26 +202,18 @@ export default function AssetsScreen() {
           <Pressable
             accessibilityLabel="Pedir Bizum"
             accessibilityRole="button"
-            accessibilityState={{ selected: selectedAction === "request" }}
             className="flex-1 items-center justify-center py-2"
             onPress={openRequestSheet}
           >
             <View
               className="h-20 w-20 items-center justify-center rounded-full"
               style={{
-                backgroundColor: selectedAction === "request" ? theme.primary : theme.backgroundMuted,
+                backgroundColor: theme.backgroundMuted,
               }}
             >
-              <ArrowDownLeft
-                color={selectedAction === "request" ? "#ffffff" : theme.text}
-                size={30}
-                strokeWidth={2.8}
-              />
+              <ArrowDownLeft color={theme.text} size={30} strokeWidth={2.8} />
             </View>
-            <Text
-              className="mt-4 text-[18px] font-black"
-              style={{ color: selectedAction === "request" ? theme.primary : theme.text }}
-            >
+            <Text className="mt-4 text-[18px] font-black" style={{ color: theme.text }}>
               Pedir
             </Text>
           </Pressable>
@@ -402,7 +221,7 @@ export default function AssetsScreen() {
       </View>
 
       <View className="gap-3">
-        {bizumError && !isSendSheetVisible ? (
+        {bizumError ? (
           <Animated.View
             entering={FadeInDown.duration(220).easing(Easing.out(Easing.cubic))}
             exiting={FadeOutUp.duration(180).easing(Easing.in(Easing.cubic))}
@@ -418,22 +237,6 @@ export default function AssetsScreen() {
           </Animated.View>
         ) : null}
 
-        {receivedNotification ? (
-          <Animated.View
-            entering={FadeInDown.duration(280).easing(Easing.out(Easing.cubic))}
-            exiting={FadeOutUp.duration(220).easing(Easing.in(Easing.cubic))}
-            className="rounded-[24px] border px-4 py-3"
-            style={{
-              backgroundColor: theme.primarySoft,
-              borderColor: theme.border,
-            }}
-          >
-            <Text className="text-[14px] font-black leading-5" style={{ color: theme.text }}>
-              {receivedNotification}
-            </Text>
-          </Animated.View>
-        ) : null}
-
         <SectionHeader
           onPress={() => {
             selectionHaptic();
@@ -445,7 +248,6 @@ export default function AssetsScreen() {
         <View>
           {movements.map((movement, index) => {
             const amountColor = movement.tone === "income" ? theme.success : theme.text;
-            const isHighlighted = highlightedMovementId === movement.id;
 
             return (
               <Animated.View
@@ -459,18 +261,18 @@ export default function AssetsScreen() {
                   className="flex-row items-center rounded-[24px] px-3 py-4"
                   onPress={selectionHaptic}
                   style={{
-                    backgroundColor: isHighlighted ? theme.primarySoft : "transparent",
+                    backgroundColor: "transparent",
                   }}
                 >
                   <View
                     className="mr-4 h-12 w-12 items-center justify-center rounded-full"
                     style={{
-                      backgroundColor: isHighlighted ? theme.primary : theme.backgroundMuted,
+                      backgroundColor: theme.backgroundMuted,
                     }}
                   >
                     <Text
                       className="text-[14px] font-black tracking-[1px]"
-                      style={{ color: isHighlighted ? theme.textOnPrimary : theme.text }}
+                      style={{ color: theme.text }}
                     >
                       {movement.initials}
                     </Text>
@@ -483,16 +285,6 @@ export default function AssetsScreen() {
                       <Text className="text-[13px]" numberOfLines={1} style={{ color: theme.mutedText }}>
                         {movement.date}
                       </Text>
-                      {isHighlighted ? (
-                        <View
-                          className="ml-2 rounded-full px-2 py-1"
-                          style={{ backgroundColor: theme.backgroundElevated }}
-                        >
-                          <Text className="text-[11px] font-black uppercase tracking-[1px]" style={{ color: theme.primary }}>
-                            Nuevo
-                          </Text>
-                        </View>
-                      ) : null}
                     </View>
                   </View>
                   <Text
@@ -511,17 +303,6 @@ export default function AssetsScreen() {
           })}
         </View>
       </View>
-
-      <BizumActionSheet
-        contacts={contacts}
-        errorMessage={bizumError}
-        isSubmitting={isSubmittingBizum}
-        mode={selectedAction}
-        onClose={closeSendSheet}
-        onDismissError={() => setBizumError(null)}
-        onSubmit={handleBizumSubmit}
-        visible={isSendSheetVisible}
-      />
     </FinanceScreenShell>
   );
 }
