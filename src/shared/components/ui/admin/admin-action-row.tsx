@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react-native";
 import type { ImageSourcePropType } from "react-native";
 import { Image, Pressable, Text, View } from "react-native";
 
@@ -54,7 +55,7 @@ export function AdminActionRow({
         <Text className="mt-1 text-sm leading-5" style={{ color: theme.mutedText }}>{description}</Text>
       </View>
 
-      <Text className="ml-3 text-2xl" style={{ color: theme.mutedText }}>{">"}</Text>
+      <ChevronRight color={theme.mutedText} size={22} strokeWidth={2.2} />
     </Pressable>
   );
 }
