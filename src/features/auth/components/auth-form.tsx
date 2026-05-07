@@ -162,7 +162,7 @@ function SignInForm() {
 
       <AuthSubmitButton
         isPending={isPending}
-        label="Get Started"
+        label="Iniciar sesion"
         onPress={() => {
           void handleSubmit();
         }}
