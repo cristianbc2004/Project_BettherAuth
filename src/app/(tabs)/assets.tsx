@@ -54,6 +54,11 @@ function getAuthCookie() {
   return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
 }
 
+function buildIdempotencyKey(scope: "bizum-send") {
+  const random = Math.random().toString(36).slice(2, 12);
+  return `${scope}-${Date.now()}-${random}`;
+}
+
 async function fetchBizumRequest(path = "/api/bizum", init?: RequestInit) {
   return fetch(`${appConfig.authApiUrl}${path}`, {
     ...init,
@@ -243,6 +248,8 @@ export default function AssetsScreen() {
     setIsSubmittingBizum(true);
 
     try {
+      const idempotencyKey =
+        selectedAction === "send" ? buildIdempotencyKey("bizum-send") : null;
       const [response] = await Promise.all([
         fetchBizumRequest("/api/bizum", {
           body: JSON.stringify({
@@ -251,6 +258,7 @@ export default function AssetsScreen() {
             concept: payload.concept,
             contactUserId: payload.contact.id,
           }),
+          headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
           method: "POST",
         }),
         new Promise((resolve) => setTimeout(resolve, 1000)),

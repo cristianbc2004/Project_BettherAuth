@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { CheckCircle2, X } from "lucide-react-native";
@@ -26,6 +26,11 @@ function getAuthCookie() {
   return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
 }
 
+function buildIdempotencyKey(scope: "bizum-request-payment", requestId: string) {
+  const random = Math.random().toString(36).slice(2, 12);
+  return `${scope}-${requestId}-${Date.now()}-${random}`;
+}
+
 function formatMoneyLabel(cents: number) {
   return `${(cents / 100).toFixed(2).replace(".", ",")} EUR`;
 }
@@ -40,6 +45,11 @@ export default function NotificationPayRequestScreen() {
   const [isPaying, setIsPaying] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [requestData, setRequestData] = useState<RequestDetailResponse | null>(null);
+  const paymentIdempotencyKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    paymentIdempotencyKeyRef.current = null;
+  }, [requestId]);
 
   useEffect(() => {
     if (!session?.user.id || !requestId) {
@@ -86,10 +96,14 @@ export default function NotificationPayRequestScreen() {
     try {
       setIsPaying(true);
       setErrorMessage(null);
+      if (!paymentIdempotencyKeyRef.current) {
+        paymentIdempotencyKeyRef.current = buildIdempotencyKey("bizum-request-payment", requestId);
+      }
 
       const response = await fetch(`${appConfig.authApiUrl}/api/bizum/request/${requestId}`, {
         headers: {
           "Content-Type": "application/json",
+          "Idempotency-Key": paymentIdempotencyKeyRef.current,
           cookie: getAuthCookie(),
         },
         method: "POST",

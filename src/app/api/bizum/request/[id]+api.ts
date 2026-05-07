@@ -30,6 +30,10 @@ function toMoneyLabel(cents: number) {
   return `${(cents / 100).toFixed(2).replace(".", ",")} EUR`;
 }
 
+function readIdempotencyKey(request: Request) {
+  return request.headers.get("Idempotency-Key")?.trim() ?? "";
+}
+
 async function getAuthenticatedUser(request: Request) {
   const session = await auth.api.getSession({
     headers: request.headers,
@@ -125,9 +129,14 @@ export async function GET(request: Request, { id }: { id: string }) {
 export async function POST(request: Request, { id }: { id: string }) {
   const auditMeta = extractAuditRequestMeta(request);
   const authenticatedUser = await getAuthenticatedUser(request);
+  const idempotencyKey = readIdempotencyKey(request);
 
   if (!authenticatedUser) {
     return Response.json({ error: "No autorizado." }, { status: 401 });
+  }
+
+  if (!idempotencyKey) {
+    return Response.json({ error: "Falta la cabecera Idempotency-Key." }, { status: 400 });
   }
 
   const bizumRequest = await prisma.bizumRequest.findUnique({
@@ -210,6 +219,36 @@ export async function POST(request: Request, { id }: { id: string }) {
     return Response.json({ error: "Saldo insuficiente para pagar la solicitud." }, { status: 400 });
   }
 
+  const existingTransfer = await prisma.bizumTransfer.findUnique({
+    where: {
+      idempotencyKey,
+    },
+  });
+
+  if (existingTransfer) {
+    const existingConcept = existingTransfer.concept?.trim() ?? "";
+    const requestConcept = bizumRequest.concept?.trim() ?? "";
+    const isSameOperation =
+      existingTransfer.senderUserId === authenticatedUser.id &&
+      existingTransfer.receiverUserId === bizumRequest.requesterUserId &&
+      existingTransfer.amountCents === bizumRequest.amountCents &&
+      existingConcept === requestConcept;
+
+    if (!isSameOperation) {
+      return Response.json(
+        { error: "La Idempotency-Key ya fue usada con otra operacion." },
+        { status: 409 },
+      );
+    }
+
+    const payerBalances = await getUserBalances(authenticatedUser.id);
+    return Response.json({
+      availableBalanceCents: payerBalances.availableBalanceCents,
+      paidRequestId: bizumRequest.id,
+      transferId: existingTransfer.id,
+    });
+  }
+
   const requesterCard = await prisma.target.findFirst({
     orderBy: {
       createdAt: "asc",
@@ -229,6 +268,7 @@ export async function POST(request: Request, { id }: { id: string }) {
         amountCents: bizumRequest.amountCents,
         completedAt: new Date(),
         concept: bizumRequest.concept,
+        idempotencyKey,
         receiverCardId: requesterCard?.id ?? null,
         receiverUserId: bizumRequest.requesterUserId,
         referenceCode: buildReferenceCode("BTR"),
