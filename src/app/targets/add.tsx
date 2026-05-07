@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Redirect, router } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { ArrowLeft, Check, CreditCard } from "lucide-react-native";
+import { Check, CreditCard } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Alert,
@@ -28,6 +28,7 @@ import {
   walletCardTypes,
   type WalletCardFormValues,
 } from "@/features/finance/lib/wallet-card-utils";
+import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { selectionHaptic, successHaptic, warningHaptic } from "@/shared/lib/haptics";
@@ -213,33 +214,21 @@ export default function AddTargetScreen() {
           keyboardShouldPersistTaps="always"
           showsVerticalScrollIndicator={false}
         >
-          <View className="flex-row items-center justify-between">
-            <Pressable
-              accessibilityLabel="Volver"
-              accessibilityRole="button"
-              className="h-12 w-12 items-center justify-center rounded-full"
-              onPress={() => {
-                selectionHaptic();
-                router.back();
-              }}
-              style={{ backgroundColor: theme.card }}
-            >
-              <ArrowLeft color={theme.text} size={22} strokeWidth={2.4} />
-            </Pressable>
-
-            <View className="rounded-full px-4 py-3" style={{ backgroundColor: theme.primarySoft }}>
-              <Text className="text-[13px] font-black uppercase tracking-[1.5px]" style={{ color: theme.primary }}>
-                Nuevo target
-              </Text>
-            </View>
-          </View>
+          <AppScreenHeader
+            fallbackHref={"/cards" as never}
+            rightSlot={
+              <View className="rounded-full px-4 py-3" style={{ backgroundColor: theme.primarySoft }}>
+                <Text className="text-[13px] font-black uppercase tracking-[1.5px]" style={{ color: theme.primary }}>
+                  Nuevo target
+                </Text>
+              </View>
+            }
+            title="Anadir tarjeta"
+          />
 
           <View>
             <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
               Tarjetas
-            </Text>
-            <Text className="mt-3 text-[34px] font-black leading-10" style={{ color: theme.text }}>
-              Anadir tarjeta
             </Text>
             <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
               Completa el formulario con los datos reales del target guardados en la base de datos.
