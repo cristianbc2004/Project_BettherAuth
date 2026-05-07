@@ -132,7 +132,7 @@ model BizumTransfer {
   concept         String?
 
   referenceCode   String   @unique
-  idempotencyKey  String?  @unique
+  idempotencyKey  String  @unique
 
   requestedAt     DateTime @default(now())
   completedAt     DateTime?
