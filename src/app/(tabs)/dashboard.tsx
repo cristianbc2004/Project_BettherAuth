@@ -1,8 +1,18 @@
 import { Redirect, router } from "expo-router";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Globe2,
+  Lock,
+  LogOut,
+  type LucideIcon,
+  Moon,
+  Shield,
+  ShieldCheck,
+  Smartphone,
+  Sun,
+} from "lucide-react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -21,7 +31,7 @@ function scheduleSelectionHaptic() {
 
 type MenuRowProps = {
   detail?: string;
-  icon?: ImageSourcePropType;
+  icon?: LucideIcon;
   label: string;
   onPress: () => void;
   theme: AppTheme;
@@ -29,6 +39,9 @@ type MenuRowProps = {
 };
 
 function MenuRow({ detail, icon, label, onPress, theme, tone = "default" }: MenuRowProps) {
+  const iconColor = tone === "danger" ? theme.danger : theme.text;
+  const RowIcon = icon;
+
   return (
     <Pressable
       className="flex-row items-center border-b px-1 py-4"
@@ -40,13 +53,8 @@ function MenuRow({ detail, icon, label, onPress, theme, tone = "default" }: Menu
       <View
         className="mr-4 h-11 w-11 items-center justify-center"
       >
-        {icon ? (
-          <Image
-            className="h-5 w-5"
-            resizeMode="contain"
-            source={icon}
-            style={{ tintColor: tone === "danger" ? theme.danger : theme.text }}
-          />
+        {RowIcon ? (
+          <RowIcon color={iconColor} size={20} strokeWidth={2.2} />
         ) : (
           <View className="h-3 w-3 rounded-full" style={{ backgroundColor: theme.text }} />
         )}
@@ -79,7 +87,7 @@ function SectionLabel({ label, theme }: { label: string; theme: AppTheme }) {
 }
 
 type ThemeModeSelectorProps = {
-  icons: Record<"dark" | "light" | "system", ImageSourcePropType>;
+  icons: Record<"dark" | "light" | "system", LucideIcon>;
   onSelect: (mode: ThemeMode) => void;
   selectedMode: ThemeMode;
   theme: AppTheme;
@@ -118,6 +126,7 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: Them
       <View className="flex-row gap-3">
         {options.map((option) => {
           const isSelected = selectedMode === option.mode;
+          const OptionIcon = icons[option.mode];
 
           return (
             <Pressable
@@ -133,12 +142,7 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: Them
                 backgroundColor: isSelected ? theme.primarySoft : theme.backgroundMuted,
               }}
             >
-              <Image
-                className="h-6 w-6"
-                resizeMode="contain"
-                source={icons[option.mode]}
-                style={{ tintColor: isSelected ? theme.primary : theme.text }}
-              />
+              <OptionIcon color={isSelected ? theme.primary : theme.text} size={24} strokeWidth={2.2} />
               <Text
                 className="mt-2 text-xs font-semibold"
                 numberOfLines={1}
@@ -155,7 +159,7 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: Them
 }
 
 type LanguageSelectorProps = {
-  icons: Record<AppLocale, ImageSourcePropType>;
+  icons: Record<AppLocale, LucideIcon>;
   onSelect: (locale: AppLocale) => void;
   selectedLocale: AppLocale;
   theme: AppTheme;
@@ -174,6 +178,7 @@ function LanguageSelector({ icons, onSelect, selectedLocale, theme, title }: Lan
       <View className="flex-row gap-3">
         {options.map((option) => {
           const isSelected = selectedLocale === option.locale;
+          const OptionIcon = icons[option.locale];
 
           return (
             <Pressable
@@ -189,11 +194,7 @@ function LanguageSelector({ icons, onSelect, selectedLocale, theme, title }: Lan
                 backgroundColor: isSelected ? theme.primarySoft : theme.backgroundMuted,
               }}
             >
-              <Image
-                className="h-7 w-7 rounded-full"
-                resizeMode="cover"
-                source={icons[option.locale]}
-              />
+              <OptionIcon color={isSelected ? theme.primary : theme.text} size={26} strokeWidth={2.2} />
               <Text
                 className="mt-2 text-xs font-semibold"
                 numberOfLines={1}
@@ -242,18 +243,16 @@ export default function DashboardScreen() {
 
   const firstName = session.user.name.split(" ")[0] || session.user.name;
   const dashboardIcons = {
-    admin: require("../../../assets/administrator.png"),
-    dark: require("../../../assets/moon.png"),
-    en: require("../../../assets/england.png"),
-    es: require("../../../assets/spain.png"),
-    light: require("../../../assets/sun.png"),
-    notifications: require("../../../assets/notifications_blanco.png"),
-    password: require("../../../assets/padlock_blanco.png"),
-    system: require("../../../assets/phone.png"),
-    twoFactor: require("../../../assets/2fa_blanco.png"),
-    out: require("../../../assets/logout.png"),
-    language: require("../../../assets/language.png"),
-  } satisfies Record<string, ImageSourcePropType>;
+    admin: Shield,
+    dark: Moon,
+    en: Globe2,
+    es: Globe2,
+    light: Sun,
+    out: LogOut,
+    password: Lock,
+    system: Smartphone,
+    twoFactor: ShieldCheck,
+  } satisfies Record<string, LucideIcon>;
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
