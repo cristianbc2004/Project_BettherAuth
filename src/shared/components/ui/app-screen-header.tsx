@@ -26,10 +26,10 @@ export function AppScreenHeader({
     leftSlot ?? (fallbackHref ? <AppBackButton accessibilityLabel={backAccessibilityLabel} fallbackHref={fallbackHref} /> : <View className="h-11 w-11" />);
 
   return (
-    <View className="mb-8 flex-row items-center">
+    <View className="mb-8 flex-row items-center" style={{ backgroundColor: theme.background }}>
       {leftContent}
 
-      <View className="absolute left-0 right-0 items-center">
+      <View className="absolute left-0 right-0 items-center" pointerEvents="none">
         <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>
           {title}
         </Text>

@@ -212,6 +212,7 @@ export default function AddTargetScreen() {
           contentInsetAdjustmentBehavior="automatic"
           keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
           keyboardShouldPersistTaps="always"
+          stickyHeaderIndices={[0]}
           showsVerticalScrollIndicator={false}
         >
           <AppScreenHeader

@@ -295,6 +295,7 @@ export default function HomeGraphicScreen() {
         contentContainerClassName="px-5 pb-20 pt-20"
         contentInsetAdjustmentBehavior="automatic"
         scrollEnabled={!isChartInteracting}
+        stickyHeaderIndices={[0]}
         showsVerticalScrollIndicator={false}
       >
         <PersonScreenHeader backHref="/home" title="Grafica de balance" />

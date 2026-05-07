@@ -115,6 +115,7 @@ export default function DetailsTargetScreen() {
         bounces={false}
         contentContainerClassName="gap-6 px-5 pb-12 pt-5"
         contentInsetAdjustmentBehavior="automatic"
+        stickyHeaderIndices={[0]}
         showsVerticalScrollIndicator={false}
       >
         <Animated.View entering={sectionEnter(30)}>

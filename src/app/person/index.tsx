@@ -49,6 +49,7 @@ export default function PersonGeneralScreen() {
       className="flex-1"
       contentContainerClassName="px-5 pb-32 pt-20"
       contentInsetAdjustmentBehavior="automatic"
+      stickyHeaderIndices={[0]}
       style={{ backgroundColor: theme.background }}
     >
       <PersonScreenHeader backHref="/home" title="Información general" />
