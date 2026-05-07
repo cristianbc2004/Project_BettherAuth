@@ -39,6 +39,10 @@ function toMoneyLabel(cents: number) {
   return `${(cents / 100).toFixed(2).replace(".", ",")} EUR`;
 }
 
+function readIdempotencyKey(request: Request) {
+  return request.headers.get("Idempotency-Key")?.trim() ?? "";
+}
+
 async function getAuthenticatedUser(request: Request) {
   // Recupera la sesion y devuelve el usuario autenticado con datos minimos.
   const session = await auth.api.getSession({
@@ -201,7 +205,23 @@ export async function POST(request: Request) {
 
   const { action, amount, concept, contactUserId } = result.data;
   const amountCents = Math.round(amount * 100);
+  const sendConcept = concept.trim();
+  const idempotencyKey = readIdempotencyKey(request);
   const senderBalances = await getUserBalances(authenticatedUser.id);
+
+  if (action === "send" && !idempotencyKey) {
+    await registrarAuditoria({
+      ...auditMeta,
+      action: "BIZUM_TRANSFER_SEND",
+      errorMensaje: "Falta la cabecera Idempotency-Key.",
+      status: "FAILED",
+      table: "bizumTransfer",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
+    return Response.json({ error: "Falta la cabecera Idempotency-Key." }, { status: 400 });
+  }
 
   if (contactUserId === authenticatedUser.id) {
     await registrarAuditoria({
@@ -317,6 +337,52 @@ export async function POST(request: Request) {
     );
   }
 
+  const existingTransfer = await prisma.bizumTransfer.findUnique({
+    include: {
+      receiverUser: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    where: {
+      idempotencyKey,
+    },
+  });
+
+  if (existingTransfer) {
+    const existingConcept = existingTransfer.concept?.trim() ?? "";
+    const currentConcept = sendConcept || "";
+    const isSameOperation =
+      existingTransfer.senderUserId === authenticatedUser.id &&
+      existingTransfer.receiverUserId === contactUser.id &&
+      existingTransfer.amountCents === amountCents &&
+      existingConcept === currentConcept;
+
+    if (!isSameOperation) {
+      return Response.json(
+        { error: "La Idempotency-Key ya fue usada con otra operacion." },
+        { status: 409 },
+      );
+    }
+
+    const refreshedBalances = await getUserBalances(authenticatedUser.id);
+    return Response.json(
+      {
+        availableBalanceCents: refreshedBalances.availableBalanceCents,
+        transfer: {
+          amount: `-${toMoneyLabel(existingTransfer.amountCents)}`,
+          createdAt: existingTransfer.createdAt.toISOString(),
+          id: existingTransfer.id,
+          initials: getInitials(existingTransfer.receiverUser?.name ?? contactUser.name),
+          name: existingTransfer.receiverUser?.name ?? contactUser.name,
+          tone: "outcome",
+        },
+      },
+      { status: 200 },
+    );
+  }
+
   const senderCards = await prisma.target.findMany({
     orderBy: {
       createdAt: "asc",
@@ -371,7 +437,8 @@ export async function POST(request: Request) {
       data: {
         amountCents,
         completedAt: new Date(),
-        concept: concept || null,
+        concept: sendConcept || null,
+        idempotencyKey,
         receiverCardId: receiverCard?.id ?? null,
         receiverUserId: contactUser.id,
         referenceCode: buildReferenceCode("BTR"),
@@ -455,7 +522,6 @@ export async function POST(request: Request) {
 
     const senderName = authenticatedUser.name.trim() || "Un usuario";
     const amountLabel = toMoneyLabel(amountCents);
-    const sendConcept = concept.trim();
     const sendBody = sendConcept
       ? `${senderName} te envio ${amountLabel}. Concepto: ${sendConcept}`
       : `${senderName} te envio ${amountLabel}.`;
@@ -490,7 +556,7 @@ export async function POST(request: Request) {
     action: "BIZUM_TRANSFER_SEND",
     newvaluePayload: {
       amountCents,
-      concept: concept || null,
+      concept: sendConcept || null,
       transferId: transfer.transfer.id,
     },
     status: "SUCCESS",
