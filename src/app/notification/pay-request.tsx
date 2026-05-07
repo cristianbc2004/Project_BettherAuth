@@ -5,6 +5,7 @@ import { CheckCircle2, X } from "lucide-react-native";
 import Animated, { FadeIn, FadeInDown, FadeOut } from "react-native-reanimated";
 
 import { authClient } from "@/features/auth/services/auth-client";
+import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { appConfig } from "@/shared/lib/app-config";
 import { selectionHaptic, successHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -151,21 +152,21 @@ export default function NotificationPayRequestScreen() {
           borderColor: theme.border,
         }}
       >
-        <View className="mb-4 flex-row items-center justify-between">
-          <Text className="text-[24px] font-black" style={{ color: theme.text }}>
-            Pagar solicitud
-          </Text>
-          <Pressable
-            className="h-11 w-11 items-center justify-center rounded-full"
-            onPress={() => {
-              selectionHaptic();
-              router.back();
-            }}
-            style={{ backgroundColor: theme.backgroundMuted }}
-          >
-            <X color={theme.text} size={20} strokeWidth={2.4} />
-          </Pressable>
-        </View>
+        <AppScreenHeader
+          rightSlot={
+            <Pressable
+              className="h-11 w-11 items-center justify-center rounded-full"
+              onPress={() => {
+                selectionHaptic();
+                router.back();
+              }}
+              style={{ backgroundColor: theme.backgroundMuted }}
+            >
+              <X color={theme.text} size={20} strokeWidth={2.4} />
+            </Pressable>
+          }
+          title="Pagar solicitud"
+        />
 
         {isLoading ? (
           <Animated.View entering={FadeIn.duration(180)} className="items-center py-12">

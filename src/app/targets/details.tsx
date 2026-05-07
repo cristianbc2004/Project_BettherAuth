@@ -1,7 +1,7 @@
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
-import { ArrowLeft, Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react-native";
+import { Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react-native";
 import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -9,6 +9,7 @@ import { authClient } from "@/features/auth/services/auth-client";
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { type WalletCard } from "@/features/finance/mocks";
+import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -116,39 +117,29 @@ export default function DetailsTargetScreen() {
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View entering={sectionEnter(30)} className="flex-row items-center justify-between">
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            className="h-12 w-12 items-center justify-center rounded-full"
-            onPress={() => {
-              selectionHaptic();
-              router.back();
-            }}
-            style={{ backgroundColor: theme.card }}
-          >
-            <ArrowLeft color={theme.text} size={22} strokeWidth={2.4} />
-          </Pressable>
-
-          <View
-            className="rounded-full px-4 py-3"
-            style={{ backgroundColor: isBlocked ? `${theme.danger}18` : theme.primarySoft }}
-          >
-            <Text
-              className="text-[13px] font-black uppercase tracking-[1.5px]"
-              style={{ color: isBlocked ? theme.danger : theme.primary }}
-            >
-              {isBlocked ? "Bloqueada" : "Activa"}
-            </Text>
-          </View>
+        <Animated.View entering={sectionEnter(30)}>
+          <AppScreenHeader
+            fallbackHref={"/cards" as never}
+            rightSlot={
+              <View
+                className="rounded-full px-4 py-3"
+                style={{ backgroundColor: isBlocked ? `${theme.danger}18` : theme.primarySoft }}
+              >
+                <Text
+                  className="text-[13px] font-black uppercase tracking-[1.5px]"
+                  style={{ color: isBlocked ? theme.danger : theme.primary }}
+                >
+                  {isBlocked ? "Bloqueada" : "Activa"}
+                </Text>
+              </View>
+            }
+            title="Detalle del target"
+          />
         </Animated.View>
 
         <Animated.View entering={sectionEnter(90)}>
           <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
             Tarjeta
-          </Text>
-          <Text className="mt-3 text-[34px] font-black leading-10" style={{ color: theme.text }}>
-            Detalle del target
           </Text>
           <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
             Aqui puedes ver el CVC y gestionar el estado de tu tarjeta.

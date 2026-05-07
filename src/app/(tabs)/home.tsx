@@ -17,6 +17,7 @@ import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { authClient } from "@/features/auth/services/auth-client";
 import { IncomePeopleDrawer } from "@/features/ingresos/components/income-people-drawer";
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
+import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -190,31 +191,35 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View>
-            <View className="flex-row items-center justify-between">
-              {isAdmin ? (
+            <AppScreenHeader
+              leftSlot={
+                isAdmin ? (
+                  <TopActionButton
+                    accessibilityLabel="Open menu"
+                    onPress={() => {
+                      selectionHaptic();
+                      setIsDrawerOpen(true);
+                    }}
+                  >
+                    <Menu color={theme.text} size={28} strokeWidth={2.3} />
+                  </TopActionButton>
+                ) : (
+                  <View className="h-12 w-12" />
+                )
+              }
+              rightSlot={
                 <TopActionButton
-                  accessibilityLabel="Open menu"
+                  accessibilityLabel="Open notifications"
                   onPress={() => {
                     selectionHaptic();
-                    setIsDrawerOpen(true);
+                    router.navigate("/notification" as never);
                   }}
                 >
-                  <Menu color={theme.text} size={28} strokeWidth={2.3} />
+                  <Bell color={theme.text} size={24} strokeWidth={2.1} />
                 </TopActionButton>
-              ) : (
-                <View className="h-12 w-12" />
-              )}
-
-              <TopActionButton
-                accessibilityLabel="Open notifications"
-                onPress={() => {
-                  selectionHaptic();
-                  router.navigate("/notification" as never);
-                }}
-              >
-                <Bell color={theme.text} size={24} strokeWidth={2.1} />
-              </TopActionButton>
-            </View>
+              }
+              title="Inicio"
+            />
 
             <View className="mt-5 pr-3">
               <Text className="text-[31px] font-black leading-9" style={{ color: theme.text }}>

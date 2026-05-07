@@ -2,6 +2,7 @@ import type { PropsWithChildren } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
 type FinanceScreenShellProps = PropsWithChildren<{
@@ -28,11 +29,9 @@ export function FinanceScreenShell({
         showsVerticalScrollIndicator={false}
       >
         <View>
+          <AppScreenHeader title={title} />
           <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
             {eyebrow}
-          </Text>
-          <Text className="mt-3 text-[34px] font-black leading-10" style={{ color: theme.text }}>
-            {title}
           </Text>
           <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
             {subtitle}

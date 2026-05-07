@@ -11,6 +11,7 @@ import {
   type Transaction,
 } from "@/features/finance/mocks";
 import { authClient } from "@/features/auth/services/auth-client";
+import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
@@ -137,11 +138,9 @@ export default function MovementsScreen() {
         ListHeaderComponent={
           <View className="gap-5 pb-5 pt-8">
             <View>
+              <AppScreenHeader title="Movimientos" />
               <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
                 Actividad
-              </Text>
-              <Text className="mt-3 text-[34px] font-black" style={{ color: theme.text }}>
-                Movimientos
               </Text>
             </View>
 

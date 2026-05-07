@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { authClient } from "@/features/auth/services/auth-client";
+import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -45,37 +46,37 @@ export default function CardsScreen() {
       <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
 
       <View className="flex-1 px-5 pt-8">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-[44px] font-black leading-[48px]" style={{ color: theme.text }}>
-            Wallet
-          </Text>
-          <View className="flex-row items-center gap-3">
-            <Pressable
-              accessibilityLabel="Actualizar tarjetas"
-              accessibilityRole="button"
-              className="h-11 w-11 items-center justify-center rounded-full"
-              onPress={() => {
-                selectionHaptic();
-                void refreshCards();
-              }}
-              style={{ backgroundColor: theme.card }}
-            >
-              <Boxes color={theme.text} size={19} strokeWidth={2.4} />
-            </Pressable>
-            <Pressable
-              accessibilityLabel="Anadir nueva tarjeta"
-              accessibilityRole="button"
-              className="h-11 w-11 items-center justify-center rounded-full"
-              onPress={() => {
-                selectionHaptic();
-                router.push({ pathname: "/targets/add" } as never);
-              }}
-              style={{ backgroundColor: theme.card }}
-            >
-              <Plus color={theme.text} size={20} strokeWidth={2.6} />
-            </Pressable>
-          </View>
-        </View>
+        <AppScreenHeader
+          rightSlot={
+            <View className="flex-row items-center gap-3">
+              <Pressable
+                accessibilityLabel="Actualizar tarjetas"
+                accessibilityRole="button"
+                className="h-11 w-11 items-center justify-center rounded-full"
+                onPress={() => {
+                  selectionHaptic();
+                  void refreshCards();
+                }}
+                style={{ backgroundColor: theme.card }}
+              >
+                <Boxes color={theme.text} size={19} strokeWidth={2.4} />
+              </Pressable>
+              <Pressable
+                accessibilityLabel="Anadir nueva tarjeta"
+                accessibilityRole="button"
+                className="h-11 w-11 items-center justify-center rounded-full"
+                onPress={() => {
+                  selectionHaptic();
+                  router.push({ pathname: "/targets/add" } as never);
+                }}
+                style={{ backgroundColor: theme.card }}
+              >
+                <Plus color={theme.text} size={20} strokeWidth={2.6} />
+              </Pressable>
+            </View>
+          }
+          title="Wallet"
+        />
 
         <View className="mt-6">
           {isLoading ? (

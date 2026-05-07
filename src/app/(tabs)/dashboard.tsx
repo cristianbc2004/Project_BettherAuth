@@ -17,6 +17,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
+import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, type AppLocale, useLanguage } from "@/shared/lib/locale";
@@ -266,6 +267,7 @@ export default function DashboardScreen() {
         contentContainerClassName="px-5 pb-10 pt-6"
         showsVerticalScrollIndicator={false}
       >
+        <AppScreenHeader title="Perfil" />
         <View>
           <SectionLabel label={t("dashboard.profileSection")} theme={theme} />
           <View

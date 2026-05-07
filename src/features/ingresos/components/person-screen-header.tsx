@@ -1,9 +1,4 @@
-import { router } from "expo-router";
-import { Pressable, Text, View } from "react-native";
-import { ArrowLeft } from "lucide-react-native";
-
-import { selectionHaptic } from "@/shared/lib/haptics";
-import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 
 type PersonScreenHeaderProps = {
   backHref?: string;
@@ -11,26 +6,11 @@ type PersonScreenHeaderProps = {
 };
 
 export function PersonScreenHeader({ backHref, title }: PersonScreenHeaderProps) {
-  const { theme } = useAppTheme();
-
   return (
-    <View>
-      <Pressable
-        accessibilityLabel={backHref === "/home" ? "Volver a home" : "Volver a general"}
-        accessibilityRole="button"
-        className="h-12 w-12 items-center justify-center"
-        hitSlop={10}
-        onPress={() => {
-          selectionHaptic();
-          router.navigate((backHref ?? "/home") as never);
-        }}
-      >
-        <ArrowLeft color={theme.text} size={25} strokeWidth={2.4} />
-      </Pressable>
-
-      <Text className="mt-3 text-[28px] font-bold" style={{ color: theme.text }}>
-        {title}
-      </Text>
-    </View>
+    <AppScreenHeader
+      backAccessibilityLabel={backHref === "/home" ? "Volver a home" : "Volver a general"}
+      fallbackHref={(backHref ?? "/home") as never}
+      title={title}
+    />
   );
 }
