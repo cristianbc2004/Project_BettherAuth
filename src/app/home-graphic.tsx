@@ -20,7 +20,7 @@ import { AnimatedNumber } from "@/shared/components/ui/animated-number";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
-type HomeGraphFilter = "1d" | "3d" | "1m" | "custom";
+type HomeGraphFilter = "3d" | "1m" | "3m" | "custom";
 
 type HomeGraphPoint = GraphPoint & {
   label: string;
@@ -168,14 +168,32 @@ export default function HomeGraphicScreen() {
     }
 
     const sizeByFilter: Record<Exclude<HomeGraphFilter, "custom">, number> = {
-      "1d": 1,
       "3d": 3,
       "1m": 30,
+      "3m": 90,
     };
 
     const size = sizeByFilter[selectedFilter];
     return allPoints.slice(-size);
   }, [allPoints, customRange.end, customRange.start, selectedFilter]);
+  const graphPoints = useMemo(() => {
+    if (filteredPoints.length !== 1) {
+      return filteredPoints;
+    }
+
+    const onlyPoint = filteredPoints[0];
+    const syntheticDate = new Date(onlyPoint.date);
+    syntheticDate.setMinutes(syntheticDate.getMinutes() + 1);
+
+    return [
+      onlyPoint,
+      {
+        ...onlyPoint,
+        date: syntheticDate,
+      },
+    ];
+  }, [filteredPoints]);
+  const isGraphInteractive = filteredPoints.length > 1;
 
   const highlightedPoint = selectedPoint ?? filteredPoints[filteredPoints.length - 1] ?? allPoints[allPoints.length - 1];
   const rangeSummary = getSelectedRangeLabel(filteredPoints);
@@ -192,10 +210,25 @@ export default function HomeGraphicScreen() {
 
   const handlePointSelected = useCallback(
     (point: GraphPoint) => {
-      const match = filteredPoints.find(
-        (item) => item.date.getTime() === point.date.getTime() && item.value === point.value,
-      );
-      setSelectedPoint(match ?? null);
+      const selectedTime = point.date.getTime();
+      const matchByDate = filteredPoints.find((item) => item.date.getTime() === selectedTime);
+
+      if (matchByDate) {
+        setSelectedPoint(matchByDate);
+        return;
+      }
+
+      const nearestPoint = filteredPoints.reduce<HomeGraphPoint | null>((closest, candidate) => {
+        if (!closest) {
+          return candidate;
+        }
+
+        const closestDelta = Math.abs(closest.date.getTime() - selectedTime);
+        const candidateDelta = Math.abs(candidate.date.getTime() - selectedTime);
+        return candidateDelta < closestDelta ? candidate : closest;
+      }, null);
+
+      setSelectedPoint(nearestPoint);
     },
     [filteredPoints],
   );
@@ -269,11 +302,6 @@ export default function HomeGraphicScreen() {
         <View className="mt-7">
           <View className="flex-row flex-wrap items-center gap-3">
             <FilterChip
-              isActive={selectedFilter === "1d"}
-              label="1 dia"
-              onPress={() => handleFilterPress("1d")}
-            />
-            <FilterChip
               isActive={selectedFilter === "3d"}
               label="3 dias"
               onPress={() => handleFilterPress("3d")}
@@ -282,6 +310,11 @@ export default function HomeGraphicScreen() {
               isActive={selectedFilter === "1m"}
               label="1 mes"
               onPress={() => handleFilterPress("1m")}
+            />
+            <FilterChip
+              isActive={selectedFilter === "3m"}
+              label="3 meses"
+              onPress={() => handleFilterPress("3m")}
             />
             <Pressable
               accessibilityRole="button"
@@ -318,7 +351,7 @@ export default function HomeGraphicScreen() {
               <LineGraph
                 animated={true}
                 color={graphColor}
-                enablePanGesture={true}
+                enablePanGesture={isGraphInteractive}
                 gradientFillColors={[`${graphColor}66`, `${graphColor}10`]}
                 horizontalPadding={16}
                 lineThickness={4}
@@ -326,7 +359,7 @@ export default function HomeGraphicScreen() {
                 onGestureStart={handleGestureStart}
                 onPointSelected={handlePointSelected}
                 panGestureDelay={40}
-                points={filteredPoints}
+                points={graphPoints}
                 style={{ flex: 1 }}
                 verticalPadding={20}
               />
