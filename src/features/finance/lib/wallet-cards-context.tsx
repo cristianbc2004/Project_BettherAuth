@@ -104,7 +104,7 @@ export function WalletCardsProvider({ children }: PropsWithChildren) {
 
         if (!response.ok) {
           const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "No se pudo actualizar el target.");
+          throw new Error(payload?.error ?? "No se pudo actualizar la tarjeta.");
         }
 
         const payload = (await response.json()) as { target: TargetResponse };

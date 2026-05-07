@@ -12,8 +12,8 @@ export default function SignUpScreen() {
       eyebrow=""
       keyboardFocusScrollY={isPasswordRequirementsFocused ? 260 : undefined}
       scrollRequestKey={isPasswordRequirementsFocused ? passwordRequirementsScrollRequest : undefined}
-      subtitle="Set up your access and continue with the same secure mobile experience."
-      title="Create Your Access."
+      subtitle="Configura tu acceso y continua con la misma experiencia movil segura."
+      title="Crea tu acceso."
     >
       <AuthForm
         mode="signUp"

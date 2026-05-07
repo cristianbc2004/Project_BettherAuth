@@ -52,7 +52,7 @@ const addTargetSchema = z.object({
     .trim()
     .min(1, "Introduce el saldo inicial.")
     .refine((value) => parseAmountInputToCents(value) !== null, "Introduce un importe valido."),
-  name: z.string().trim().min(2, "Introduce el nombre del target."),
+  name: z.string().trim().min(2, "Introduce el nombre de la tarjeta."),
   numberTarget: z
     .string()
     .trim()
@@ -173,7 +173,7 @@ export default function AddTargetScreen() {
       const createdCard = await addCard(payload);
 
       successHaptic();
-      Alert.alert("Tarjeta creada", "Tu nuevo target ya esta disponible en la cartera.");
+      Alert.alert("Tarjeta creada", "Tu nueva tarjeta ya esta disponible en la cartera.");
       router.replace({
         params: { cardId: createdCard.id },
         pathname: "/targets/details",
@@ -220,7 +220,7 @@ export default function AddTargetScreen() {
             rightSlot={
               <View className="rounded-full px-4 py-3" style={{ backgroundColor: theme.primarySoft }}>
                 <Text className="text-[13px] font-black uppercase tracking-[1.5px]" style={{ color: theme.primary }}>
-                  Nuevo target
+                  Nueva tarjeta
                 </Text>
               </View>
             }
@@ -232,7 +232,7 @@ export default function AddTargetScreen() {
               Tarjetas
             </Text>
             <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-              Completa el formulario con los datos reales del target guardados en la base de datos.
+              Completa el formulario con los datos reales de la tarjeta guardados en la base de datos.
             </Text>
           </View>
 
@@ -253,10 +253,10 @@ export default function AddTargetScreen() {
               </View>
               <View className="ml-3 flex-1">
                 <Text className="text-[18px] font-black" style={{ color: theme.text }}>
-                  Datos del target
+                  Datos de la tarjeta
                 </Text>
                 <Text className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
-                  El alta se guarda directamente en la tabla targets.
+                  El alta se guarda directamente en la tabla de tarjetas.
                 </Text>
               </View>
             </View>
@@ -273,7 +273,7 @@ export default function AddTargetScreen() {
                   onBlur={onBlur}
                   onChangeText={onChange}
                   onFocus={() => scrollToFormPosition(260)}
-                  placeholder="Nombre del target"
+                  placeholder="Nombre de la tarjeta"
                   value={value}
                 />
               )}
@@ -288,7 +288,7 @@ export default function AddTargetScreen() {
                   autoCorrect={false}
                   error={error?.message}
                   keyboardType="number-pad"
-                  label="Numero de target"
+                  label="Numero de tarjeta"
                   maxLength={19}
                   onBlur={onBlur}
                   onChangeText={(text) => onChange(text.replace(/\D/g, "").slice(0, 19))}
@@ -347,7 +347,7 @@ export default function AddTargetScreen() {
               name="type"
               render={({ field: { onChange, value } }) => (
                 <SelectorField
-                  label="Tipo de target"
+                  label="Tipo de tarjeta"
                   onChange={onChange}
                   options={walletCardTypes}
                   selectedValue={value}
@@ -366,13 +366,13 @@ export default function AddTargetScreen() {
             >
               <Check color={theme.primary} size={18} strokeWidth={2.5} />
               <Text className="ml-3 text-[14px] font-black" style={{ color: theme.primary }}>
-                Revisar y guardar en tu wallet
+                Revisar y guardar en tu cartera
               </Text>
             </Pressable>
 
             <AuthSubmitButton
               isPending={isSaving}
-              label="Guardar target"
+              label="Guardar tarjeta"
               onPress={() => {
                 void handleSubmit();
               }}
