@@ -190,7 +190,12 @@ export default function NotificationsScreen() {
         <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
       </View>
 
-      <ScrollView bounces={false} contentContainerClassName="px-5 pb-10 pt-6" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        bounces={false}
+        contentContainerClassName="px-5 pb-10 pt-6"
+        stickyHeaderIndices={[0]}
+        showsVerticalScrollIndicator={false}
+      >
         <AppScreenHeader fallbackHref={"/home" as never} title="Notifications" />
 
         <Text className="mb-4 px-1 text-xs font-medium uppercase tracking-[1.5px]" style={{ color: theme.mutedText }}>

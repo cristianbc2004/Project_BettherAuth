@@ -188,6 +188,7 @@ export default function HomeScreen() {
           contentContainerClassName="gap-7 pb-12 pt-4"
           contentInsetAdjustmentBehavior="automatic"
           scrollEnabled={!isChartInteracting}
+          stickyHeaderIndices={[0]}
           showsVerticalScrollIndicator={false}
         >
           <View>
@@ -220,15 +221,15 @@ export default function HomeScreen() {
               }
               title="Inicio"
             />
+          </View>
 
-            <View className="mt-5 pr-3">
-              <Text className="text-[31px] font-black leading-9" style={{ color: theme.text }}>
-                {getGreeting()}, {firstName}
-              </Text>
-              <Text className="mt-2 text-[16px] font-medium" style={{ color: theme.mutedText }}>
-                Aqui tienes tu resumen semanal
-              </Text>
-            </View>
+          <View className="pr-3">
+            <Text className="text-[31px] font-black leading-9" style={{ color: theme.text }}>
+              {getGreeting()}, {firstName}
+            </Text>
+            <Text className="mt-2 text-[16px] font-medium" style={{ color: theme.mutedText }}>
+              Aqui tienes tu resumen semanal
+            </Text>
           </View>
 
           <View>

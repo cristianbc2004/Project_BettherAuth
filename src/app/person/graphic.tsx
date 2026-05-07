@@ -40,6 +40,7 @@ export default function PersonGraphicScreen() {
       contentContainerClassName="px-5 pb-32 pt-20"
       contentInsetAdjustmentBehavior="automatic"
       scrollEnabled={!isChartInteracting}
+      stickyHeaderIndices={[0]}
       style={{ backgroundColor: theme.background }}
     >
       <PersonScreenHeader backHref={generalHref} title="Gráfica de ingresos" />
