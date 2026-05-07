@@ -26,6 +26,7 @@ function AppNavigation() {
         <Stack.Screen name="targets/add" />
         <Stack.Screen name="home-graphic" />
         <Stack.Screen name="notification" />
+        <Stack.Screen name="bizum" />
         <Stack.Screen name="person" />
         <Stack.Screen name="(auth)/sign-in" />
         <Stack.Screen name="(auth)/sign-up" />
