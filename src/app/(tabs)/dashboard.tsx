@@ -2,6 +2,7 @@ import { Redirect, router } from "expo-router";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ChevronRight,
   Globe2,
   Lock,
   LogOut,
@@ -70,7 +71,7 @@ function MenuRow({ detail, icon, label, onPress, theme, tone = "default" }: Menu
       </View>
 
       {detail ? <Text className="mr-3 text-xs" style={{ color: theme.mutedText }}>{detail}</Text> : null}
-      <Text className="text-2xl" style={{ color: theme.mutedText }}>{">"}</Text>
+      <ChevronRight color={theme.mutedText} size={22} strokeWidth={2.2} />
     </Pressable>
   );
 }
