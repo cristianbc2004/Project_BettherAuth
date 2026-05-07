@@ -1,6 +1,6 @@
 import { Redirect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import { FlatList, Text, TextInput, View, type ListRenderItem } from "react-native";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Animated, FlatList, Pressable, Text, TextInput, View, type ListRenderItem } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Filter, Search } from "lucide-react-native";
 
@@ -20,19 +20,25 @@ export default function MovementsScreen() {
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isFilterDrawerMounted, setIsFilterDrawerMounted] = useState(false);
+  const [selectedTone, setSelectedTone] = useState<"all" | Transaction["tone"]>("all");
+  const [draftTone, setDraftTone] = useState<"all" | Transaction["tone"]>("all");
   const [visibleCount, setVisibleCount] = useState<number>(financeConfig.transactionBatchSize);
+  const drawerTranslateX = useRef(new Animated.Value(340)).current;
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
   const trimmedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery]);
   const filteredTransactions = useMemo(() => {
-    if (!trimmedQuery) {
-      return allTransactions;
-    }
+    return allTransactions.filter((transaction) => {
+      const matchesSearch =
+        !trimmedQuery ||
+        `${transaction.merchant} ${transaction.category} ${transaction.amount} ${transaction.time}`
+          .toLowerCase()
+          .includes(trimmedQuery);
+      const matchesTone = selectedTone === "all" || transaction.tone === selectedTone;
 
-    return allTransactions.filter((transaction) =>
-      `${transaction.merchant} ${transaction.category} ${transaction.amount} ${transaction.time}`
-        .toLowerCase()
-        .includes(trimmedQuery),
-    );
-  }, [trimmedQuery]);
+      return matchesSearch && matchesTone;
+    });
+  }, [selectedTone, trimmedQuery]);
   const visibleTransactions = useMemo(() => {
     if (trimmedQuery) {
       return filteredTransactions;
@@ -40,6 +46,7 @@ export default function MovementsScreen() {
 
     return filteredTransactions.slice(0, visibleCount);
   }, [filteredTransactions, trimmedQuery, visibleCount]);
+  const hasActiveFilters = selectedTone !== "all";
   const hasMoreTransactions = !trimmedQuery && visibleCount < financeConfig.totalTransactionCount;
   const handleLoadMore = useCallback(() => {
     setVisibleCount((currentCount) =>
@@ -52,6 +59,57 @@ export default function MovementsScreen() {
   );
   const keyExtractor = useCallback((item: Transaction) => item.id, []);
   const renderSeparator = useCallback(() => <View className="h-3" />, []);
+  const animateDrawerIn = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(drawerTranslateX, {
+        duration: 220,
+        toValue: 0,
+        useNativeDriver: true,
+      }),
+      Animated.timing(overlayOpacity, {
+        duration: 220,
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [drawerTranslateX, overlayOpacity]);
+  const animateDrawerOut = useCallback(
+    (onEnd?: () => void) => {
+      Animated.parallel([
+        Animated.timing(drawerTranslateX, {
+          duration: 180,
+          toValue: 340,
+          useNativeDriver: true,
+        }),
+        Animated.timing(overlayOpacity, {
+          duration: 180,
+          toValue: 0,
+          useNativeDriver: true,
+        }),
+      ]).start(({ finished }) => {
+        if (finished) {
+          setIsFilterDrawerMounted(false);
+          onEnd?.();
+        }
+      });
+    },
+    [drawerTranslateX, overlayOpacity],
+  );
+  const openFilters = useCallback(() => {
+    setDraftTone(selectedTone);
+    setIsFilterDrawerMounted(true);
+    animateDrawerIn();
+  }, [animateDrawerIn, selectedTone]);
+  const closeFilters = useCallback(() => animateDrawerOut(), [animateDrawerOut]);
+  const applyFilters = useCallback(() => {
+    setSelectedTone(draftTone);
+    animateDrawerOut();
+  }, [animateDrawerOut, draftTone]);
+  const clearFilters = useCallback(() => {
+    setDraftTone("all");
+    setSelectedTone("all");
+    animateDrawerOut();
+  }, [animateDrawerOut]);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -100,9 +158,13 @@ export default function MovementsScreen() {
                   value={searchQuery}
                 />
               </View>
-              <View className="h-[54px] w-[54px] items-center justify-center rounded-[22px]" style={{ backgroundColor: theme.card }}>
+              <Pressable
+                className="h-[54px] w-[54px] items-center justify-center rounded-[22px]"
+                onPress={openFilters}
+                style={{ backgroundColor: hasActiveFilters ? theme.primary : theme.card }}
+              >
                 <Filter color={theme.text} size={21} strokeWidth={2.4} />
-              </View>
+              </Pressable>
             </View>
           </View>
         }
@@ -122,6 +184,84 @@ export default function MovementsScreen() {
         updateCellsBatchingPeriod={24}
         windowSize={9}
       />
+      {isFilterDrawerMounted ? (
+        <View className="absolute inset-0 flex-row">
+          <Animated.View className="flex-1" style={{ opacity: overlayOpacity }}>
+            <Pressable className="flex-1" onPress={closeFilters} style={{ backgroundColor: "rgba(7, 10, 18, 0.45)" }} />
+          </Animated.View>
+          <Animated.View
+            className="h-full w-[84%] max-w-[340px] px-5 pb-7 pt-8"
+            style={{ backgroundColor: theme.card, transform: [{ translateX: drawerTranslateX }] }}
+          >
+            <View className="flex-row items-center justify-between">
+              <Text className="text-[22px] font-black" style={{ color: theme.text }}>
+                Filtros
+              </Text>
+              <Pressable onPress={closeFilters}>
+                <Text className="text-[13px] font-semibold" style={{ color: theme.mutedText }}>
+                  Cerrar
+                </Text>
+              </Pressable>
+            </View>
+
+            <View className="mt-8">
+              <Text className="text-[12px] font-black uppercase tracking-[1px]" style={{ color: theme.primary }}>
+                Tipo
+              </Text>
+              <View className="mt-4 gap-3">
+                <Pressable
+                  className="rounded-[16px] px-4 py-4"
+                  onPress={() => setDraftTone("all")}
+                  style={{ backgroundColor: draftTone === "all" ? theme.primary : theme.background }}
+                >
+                  <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
+                    Todos
+                  </Text>
+                </Pressable>
+                <Pressable
+                  className="rounded-[16px] px-4 py-4"
+                  onPress={() => setDraftTone("income")}
+                  style={{ backgroundColor: draftTone === "income" ? theme.primary : theme.background }}
+                >
+                  <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
+                    Ingresos
+                  </Text>
+                </Pressable>
+                <Pressable
+                  className="rounded-[16px] px-4 py-4"
+                  onPress={() => setDraftTone("expense")}
+                  style={{ backgroundColor: draftTone === "expense" ? theme.primary : theme.background }}
+                >
+                  <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
+                    Gastos
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+
+            <View className="mt-auto flex-row gap-3">
+              <Pressable
+                className="flex-1 items-center rounded-[16px] px-4 py-4"
+                onPress={clearFilters}
+                style={{ backgroundColor: theme.background }}
+              >
+                <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
+                  Limpiar
+                </Text>
+              </Pressable>
+              <Pressable
+                className="flex-1 items-center rounded-[16px] px-4 py-4"
+                onPress={applyFilters}
+                style={{ backgroundColor: theme.primary }}
+              >
+                <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
+                  Aplicar
+                </Text>
+              </Pressable>
+            </View>
+          </Animated.View>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
