@@ -11,7 +11,6 @@ import { TransactionRow } from "@/features/finance/components/transaction-row";
 import {
   recentTransactions,
   weeklyBalance,
-  type WeeklyBalancePoint,
 } from "@/features/finance/mocks";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { authClient } from "@/features/auth/services/auth-client";
