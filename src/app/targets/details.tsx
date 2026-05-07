@@ -134,7 +134,7 @@ export default function DetailsTargetScreen() {
                 </Text>
               </View>
             }
-            title="Detalle del target"
+            title="Detalle de la tarjeta"
           />
         </Animated.View>
 
@@ -170,7 +170,7 @@ export default function DetailsTargetScreen() {
                 setIsBlockPending(true);
                 await updateCardBlock(selectedCard.id, !isBlocked);
               } catch (error) {
-                const message = error instanceof Error ? error.message : "No se pudo actualizar el target.";
+                const message = error instanceof Error ? error.message : "No se pudo actualizar la tarjeta.";
                 warningHaptic();
                 Alert.alert("Error", message);
               } finally {

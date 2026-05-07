@@ -75,7 +75,7 @@ export default function CardsScreen() {
               </Pressable>
             </View>
           }
-          title="Wallet"
+          title="Cartera"
         />
 
         <View className="mt-6">
@@ -85,7 +85,7 @@ export default function CardsScreen() {
               style={{ backgroundColor: theme.card, width: cardWidth }}
             >
               <Text className="text-[15px] font-black" style={{ color: theme.mutedText }}>
-                Cargando targets...
+                Cargando tarjetas...
               </Text>
             </View>
           ) : displayedCards.length === 0 ? (
@@ -94,10 +94,10 @@ export default function CardsScreen() {
               style={{ backgroundColor: theme.card, borderColor: theme.border, width: cardWidth }}
             >
               <Text className="text-center text-[17px] font-black" style={{ color: theme.text }}>
-                No hay targets guardados
+                No hay tarjetas guardadas
               </Text>
               <Text className="mt-2 text-center text-[14px] leading-5" style={{ color: theme.mutedText }}>
-                Anade tu primer target para verlo aqui.
+                Anade tu primera tarjeta para verla aqui.
               </Text>
             </View>
           ) : (

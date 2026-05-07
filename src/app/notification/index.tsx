@@ -196,10 +196,10 @@ export default function NotificationsScreen() {
         stickyHeaderIndices={[0]}
         showsVerticalScrollIndicator={false}
       >
-        <AppScreenHeader fallbackHref={"/home" as never} title="Notifications" />
+        <AppScreenHeader fallbackHref={"/home" as never} title="Notificaciones" />
 
         <Text className="mb-4 px-1 text-xs font-medium uppercase tracking-[1.5px]" style={{ color: theme.mutedText }}>
-          Latest activity
+          Ultima actividad
         </Text>
 
         {isLoading ? (
