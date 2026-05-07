@@ -1,6 +1,6 @@
 import { Redirect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, Text, View, type ListRenderItem } from "react-native";
+import { FlatList, Text, TextInput, View, type ListRenderItem } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Filter, Search } from "lucide-react-native";
 
@@ -19,12 +19,28 @@ export default function MovementsScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
+  const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState<number>(financeConfig.transactionBatchSize);
-  const visibleTransactions = useMemo(
-    () => allTransactions.slice(0, visibleCount),
-    [visibleCount],
-  );
-  const hasMoreTransactions = visibleCount < financeConfig.totalTransactionCount;
+  const trimmedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery]);
+  const filteredTransactions = useMemo(() => {
+    if (!trimmedQuery) {
+      return allTransactions;
+    }
+
+    return allTransactions.filter((transaction) =>
+      `${transaction.merchant} ${transaction.category} ${transaction.amount} ${transaction.time}`
+        .toLowerCase()
+        .includes(trimmedQuery),
+    );
+  }, [trimmedQuery]);
+  const visibleTransactions = useMemo(() => {
+    if (trimmedQuery) {
+      return filteredTransactions;
+    }
+
+    return filteredTransactions.slice(0, visibleCount);
+  }, [filteredTransactions, trimmedQuery, visibleCount]);
+  const hasMoreTransactions = !trimmedQuery && visibleCount < financeConfig.totalTransactionCount;
   const handleLoadMore = useCallback(() => {
     setVisibleCount((currentCount) =>
       Math.min(currentCount + financeConfig.transactionBatchSize, financeConfig.totalTransactionCount),
@@ -52,9 +68,11 @@ export default function MovementsScreen() {
         ListFooterComponent={
           <View className="items-center pb-10 pt-4">
             <Text className="text-[12px] font-semibold" style={{ color: theme.mutedText }}>
-              {hasMoreTransactions
-                ? `Mostrando ${visibleTransactions.length} de ${financeConfig.totalTransactionCount}`
-                : "Todos los movimientos cargados"}
+              {trimmedQuery
+                ? `Resultados: ${visibleTransactions.length}`
+                : hasMoreTransactions
+                  ? `Mostrando ${visibleTransactions.length} de ${financeConfig.totalTransactionCount}`
+                  : "Todos los movimientos cargados"}
             </Text>
           </View>
         }
@@ -72,9 +90,15 @@ export default function MovementsScreen() {
             <View className="flex-row gap-3">
               <View className="flex-1 flex-row items-center rounded-[22px] px-4 py-4" style={{ backgroundColor: theme.card }}>
                 <Search color={theme.mutedText} size={20} strokeWidth={2.3} />
-                <Text className="ml-3 text-[14px] font-semibold" style={{ color: theme.mutedText }}>
-                  Buscar movimiento
-                </Text>
+                <TextInput
+                  className="ml-3 flex-1 text-[14px] font-semibold"
+                  onChangeText={setSearchQuery}
+                  placeholder="Buscar movimiento"
+                  placeholderTextColor={theme.mutedText}
+                  selectionColor={theme.primary}
+                  style={{ color: theme.text }}
+                  value={searchQuery}
+                />
               </View>
               <View className="h-[54px] w-[54px] items-center justify-center rounded-[22px]" style={{ backgroundColor: theme.card }}>
                 <Filter color={theme.text} size={21} strokeWidth={2.4} />
