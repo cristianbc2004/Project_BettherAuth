@@ -1,5 +1,6 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { ScrollView } from "react-native";
+import { useCallback, useState } from "react";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { Graphic } from "@/features/ingresos/components/person/graphic";
@@ -17,9 +18,13 @@ export default function PersonGraphicScreen() {
   });
   const { theme } = useAppTheme();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
+  const [isChartInteracting, setIsChartInteracting] = useState(false);
   const selectedPersonId = personId ? Number(personId) : undefined;
   const initialSelectedPersonId = Number.isFinite(selectedPersonId) ? selectedPersonId : undefined;
   const generalHref = personId ? (`/person?personId=${personId}` as const) : "/person";
+  const handleGraphInteractionChange = useCallback((isInteracting: boolean) => {
+    setIsChartInteracting(isInteracting);
+  }, []);
 
   if (showSessionLoading) {
     return <PersonGraphicSkeleton />;
@@ -34,10 +39,14 @@ export default function PersonGraphicScreen() {
       className="flex-1"
       contentContainerClassName="px-5 pb-32 pt-20"
       contentInsetAdjustmentBehavior="automatic"
+      scrollEnabled={!isChartInteracting}
       style={{ backgroundColor: theme.background }}
     >
       <PersonScreenHeader backHref={generalHref} title="Gráfica de ingresos" />
-      <Graphic initialSelectedPersonId={initialSelectedPersonId} />
+      <Graphic
+        initialSelectedPersonId={initialSelectedPersonId}
+        onGraphInteractionChange={handleGraphInteractionChange}
+      />
     </ScrollView>
   );
 }

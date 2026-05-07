@@ -1,5 +1,6 @@
 import { Redirect, router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { LineGraph, type GraphPoint } from "react-native-graph";
@@ -118,6 +119,7 @@ export default function HomeScreen() {
   const { cards, refreshCards } = useWalletCards();
   const { resolvedThemeName, theme } = useAppTheme();
   const { width } = useWindowDimensions();
+  const cardNavigationLockRef = useRef(false);
   const cardWidth = width - 40;
   const chartWidth = Math.max(width - 82, 260);
   const graphColor = resolvedThemeName === "dark" ? "#78a9ff" : "#3467d6";
@@ -157,6 +159,12 @@ export default function HomeScreen() {
       void refreshCards();
     }
   }, [refreshCards, session?.user.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      cardNavigationLockRef.current = false;
+    }, []),
+  );
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -320,6 +328,11 @@ export default function HomeScreen() {
                   accessibilityRole="button"
                   key={card.id}
                   onPress={() => {
+                    if (cardNavigationLockRef.current) {
+                      return;
+                    }
+
+                    cardNavigationLockRef.current = true;
                     selectionHaptic();
                     router.push({
                       params: { cardId: card.id },

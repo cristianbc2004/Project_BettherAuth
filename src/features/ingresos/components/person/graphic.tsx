@@ -23,6 +23,7 @@ type PersonFilterProps = {
 
 type GraphicProps = {
   initialSelectedPersonId?: number;
+  onGraphInteractionChange?: (isInteracting: boolean) => void;
 };
 
 const graphColor = "#4484B2";
@@ -72,7 +73,7 @@ function getMonthlyTotal(monthIndex: number) {
   );
 }
 
-export function Graphic({ initialSelectedPersonId }: GraphicProps) {
+export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: GraphicProps) {
   const { theme } = useAppTheme();
   const [selectedPersonId, setSelectedPersonId] = useState<SelectedPersonId>(
     initialSelectedPersonId ?? "all",
@@ -139,11 +140,13 @@ export function Graphic({ initialSelectedPersonId }: GraphicProps) {
 
   const handleGestureStart = useCallback(() => {
     selectionHaptic();
-  }, []);
+    onGraphInteractionChange?.(true);
+  }, [onGraphInteractionChange]);
 
   const handleGestureEnd = useCallback(() => {
     setSelectedPoint(null);
-  }, []);
+    onGraphInteractionChange?.(false);
+  }, [onGraphInteractionChange]);
 
   return (
     <GestureHandlerRootView className="mt-6">
