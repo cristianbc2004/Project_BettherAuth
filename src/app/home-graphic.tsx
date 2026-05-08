@@ -10,19 +10,18 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { LineGraph, type GraphPoint } from "react-native-graph";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { weeklyBalance } from "@/features/finance/mocks";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
+import { NativeLineChart, type NativeLineChartPoint } from "@/shared/components/ui/native-line-chart";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
 type HomeGraphFilter = "3d" | "1m" | "3m" | "custom";
 
-type HomeGraphPoint = GraphPoint & {
+type HomeGraphPoint = NativeLineChartPoint & {
   label: string;
 };
 
@@ -208,30 +207,9 @@ export default function HomeGraphicScreen() {
     setSelectedFilter(filter);
   }, []);
 
-  const handlePointSelected = useCallback(
-    (point: GraphPoint) => {
-      const selectedTime = point.date.getTime();
-      const matchByDate = filteredPoints.find((item) => item.date.getTime() === selectedTime);
-
-      if (matchByDate) {
-        setSelectedPoint(matchByDate);
-        return;
-      }
-
-      const nearestPoint = filteredPoints.reduce<HomeGraphPoint | null>((closest, candidate) => {
-        if (!closest) {
-          return candidate;
-        }
-
-        const closestDelta = Math.abs(closest.date.getTime() - selectedTime);
-        const candidateDelta = Math.abs(candidate.date.getTime() - selectedTime);
-        return candidateDelta < closestDelta ? candidate : closest;
-      }, null);
-
-      setSelectedPoint(nearestPoint);
-    },
-    [filteredPoints],
-  );
+  const handlePointSelected = useCallback((point: HomeGraphPoint) => {
+    setSelectedPoint(point);
+  }, []);
 
   const handleGestureStart = useCallback(() => {
     selectionHaptic();
@@ -347,25 +325,23 @@ export default function HomeGraphicScreen() {
             Balance en {highlightedPoint.label}
           </Text>
 
-          <GestureHandlerRootView className="mt-5">
+          <View className="mt-5">
             <View className="h-[220px]">
-              <LineGraph
-                animated={true}
+              <NativeLineChart
                 color={graphColor}
                 enablePanGesture={isGraphInteractive}
                 gradientFillColors={[`${graphColor}66`, `${graphColor}10`]}
+                height={220}
                 horizontalPadding={16}
                 lineThickness={4}
                 onGestureEnd={handleGestureEnd}
                 onGestureStart={handleGestureStart}
                 onPointSelected={handlePointSelected}
-                panGestureDelay={40}
                 points={graphPoints}
-                style={{ flex: 1 }}
                 verticalPadding={20}
               />
             </View>
-          </GestureHandlerRootView>
+          </View>
         </View>
 
         <View className="mt-6 border-t pt-6" style={{ borderColor: theme.border }}>

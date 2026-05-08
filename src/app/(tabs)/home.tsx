@@ -1,9 +1,13 @@
 import { Redirect, router } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { LineGraph, type GraphPoint } from "react-native-graph";
+import {
+  Pressable,
+  ScrollView,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Bell, Menu } from "lucide-react-native";
 
@@ -19,6 +23,7 @@ import { IncomePeopleDrawer } from "@/features/ingresos/components/income-people
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { NativeLineChart, type NativeLineChartPoint } from "@/shared/components/ui/native-line-chart";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
@@ -29,7 +34,7 @@ type SectionHeaderProps = {
   title: string;
 };
 
-type HomeBalancePoint = GraphPoint & {
+type HomeBalancePoint = NativeLineChartPoint & {
   label: string;
 };
 
@@ -121,6 +126,7 @@ export default function HomeScreen() {
   const { resolvedThemeName, theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const cardNavigationLockRef = useRef(false);
+  const chartNavigationLockRef = useRef(false);
   const cardGap = 16;
   const cardsViewportWidth = Math.max(width - 52, 250);
   const nextCardPeek = Math.round(Math.min(Math.max(cardsViewportWidth * 0.12, 32), 56));
@@ -142,16 +148,18 @@ export default function HomeScreen() {
   );
   const highlightedPoint = selectedPoint ?? balancePoints[balancePoints.length - 1];
   const periodDelta = highlightedPoint.value - balancePoints[0].value;
-  const handlePointSelected = useCallback(
-    (point: GraphPoint) => {
-      const matchingPoint = balancePoints.find(
-        (item) => item.date.getTime() === point.date.getTime() && item.value === point.value,
-      );
+  const openBalanceGraph = useCallback(() => {
+    if (chartNavigationLockRef.current) {
+      return;
+    }
 
-      setSelectedPoint(matchingPoint ?? null);
-    },
-    [balancePoints],
-  );
+    chartNavigationLockRef.current = true;
+    selectionHaptic();
+    router.push("/home-graphic" as never);
+  }, []);
+  const handlePointSelected = useCallback((point: HomeBalancePoint) => {
+    setSelectedPoint(point);
+  }, []);
   const handleGestureStart = useCallback(() => {
     selectionHaptic();
     setIsChartInteracting(true);
@@ -170,6 +178,7 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       cardNavigationLockRef.current = false;
+      chartNavigationLockRef.current = false;
     }, []),
   );
 
@@ -245,13 +254,7 @@ export default function HomeScreen() {
               accessibilityLabel="Abrir grafica detallada"
               accessibilityRole="button"
               className="overflow-hidden rounded-[34px] border p-5"
-              onPress={() => {
-                if (isChartInteracting) {
-                  return;
-                }
-                selectionHaptic();
-                router.push("/home-graphic" as never);
-              }}
+              onPress={openBalanceGraph}
               style={{
                 backgroundColor: theme.card,
                 borderColor: theme.border,
@@ -295,25 +298,24 @@ export default function HomeScreen() {
                 {selectedPoint ? highlightedPoint.label : "Resumen semanal"}
               </Text>
 
-              <GestureHandlerRootView className="mt-5">
+              <View className="mt-5">
                 <View className="h-[208px]" style={{ width: chartWidth }}>
-                  <LineGraph
-                    animated={true}
+                  <NativeLineChart
                     color={graphColor}
                     enablePanGesture={true}
                     gradientFillColors={[`${graphColor}66`, `${graphColor}10`]}
+                    height={208}
                     horizontalPadding={16}
                     lineThickness={4}
                     onGestureEnd={handleGestureEnd}
                     onGestureStart={handleGestureStart}
                     onPointSelected={handlePointSelected}
-                    panGestureDelay={40}
+                    onPress={openBalanceGraph}
                     points={balancePoints}
-                    style={{ flex: 1 }}
                     verticalPadding={20}
                   />
                 </View>
-              </GestureHandlerRootView>
+              </View>
               <Text className="mt-3 text-[12px] font-semibold" style={{ color: theme.mutedText }}>
                 Toca la grafica para ver el detalle por rango
               </Text>

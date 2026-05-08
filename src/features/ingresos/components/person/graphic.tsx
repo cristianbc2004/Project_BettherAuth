@@ -1,16 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { LineGraph, type GraphPoint } from "react-native-graph";
 
 import { mockIngresos } from "@/features/ingresos/mocks";
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
+import { NativeLineChart, type NativeLineChartPoint } from "@/shared/components/ui/native-line-chart";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
 type SelectedPersonId = "all" | number;
 
-type IncomeGraphPoint = GraphPoint & {
+type IncomeGraphPoint = NativeLineChartPoint & {
   month: string;
   person: string;
 };
@@ -127,16 +126,9 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
     setSelectedPersonId(personId);
   }, []);
 
-  const handlePointSelected = useCallback(
-    (point: GraphPoint) => {
-      const matchingPoint = priceHistory.find(
-        (item) => item.date.getTime() === point.date.getTime() && item.value === point.value,
-      );
-
-      setSelectedPoint(matchingPoint ?? null);
-    },
-    [priceHistory],
-  );
+  const handlePointSelected = useCallback((point: IncomeGraphPoint) => {
+    setSelectedPoint(point);
+  }, []);
 
   const handleGestureStart = useCallback(() => {
     selectionHaptic();
@@ -149,7 +141,7 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
   }, [onGraphInteractionChange]);
 
   return (
-    <GestureHandlerRootView className="mt-6">
+    <View className="mt-6">
       <Text className="text-[13px] font-semibold uppercase tracking-[1.3px]" style={{ color: theme.mutedText }}>
         Ingresos por mes
       </Text>
@@ -212,22 +204,20 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
       </ScrollView>
 
       <View className="mt-6 h-[280px]">
-        <LineGraph
-          animated={true}
+        <NativeLineChart
           color={graphColor}
           enablePanGesture={true}
           gradientFillColors={[`${graphColor}66`, `${graphColor}10`]}
+          height={280}
           horizontalPadding={16}
           lineThickness={4}
           onGestureEnd={handleGestureEnd}
           onGestureStart={handleGestureStart}
           onPointSelected={handlePointSelected}
-          panGestureDelay={80}
           points={priceHistory}
-          style={{ flex: 1 }}
           verticalPadding={24}
         />
       </View>
-    </GestureHandlerRootView>
+    </View>
   );
 }
