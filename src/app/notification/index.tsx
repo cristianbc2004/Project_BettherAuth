@@ -98,6 +98,15 @@ function resolveBizumRequestId(item: NotificationItem) {
   return item.actionPayload?.bizumRequestId ?? null;
 }
 
+function hexToRgba(hexColor: string, alpha: number) {
+  const hex = hexColor.replace("#", "");
+  const red = Number.parseInt(hex.slice(0, 2), 16);
+  const green = Number.parseInt(hex.slice(2, 4), 16);
+  const blue = Number.parseInt(hex.slice(4, 6), 16);
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}
+
 function NotificationRow({
   accent,
   body,
@@ -108,12 +117,19 @@ function NotificationRow({
   title,
   unread,
 }: NotificationItem & { onPress?: () => void }) {
-  const { theme } = useAppTheme();
+  const { resolvedThemeName, theme } = useAppTheme();
   const Icon = icon;
+  const iconBackgroundColor =
+    resolvedThemeName === "light" ? hexToRgba(iconAccent, 0.16) : accent;
+  const iconBorderColor =
+    resolvedThemeName === "light" ? hexToRgba(iconAccent, 0.28) : "transparent";
 
   return (
     <Pressable className="flex-row items-center px-2 py-5" disabled={!onPress} onPress={onPress}>
-      <View className="mr-4 h-14 w-14 items-center justify-center rounded-full" style={{ backgroundColor: accent }}>
+      <View
+        className="mr-4 h-14 w-14 items-center justify-center rounded-full border"
+        style={{ backgroundColor: iconBackgroundColor, borderColor: iconBorderColor }}
+      >
         <Icon color={iconAccent} size={22} strokeWidth={2.4} />
       </View>
 
