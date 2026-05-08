@@ -206,14 +206,15 @@ export default function NotificationsScreen() {
         <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
       </View>
 
+      <View className="px-5 pt-6">
+        <AppScreenHeader fallbackHref={"/home" as never} title="Notificaciones" />
+      </View>
+
       <ScrollView
         bounces={false}
-        contentContainerClassName="px-5 pb-10 pt-6"
-        stickyHeaderIndices={[0]}
+        contentContainerClassName="px-5 pb-10"
         showsVerticalScrollIndicator={false}
       >
-        <AppScreenHeader fallbackHref={"/home" as never} title="Notificaciones" />
-
         <Text className="mb-4 px-1 text-xs font-medium uppercase tracking-[1.5px]" style={{ color: theme.mutedText }}>
           Ultima actividad
         </Text>

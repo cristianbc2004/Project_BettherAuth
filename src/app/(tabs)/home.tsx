@@ -198,47 +198,45 @@ export default function HomeScreen() {
       <View className="absolute inset-0" style={{ backgroundColor: screenBackgroundColor }} />
 
       <View className="flex-1 px-5 pt-5">
+        <AppScreenHeader
+          backgroundColor={screenBackgroundColor}
+          leftSlot={
+            isAdmin ? (
+              <TopActionButton
+                accessibilityLabel="Open menu"
+                onPress={() => {
+                  selectionHaptic();
+                  setIsDrawerOpen(true);
+                }}
+              >
+                <Menu color={theme.text} size={28} strokeWidth={2.3} />
+              </TopActionButton>
+            ) : (
+              <View className="h-12 w-12" />
+            )
+          }
+          rightSlot={
+            <TopActionButton
+              accessibilityLabel="Open notifications"
+              onPress={() => {
+                selectionHaptic();
+                router.navigate("/notification" as never);
+              }}
+            >
+              <Bell color={theme.text} size={24} strokeWidth={2.1} />
+            </TopActionButton>
+          }
+          title="Inicio"
+        />
+
         <ScrollView
+          className="flex-1"
           bounces={false}
-          contentContainerClassName="gap-7 pb-12 pt-4"
+          contentContainerClassName="gap-7 pb-12"
           contentInsetAdjustmentBehavior="automatic"
           scrollEnabled={!isChartInteracting}
-          stickyHeaderIndices={[0]}
           showsVerticalScrollIndicator={false}
         >
-          <View>
-            <AppScreenHeader
-              backgroundColor={screenBackgroundColor}
-              leftSlot={
-                isAdmin ? (
-                  <TopActionButton
-                    accessibilityLabel="Open menu"
-                    onPress={() => {
-                      selectionHaptic();
-                      setIsDrawerOpen(true);
-                    }}
-                  >
-                    <Menu color={theme.text} size={28} strokeWidth={2.3} />
-                  </TopActionButton>
-                ) : (
-                  <View className="h-12 w-12" />
-                )
-              }
-              rightSlot={
-                <TopActionButton
-                  accessibilityLabel="Open notifications"
-                  onPress={() => {
-                    selectionHaptic();
-                    router.navigate("/notification" as never);
-                  }}
-                >
-                  <Bell color={theme.text} size={24} strokeWidth={2.1} />
-                </TopActionButton>
-              }
-              title="Inicio"
-            />
-          </View>
-
           <View className="pr-3">
             <Text className="text-[31px] font-black leading-9" style={{ color: theme.text }}>
               {getGreeting()}, {firstName}

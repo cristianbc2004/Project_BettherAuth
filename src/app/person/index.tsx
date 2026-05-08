@@ -45,35 +45,37 @@ export default function PersonGeneralScreen() {
   }
 
   return (
-    <ScrollView
-      className="flex-1"
-      contentContainerClassName="px-5 pb-32 pt-20"
-      contentInsetAdjustmentBehavior="automatic"
-      stickyHeaderIndices={[0]}
-      style={{ backgroundColor: theme.background }}
-    >
-      <PersonScreenHeader backHref="/home" title="Información general" />
-
-      <View className="mt-8">
-        <Text className="text-[28px] font-bold" style={{ color: theme.text }}>
-          {selectedPerson.nombre}
-        </Text>
-        <Text className="mt-2 text-[16px]" style={{ color: theme.mutedText }}>
-          {selectedPerson.cargo}
-        </Text>
+    <View className="flex-1" style={{ backgroundColor: theme.background }}>
+      <View className="px-5 pt-20">
+        <PersonScreenHeader backHref="/home" title="Informacion general" />
       </View>
 
-      <View className="mt-10">
-        <Text className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
-          Ingreso del periodo
-        </Text>
-        <Text className="mt-2 text-[36px] font-bold" style={{ color: theme.text }}>
-          {formatCurrency(selectedPerson.ingresos)}
-        </Text>
-        <Text className="mt-2 text-[15px]" style={{ color: theme.mutedText }}>
-          {mockIngresos.general.periodo}
-        </Text>
-      </View>
-    </ScrollView>
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="px-5 pb-32"
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <View className="mt-8">
+          <Text className="text-[28px] font-bold" style={{ color: theme.text }}>
+            {selectedPerson.nombre}
+          </Text>
+          <Text className="mt-2 text-[16px]" style={{ color: theme.mutedText }}>
+            {selectedPerson.cargo}
+          </Text>
+        </View>
+
+        <View className="mt-10">
+          <Text className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
+            Ingreso del periodo
+          </Text>
+          <Text className="mt-2 text-[36px] font-bold" style={{ color: theme.text }}>
+            {formatCurrency(selectedPerson.ingresos)}
+          </Text>
+          <Text className="mt-2 text-[15px]" style={{ color: theme.mutedText }}>
+            {mockIngresos.general.periodo}
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }

@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useCallback, useState } from "react";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -35,19 +35,22 @@ export default function PersonGraphicScreen() {
   }
 
   return (
-    <ScrollView
-      className="flex-1"
-      contentContainerClassName="px-5 pb-32 pt-20"
-      contentInsetAdjustmentBehavior="automatic"
-      scrollEnabled={!isChartInteracting}
-      stickyHeaderIndices={[0]}
-      style={{ backgroundColor: theme.background }}
-    >
-      <PersonScreenHeader backHref={generalHref} title="Gráfica de ingresos" />
-      <Graphic
-        initialSelectedPersonId={initialSelectedPersonId}
-        onGraphInteractionChange={handleGraphInteractionChange}
-      />
-    </ScrollView>
+    <View className="flex-1" style={{ backgroundColor: theme.background }}>
+      <View className="px-5 pt-20">
+        <PersonScreenHeader backHref={generalHref} title="Grafica de ingresos" />
+      </View>
+
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="px-5 pb-32"
+        contentInsetAdjustmentBehavior="automatic"
+        scrollEnabled={!isChartInteracting}
+      >
+        <Graphic
+          initialSelectedPersonId={initialSelectedPersonId}
+          onGraphInteractionChange={handleGraphInteractionChange}
+        />
+      </ScrollView>
+    </View>
   );
 }

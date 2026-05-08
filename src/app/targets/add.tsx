@@ -204,22 +204,23 @@ export default function AddTargetScreen() {
         className="flex-1"
         keyboardVerticalOffset={Platform.OS === "ios" ? 16 : 0}
       >
-        <ScrollView
-          ref={scrollViewRef}
-          bounces={false}
-          contentContainerClassName="gap-6 px-5 pb-12 pt-5"
-          contentContainerStyle={{ paddingBottom: 220 }}
-          contentInsetAdjustmentBehavior="automatic"
-          keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-          keyboardShouldPersistTaps="always"
-          stickyHeaderIndices={[0]}
-          showsVerticalScrollIndicator={false}
-        >
+        <View className="px-5 pt-5">
           <AppScreenHeader
             fallbackHref={"/cards" as never}
             title="Anadir tarjeta"
           />
+        </View>
 
+        <ScrollView
+          ref={scrollViewRef}
+          bounces={false}
+          contentContainerClassName="gap-6 px-5 pb-12"
+          contentContainerStyle={{ paddingBottom: 220 }}
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+          keyboardShouldPersistTaps="always"
+          showsVerticalScrollIndicator={false}
+        >
           <View>
             <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
               Tarjetas

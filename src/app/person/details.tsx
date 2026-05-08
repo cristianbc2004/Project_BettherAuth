@@ -46,15 +46,17 @@ export default function PersonDetailsScreen() {
   }
 
   return (
-    <ScrollView
-      className="flex-1"
-      contentContainerClassName="px-5 pb-32 pt-20"
-      contentInsetAdjustmentBehavior="automatic"
-      stickyHeaderIndices={[0]}
-      style={{ backgroundColor: theme.background }}
-    >
-      <PersonScreenHeader backHref={generalHref} title="Detalles" />
-      <View className="mt-6">
+    <View className="flex-1" style={{ backgroundColor: theme.background }}>
+      <View className="px-5 pt-20">
+        <PersonScreenHeader backHref={generalHref} title="Detalles" />
+      </View>
+
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="px-5 pb-32"
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <View className="mt-6">
         <Text className="text-[20px] font-bold" style={{ color: theme.text }}>
           {selectedPerson.nombre}
         </Text>
@@ -123,6 +125,7 @@ export default function PersonDetailsScreen() {
           {selectedPerson.observacion}
         </Text>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
