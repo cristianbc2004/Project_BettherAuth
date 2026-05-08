@@ -9,7 +9,7 @@ function PersonSkeletonFrame({ children }: { children: React.ReactNode }) {
   return (
     <ScrollView
       className="flex-1"
-      contentContainerClassName="px-5 pb-32 pt-20"
+      contentContainerClassName="px-5 pb-32 pt-5"
       contentInsetAdjustmentBehavior="automatic"
       style={{ backgroundColor: theme.background }}
     >
@@ -168,7 +168,7 @@ export function PersonGraphicSkeleton() {
       </View>
 
       <View className="mt-6">
-        <SkeletonBlock height={280} radius={18} width="100%" />
+        <SkeletonBlock height={240} radius={18} width="100%" />
       </View>
 
       <View className="mt-5 flex-row">

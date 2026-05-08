@@ -165,6 +165,8 @@ Compact does not mean dense or uncomfortable. Keep enough spacing between elemen
 
 Avoid excessive vertical scrolling caused by oversized headers, repeated explanatory text, unnecessary cards, or overly large spacing. If a screen needs scrolling because the content is naturally long, make sure the structure is easy to scan and the most important actions appear early.
 
+Remove redundant screen intro copy when it does not change the user's next action. Favor direct content over labels and descriptions that only restate the route.
+
 Keep sections visually light:
 
 - Use `border-t` or `border-b` for separation.
@@ -203,6 +205,12 @@ Tab-accessed pages should not repeat where the user is.
 If a page is already accessed through a tab, do not add redundant copy such as "You are in Home", "Profile section", or explanatory location text. The tab label already provides context.
 
 Tab pages may still show useful content headers, greetings, filters, or section labels when they help the task.
+
+Avoid introductory eyebrow/subtitle blocks at the top of operational screens, especially tab screens. Do not add text such as "Payments", "Activity", "Cards", or explanatory copy like "Send, request, and review..." when the current tab, header, or primary content already makes the purpose obvious.
+
+Screens should start as high as safely possible after the status bar/safe area. Use only the top padding needed for a comfortable header and touch targets. Avoid large empty top gaps before the first useful content.
+
+The first visible content should usually be the primary data, action group, search/filter row, or form. Supporting explanatory copy belongs only where it prevents real user confusion.
 
 ### Headers
 
@@ -329,6 +337,8 @@ Do:
 - Use NativeWind for custom inputs and layout styling.
 - Prefer dividers before cards.
 - Keep tab screens free from redundant location copy.
+- Put the first useful content as high as the safe area allows.
+- Remove intro eyebrow/subtitle text when the screen purpose is already clear.
 - Use native-feeling rows and controls.
 - Keep each screen focused on its main task.
 - Validate UI visually in Expo after changes.
@@ -339,6 +349,7 @@ Don't:
 - Do not put cards inside cards.
 - Do not add large hero titles to app screens.
 - Do not add decorative copy explaining where the user is.
+- Do not add top intro text that restates the current tab, section, or obvious action.
 - Do not create excessive scroll by using oversized headers, repeated copy, unnecessary cards, or decorative empty space.
 - Do not use generic image assets as UI icons when Lucide has the icon.
 - Do not use raw unstyled text inputs.

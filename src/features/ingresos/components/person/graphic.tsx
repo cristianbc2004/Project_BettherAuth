@@ -147,12 +147,12 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
       </Text>
       <AnimatedNumber
         animateOnMount={true}
-        className="mt-2 text-[28px] font-bold"
+        className="mt-2 text-[26px] font-bold"
         formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
         style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
         value={highlightedPoint.value}
       />
-      <Text className="mt-1 text-[16px]" style={{ color: theme.mutedText }}>
+      <Text className="mt-1 text-[14px]" style={{ color: theme.mutedText }}>
         {selectedPersonName} - {highlightedPoint.month}
       </Text>
 
@@ -203,12 +203,12 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
         ))}
       </ScrollView>
 
-      <View className="mt-6 h-[280px]">
+      <View className="mt-5 h-[240px]">
         <NativeLineChart
           color={graphColor}
           enablePanGesture={true}
           gradientFillColors={[`${graphColor}66`, `${graphColor}10`]}
-          height={280}
+          height={240}
           horizontalPadding={16}
           lineThickness={4}
           onGestureEnd={handleGestureEnd}

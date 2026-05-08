@@ -1,6 +1,7 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { useCallback, useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { Graphic } from "@/features/ingresos/components/person/graphic";
@@ -35,8 +36,8 @@ export default function PersonGraphicScreen() {
   }
 
   return (
-    <View className="flex-1" style={{ backgroundColor: theme.background }}>
-      <View className="px-5 pt-20">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
+      <View className="px-5 pt-5">
         <PersonScreenHeader backHref={generalHref} title="Grafica de ingresos" />
       </View>
 
@@ -51,6 +52,6 @@ export default function PersonGraphicScreen() {
           onGraphInteractionChange={handleGraphInteractionChange}
         />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

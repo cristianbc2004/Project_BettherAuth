@@ -97,7 +97,7 @@ function SectionHeader({ action, onActionPress, title }: SectionHeaderProps) {
 
   return (
     <View className="flex-row items-center justify-between px-1">
-      <Text className="text-[26px] font-black" style={{ color: theme.text }}>
+      <Text className="text-[18px] font-black" style={{ color: theme.text }}>
         {title}
       </Text>
       {action && onActionPress ? (
@@ -197,7 +197,7 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1" style={{ backgroundColor: screenBackgroundColor }}>
       <View className="absolute inset-0" style={{ backgroundColor: screenBackgroundColor }} />
 
-      <View className="flex-1 px-5 pt-5">
+      <View className="flex-1 px-5 pt-4">
         <AppScreenHeader
           backgroundColor={screenBackgroundColor}
           leftSlot={
@@ -226,22 +226,21 @@ export default function HomeScreen() {
               <Bell color={theme.text} size={24} strokeWidth={2.1} />
             </TopActionButton>
           }
-          title="Inicio"
         />
 
         <ScrollView
           className="flex-1"
           bounces={false}
-          contentContainerClassName="gap-7 pb-12"
+          contentContainerClassName="gap-6 pb-12"
           contentInsetAdjustmentBehavior="automatic"
           scrollEnabled={!isChartInteracting}
           showsVerticalScrollIndicator={false}
         >
           <View className="pr-3">
-            <Text className="text-[31px] font-black leading-9" style={{ color: theme.text }}>
+            <Text className="text-[24px] font-black leading-8" style={{ color: theme.text }}>
               {getGreeting()}, {firstName}
             </Text>
-            <Text className="mt-2 text-[16px] font-medium" style={{ color: theme.mutedText }}>
+            <Text className="mt-1 text-[13px] font-medium" style={{ color: theme.mutedText }}>
               Aqui tienes tu resumen semanal
             </Text>
           </View>
@@ -251,7 +250,7 @@ export default function HomeScreen() {
               accessibilityHint="Abre la vista detallada de la grafica"
               accessibilityLabel="Abrir grafica detallada"
               accessibilityRole="button"
-              className="overflow-hidden rounded-[34px] border p-5"
+              className="overflow-hidden rounded-[28px] border p-5"
               onPress={openBalanceGraph}
               style={{
                 backgroundColor: theme.card,
@@ -269,7 +268,7 @@ export default function HomeScreen() {
                   </Text>
                   <AnimatedNumber
                     animateOnMount={true}
-                    className="mt-3 text-[44px] font-black"
+                    className="mt-3 text-[32px] font-black"
                     formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
                     style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
                     value={highlightedPoint.value}

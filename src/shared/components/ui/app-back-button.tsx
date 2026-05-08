@@ -1,4 +1,5 @@
-import { Image, Pressable } from "react-native";
+import { ChevronLeft } from "lucide-react-native";
+import { Pressable } from "react-native";
 
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { backOrReplace } from "@/shared/lib/navigation";
@@ -8,8 +9,6 @@ type AppBackButtonProps = {
   accessibilityLabel?: string;
   fallbackHref: Parameters<typeof backOrReplace>[0];
 };
-
-const backIcon = require("../../../../assets/back.png");
 
 export function AppBackButton({
   accessibilityLabel = "Go back",
@@ -28,12 +27,7 @@ export function AppBackButton({
         backOrReplace(fallbackHref);
       }}
     >
-      <Image
-        className="h-6 w-6"
-        resizeMode="contain"
-        source={backIcon}
-        style={{ tintColor: theme.text }}
-      />
+      <ChevronLeft color={theme.text} size={24} strokeWidth={2.4} />
     </Pressable>
   );
 }

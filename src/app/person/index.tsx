@@ -1,5 +1,6 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
@@ -45,8 +46,8 @@ export default function PersonGeneralScreen() {
   }
 
   return (
-    <View className="flex-1" style={{ backgroundColor: theme.background }}>
-      <View className="px-5 pt-20">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
+      <View className="px-5 pt-5">
         <PersonScreenHeader backHref="/home" title="Informacion general" />
       </View>
 
@@ -55,8 +56,8 @@ export default function PersonGeneralScreen() {
         contentContainerClassName="px-5 pb-32"
         contentInsetAdjustmentBehavior="automatic"
       >
-        <View className="mt-8">
-          <Text className="text-[28px] font-bold" style={{ color: theme.text }}>
+        <View className="mt-5">
+          <Text className="text-[22px] font-bold" style={{ color: theme.text }}>
             {selectedPerson.nombre}
           </Text>
           <Text className="mt-2 text-[16px]" style={{ color: theme.mutedText }}>
@@ -64,11 +65,11 @@ export default function PersonGeneralScreen() {
           </Text>
         </View>
 
-        <View className="mt-10">
+        <View className="mt-7">
           <Text className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
             Ingreso del periodo
           </Text>
-          <Text className="mt-2 text-[36px] font-bold" style={{ color: theme.text }}>
+          <Text className="mt-2 text-[30px] font-bold" style={{ color: theme.text }}>
             {formatCurrency(selectedPerson.ingresos)}
           </Text>
           <Text className="mt-2 text-[15px]" style={{ color: theme.mutedText }}>
@@ -76,6 +77,6 @@ export default function PersonGeneralScreen() {
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

@@ -2,12 +2,12 @@ import type { PropsWithChildren, ReactNode } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AppBackButton } from "@/shared/components/ui/app-back-button";
+import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
 type AdminScreenShellProps = PropsWithChildren<{
   eyebrow: string;
-  subtitle: string;
+  subtitle?: string;
   title: string;
   trailingAction?: ReactNode;
 }>;
@@ -15,7 +15,6 @@ type AdminScreenShellProps = PropsWithChildren<{
 export function AdminScreenShell({
   children,
   eyebrow,
-  subtitle,
   title,
   trailingAction,
 }: AdminScreenShellProps) {
@@ -29,27 +28,20 @@ export function AdminScreenShell({
 
       <ScrollView
         bounces={false}
-        contentContainerClassName="px-5 pb-10 pt-6"
+        contentContainerClassName="px-5 pb-10 pt-5"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View className="mb-8 flex-row items-center justify-between">
-          <AppBackButton fallbackHref="/admin" />
+        <AppScreenHeader fallbackHref="/admin" rightSlot={trailingAction} title="Admin" />
 
-          <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>Admin</Text>
-
-          {trailingAction ?? <View className="h-11 w-11" />}
-        </View>
-
-        <View className="rounded-[34px] border p-5" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+        <View className="border-t pt-4" style={{ borderColor: theme.border }}>
           <Text className="mb-4 text-[11px] font-semibold uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
             {eyebrow}
           </Text>
-          <Text className="text-[42px] font-semibold leading-[48px]" style={{ color: theme.text }}>{title}</Text>
-          <Text className="mt-4 max-w-[360px] text-[15px] leading-6" style={{ color: theme.mutedText }}>{subtitle}</Text>
+          <Text className="text-[22px] font-semibold leading-[28px]" style={{ color: theme.text }}>{title}</Text>
         </View>
 
-        <View className="mt-6 gap-4">{children}</View>
+        <View className="mt-4 gap-4">{children}</View>
       </ScrollView>
     </SafeAreaView>
   );

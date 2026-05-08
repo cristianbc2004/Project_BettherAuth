@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Redirect, router } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { Check, CreditCard } from "lucide-react-native";
+import { CreditCard } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Alert,
@@ -204,7 +204,7 @@ export default function AddTargetScreen() {
         className="flex-1"
         keyboardVerticalOffset={Platform.OS === "ios" ? 16 : 0}
       >
-        <View className="px-5 pt-5">
+        <View className="px-5 pt-4">
           <AppScreenHeader
             fallbackHref={"/cards" as never}
             title="Anadir tarjeta"
@@ -214,7 +214,7 @@ export default function AddTargetScreen() {
         <ScrollView
           ref={scrollViewRef}
           bounces={false}
-          contentContainerClassName="gap-6 px-5 pb-12"
+          contentContainerClassName="gap-5 px-5 pb-12"
           contentContainerStyle={{ paddingBottom: 220 }}
           contentInsetAdjustmentBehavior="automatic"
           keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
@@ -222,20 +222,11 @@ export default function AddTargetScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View>
-            <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
-              Tarjetas
-            </Text>
-            <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-              Completa el formulario con los datos reales de la tarjeta guardados en la base de datos.
-            </Text>
-          </View>
-
-          <View>
             <WalletCardPreview card={previewCard} width={cardWidth} />
           </View>
 
           <View
-            className="rounded-[30px] border p-5"
+            className="rounded-[28px] border p-5"
             style={{ backgroundColor: theme.card, borderColor: theme.border }}
           >
             <View className="mb-5 flex-row items-center">
@@ -246,7 +237,7 @@ export default function AddTargetScreen() {
                 <CreditCard color={theme.primary} size={20} strokeWidth={2.4} />
               </View>
               <View className="ml-3 flex-1">
-                <Text className="text-[18px] font-black" style={{ color: theme.text }}>
+                <Text className="text-[17px] font-black" style={{ color: theme.text }}>
                   Datos de la tarjeta
                 </Text>
                 <Text className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
@@ -348,21 +339,6 @@ export default function AddTargetScreen() {
                 />
               )}
             />
-
-            <Pressable
-              accessibilityRole="button"
-              className="mt-1 flex-row items-center rounded-[22px] px-4 py-4"
-              onPress={() => {
-                selectionHaptic();
-                void handleSubmit();
-              }}
-              style={{ backgroundColor: theme.primarySoft }}
-            >
-              <Check color={theme.primary} size={18} strokeWidth={2.5} />
-              <Text className="ml-3 text-[14px] font-black" style={{ color: theme.primary }}>
-                Revisar y guardar en tu cartera
-              </Text>
-            </Pressable>
 
             <AuthSubmitButton
               isPending={isSaving}

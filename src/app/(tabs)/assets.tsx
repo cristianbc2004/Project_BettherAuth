@@ -45,7 +45,7 @@ function SectionHeader({ onPress, title }: { onPress: () => void; title: string 
 
   return (
     <View className="flex-row items-center justify-between px-1">
-      <Text className="text-[26px] font-black" style={{ color: theme.text }}>
+      <Text className="text-[18px] font-black" style={{ color: theme.text }}>
         {title}
       </Text>
       <Pressable
@@ -142,13 +142,9 @@ export default function AssetsScreen() {
   }
 
   return (
-    <FinanceScreenShell
-      eyebrow="Pagos"
-      subtitle="Envia, solicita y revisa tus ultimos Bizum de forma rapida."
-      title="Bizum"
-    >
+    <FinanceScreenShell>
       <View
-        className="overflow-hidden rounded-[34px] border p-5"
+        className="overflow-hidden rounded-[28px] border p-5"
         style={{
           backgroundColor: theme.card,
           borderColor: theme.border,
@@ -164,13 +160,7 @@ export default function AssetsScreen() {
             <Zap color={theme.primary} size={24} strokeWidth={2.7} />
           </View>
           <View className="ml-4 flex-1">
-            <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
-              Acciones rapidas
-            </Text>
-            <Text className="mt-1 text-[22px] font-black" style={{ color: theme.text }}>
-              Gestiona tu Bizum
-            </Text>
-            <Text className="mt-1 text-[13px]" style={{ color: theme.mutedText }}>
+            <Text className="text-[18px] font-black" style={{ color: theme.text }}>
               {availableBalanceLabel}
             </Text>
             <Text className="mt-1 text-[13px]" style={{ color: theme.mutedText }}>
@@ -179,7 +169,7 @@ export default function AssetsScreen() {
           </View>
         </View>
 
-        <View className="mt-6 flex-row gap-4">
+        <View className="mt-5 flex-row gap-4">
           <Pressable
             accessibilityLabel="Enviar Bizum"
             accessibilityRole="button"
@@ -187,14 +177,14 @@ export default function AssetsScreen() {
             onPress={openSendSheet}
           >
             <View
-              className="h-20 w-20 items-center justify-center rounded-full"
+              className="h-16 w-16 items-center justify-center rounded-full"
               style={{
                 backgroundColor: theme.backgroundMuted,
               }}
             >
-              <ArrowUpRight color={theme.text} size={30} strokeWidth={2.8} />
+              <ArrowUpRight color={theme.text} size={26} strokeWidth={2.8} />
             </View>
-            <Text className="mt-4 text-[18px] font-black" style={{ color: theme.text }}>
+            <Text className="mt-3 text-[15px] font-black" style={{ color: theme.text }}>
               Enviar
             </Text>
           </Pressable>
@@ -206,14 +196,14 @@ export default function AssetsScreen() {
             onPress={openRequestSheet}
           >
             <View
-              className="h-20 w-20 items-center justify-center rounded-full"
+              className="h-16 w-16 items-center justify-center rounded-full"
               style={{
                 backgroundColor: theme.backgroundMuted,
               }}
             >
-              <ArrowDownLeft color={theme.text} size={30} strokeWidth={2.8} />
+              <ArrowDownLeft color={theme.text} size={26} strokeWidth={2.8} />
             </View>
-            <Text className="mt-4 text-[18px] font-black" style={{ color: theme.text }}>
+            <Text className="mt-3 text-[15px] font-black" style={{ color: theme.text }}>
               Pedir
             </Text>
           </Pressable>
