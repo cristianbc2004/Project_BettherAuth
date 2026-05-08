@@ -1,8 +1,7 @@
 import { Redirect, router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, Text, useWindowDimensions, View } from "react-native";
-import { Boxes, Plus } from "lucide-react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { Boxes, ChevronLeft, Plus } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
@@ -14,9 +13,6 @@ import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
-const ACTIVE_CARD_HEIGHT = 188;
-const STACK_STEP = 44;
-
 export default function CardsScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
@@ -26,7 +22,6 @@ export default function CardsScreen() {
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const cardWidth = Math.min(width - 40, 360);
   const displayedCards = cards;
-  const stackedCardsHeight = ACTIVE_CARD_HEIGHT + Math.max(displayedCards.length - 1, 0) * STACK_STEP + 16;
   const selectedCard = useMemo(
     () => displayedCards.find((card) => card.id === selectedCardId) ?? null,
     [displayedCards, selectedCardId],
@@ -37,6 +32,12 @@ export default function CardsScreen() {
       void refreshCards();
     }
   }, [refreshCards, session?.user.id]);
+
+  useEffect(() => {
+    if (selectedCardId && !selectedCard) {
+      setSelectedCardId(null);
+    }
+  }, [selectedCard, selectedCardId]);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -50,7 +51,12 @@ export default function CardsScreen() {
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
       <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
 
-      <View className="flex-1 px-5 pt-8">
+      <ScrollView
+        bounces={false}
+        contentContainerClassName="px-5 pb-10 pt-8"
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+      >
         <AppScreenHeader
           rightSlot={
             <View className="flex-row items-center gap-3">
@@ -105,41 +111,27 @@ export default function CardsScreen() {
                 Anade tu primera tarjeta para verla aqui.
               </Text>
             </View>
-          ) : (
-            <View style={{ height: stackedCardsHeight }}>
-              {displayedCards.map((card, index) => {
-                const topOffset = index * STACK_STEP;
+          ) : selectedCard ? (
+            <View className="items-center">
+              <View className="mb-4 w-full flex-row items-center">
+                <Pressable
+                  accessibilityLabel="Volver a todas las tarjetas"
+                  accessibilityRole="button"
+                  className="flex-row items-center gap-2 rounded-full px-3 py-2"
+                  onPress={() => {
+                    selectionHaptic();
+                    setSelectedCardId(null);
+                  }}
+                  style={{ backgroundColor: theme.card }}
+                >
+                  <ChevronLeft color={theme.text} size={18} strokeWidth={2.4} />
+                  <Text className="text-[13px] font-black" style={{ color: theme.text }}>
+                    Todas
+                  </Text>
+                </Pressable>
+              </View>
 
-                return (
-                  <Animated.View
-                    key={card.id}
-                    layout={LinearTransition.springify().damping(24).stiffness(220)}
-                    style={{
-                      left: 0,
-                      position: "absolute",
-                      right: 0,
-                      top: topOffset,
-                      zIndex: index + 1,
-                    }}
-                  >
-                    <Pressable
-                      accessibilityLabel={`Gestionar tarjeta terminada en ${card.lastDigits}`}
-                      accessibilityRole="button"
-                      onPress={() => {
-                        selectionHaptic();
-                        setSelectedCardId(card.id);
-                      }}
-                    >
-                      <WalletCardPreview card={card} width={cardWidth} />
-                    </Pressable>
-                  </Animated.View>
-                );
-              })}
-            </View>
-          )}
-          {selectedCard ? (
-            <View className="mt-8 items-center">
-              <WalletCardPreview card={selectedCard} width={Math.min(cardWidth, 210)} />
+              <WalletCardPreview card={selectedCard} width={cardWidth} />
               <Pressable
                 accessibilityLabel={`Gestionar tarjeta terminada en ${selectedCard.lastDigits}`}
                 accessibilityRole="button"
@@ -158,9 +150,31 @@ export default function CardsScreen() {
                 </Text>
               </Pressable>
             </View>
-          ) : null}
+          ) : (
+            <View>
+              <Text className="mb-3 text-[12px] font-black uppercase tracking-[1.8px]" style={{ color: theme.primary }}>
+                Tus tarjetas
+              </Text>
+              <View className="gap-4">
+                {displayedCards.map((card) => (
+                  <Pressable
+                    key={card.id}
+                    accessibilityLabel={`Abrir tarjeta terminada en ${card.lastDigits}`}
+                    accessibilityRole="button"
+                    onPress={() => {
+                      selectionHaptic();
+                      setSelectedCardId(card.id);
+                    }}
+                  >
+                    <WalletCardPreview card={card} width={cardWidth} />
+                  </Pressable>
+                ))}
+              </View>
+              
+            </View>
+          )}
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
