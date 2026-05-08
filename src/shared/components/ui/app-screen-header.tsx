@@ -7,6 +7,7 @@ import { useAppTheme } from "@/shared/lib/theme-context";
 
 type AppScreenHeaderProps = {
   backAccessibilityLabel?: string;
+  backgroundColor?: string;
   fallbackHref?: Parameters<typeof backOrReplace>[0];
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
@@ -15,6 +16,7 @@ type AppScreenHeaderProps = {
 
 export function AppScreenHeader({
   backAccessibilityLabel,
+  backgroundColor,
   fallbackHref,
   leftSlot,
   rightSlot,
@@ -26,7 +28,7 @@ export function AppScreenHeader({
     leftSlot ?? (fallbackHref ? <AppBackButton accessibilityLabel={backAccessibilityLabel} fallbackHref={fallbackHref} /> : <View className="h-11 w-11" />);
 
   return (
-    <View className="mb-8 flex-row items-center" style={{ backgroundColor: theme.background }}>
+    <View className="mb-8 flex-row items-center" style={{ backgroundColor: backgroundColor ?? theme.background }}>
       {leftContent}
 
       <View className="absolute left-0 right-0 items-center" pointerEvents="none">

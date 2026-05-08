@@ -128,6 +128,8 @@ export default function HomeScreen() {
   const cardSnapInterval = cardWidth + cardGap;
   const chartWidth = Math.max(width - 82, 260);
   const graphColor = resolvedThemeName === "dark" ? "#78a9ff" : "#3467d6";
+  const screenBackgroundColor =
+    resolvedThemeName === "light" ? theme.backgroundElevated : theme.background;
   const firstName = session?.user.name.split(" ")[0] || session?.user.name || "Cristian";
   const balancePoints = useMemo<HomeBalancePoint[]>(
     () =>
@@ -183,8 +185,8 @@ export default function HomeScreen() {
   const isAdmin = isAdminRole(role);
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
-      <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
+    <SafeAreaView className="flex-1" style={{ backgroundColor: screenBackgroundColor }}>
+      <View className="absolute inset-0" style={{ backgroundColor: screenBackgroundColor }} />
 
       <View className="flex-1 px-5 pt-5">
         <ScrollView
@@ -197,6 +199,7 @@ export default function HomeScreen() {
         >
           <View>
             <AppScreenHeader
+              backgroundColor={screenBackgroundColor}
               leftSlot={
                 isAdmin ? (
                   <TopActionButton
@@ -253,7 +256,9 @@ export default function HomeScreen() {
                 backgroundColor: theme.card,
                 borderColor: theme.border,
                 borderCurve: "continuous",
-                boxShadow: "0 18px 40px rgba(7, 17, 31, 0.08)",
+                ...(resolvedThemeName === "dark"
+                  ? { boxShadow: "0 18px 40px rgba(7, 17, 31, 0.08)" }
+                  : {}),
               }}
             >
               <View className="flex-row items-start justify-between">
