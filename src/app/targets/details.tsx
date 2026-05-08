@@ -111,20 +111,19 @@ export default function DetailsTargetScreen() {
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
       <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
 
+      <View className="px-5 pt-5">
+        <AppScreenHeader
+          fallbackHref={"/cards" as never}
+          title="Detalle de la tarjeta"
+        />
+      </View>
+
       <ScrollView
         bounces={false}
-        contentContainerClassName="gap-6 px-5 pb-12 pt-5"
+        contentContainerClassName="gap-6 px-5 pb-12"
         contentInsetAdjustmentBehavior="automatic"
-        stickyHeaderIndices={[0]}
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View entering={sectionEnter(30)}>
-          <AppScreenHeader
-            fallbackHref={"/cards" as never}
-            title="Detalle de la tarjeta"
-          />
-        </Animated.View>
-
         <Animated.View entering={sectionEnter(90)}>
           <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
             Tarjeta

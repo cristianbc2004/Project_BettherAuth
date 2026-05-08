@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { AppBackButton } from "@/shared/components/ui/app-back-button";
 import { backOrReplace } from "@/shared/lib/navigation";
@@ -27,9 +27,15 @@ export function AppScreenHeader({
   const leftContent =
     leftSlot ?? (fallbackHref ? <AppBackButton accessibilityLabel={backAccessibilityLabel} fallbackHref={fallbackHref} /> : <View className="h-11 w-11" />);
 
+  const resolvedBackgroundColor = backgroundColor ?? theme.background;
+
   return (
-    <View className="mb-8 flex-row items-center" style={{ backgroundColor: backgroundColor ?? theme.background }}>
-      {leftContent}
+    <View
+      className="mb-8 flex-row items-center"
+      pointerEvents="box-none"
+      style={[styles.container, { backgroundColor: resolvedBackgroundColor }]}
+    >
+      <View style={styles.actionLayer}>{leftContent}</View>
 
       <View className="absolute left-0 right-0 items-center" pointerEvents="none">
         <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>
@@ -37,7 +43,19 @@ export function AppScreenHeader({
         </Text>
       </View>
 
-      <View className="ml-auto">{rightSlot ? rightSlot : <View className="h-11 w-11" />}</View>
+      <View className="ml-auto" style={styles.actionLayer}>
+        {rightSlot ? rightSlot : <View className="h-11 w-11" />}
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  actionLayer: {
+    zIndex: 2,
+  },
+  container: {
+    elevation: 12,
+    zIndex: 12,
+  },
+});

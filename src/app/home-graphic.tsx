@@ -268,16 +268,17 @@ export default function HomeGraphicScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: theme.background }}>
+      <View className="px-5 pt-20">
+        <PersonScreenHeader backHref="/home" title="Grafica de balance" />
+      </View>
+
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-5 pb-20 pt-20"
+        contentContainerClassName="px-5 pb-20"
         contentInsetAdjustmentBehavior="automatic"
         scrollEnabled={!isChartInteracting}
-        stickyHeaderIndices={[0]}
         showsVerticalScrollIndicator={false}
       >
-        <PersonScreenHeader backHref="/home" title="Grafica de balance" />
-
         <View className="mt-7">
           <View className="flex-row flex-wrap items-center gap-3">
             <FilterChip
