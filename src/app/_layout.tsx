@@ -3,6 +3,7 @@ import "@/shared/lib/i18n";
 
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { WalletCardsProvider } from "@/features/finance/lib/wallet-cards-context";
 import { LanguageProvider } from "@/shared/lib/locale";
@@ -47,8 +48,10 @@ function AppNavigation() {
 
 export default function RootLayout() {
   return (
-    <WalletCardsProvider>
-      <AppNavigation />
-    </WalletCardsProvider>
+    <KeyboardProvider>
+      <WalletCardsProvider>
+        <AppNavigation />
+      </WalletCardsProvider>
+    </KeyboardProvider>
   );
 }
