@@ -217,13 +217,6 @@ export default function AddTargetScreen() {
         >
           <AppScreenHeader
             fallbackHref={"/cards" as never}
-            rightSlot={
-              <View className="rounded-full px-4 py-3" style={{ backgroundColor: theme.primarySoft }}>
-                <Text className="text-[13px] font-black uppercase tracking-[1.5px]" style={{ color: theme.primary }}>
-                  Nueva tarjeta
-                </Text>
-              </View>
-            }
             title="Anadir tarjeta"
           />
 

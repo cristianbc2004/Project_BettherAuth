@@ -1,5 +1,5 @@
 import { Redirect, router } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, Text, useWindowDimensions, View } from "react-native";
 import { Boxes, Plus } from "lucide-react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
@@ -23,9 +23,14 @@ export default function CardsScreen() {
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const { cards, isLoading, refreshCards } = useWalletCards();
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const cardWidth = Math.min(width - 40, 360);
   const displayedCards = cards;
   const stackedCardsHeight = ACTIVE_CARD_HEIGHT + Math.max(displayedCards.length - 1, 0) * STACK_STEP + 16;
+  const selectedCard = useMemo(
+    () => displayedCards.find((card) => card.id === selectedCardId) ?? null,
+    [displayedCards, selectedCardId],
+  );
 
   useEffect(() => {
     if (session?.user.id) {
@@ -122,10 +127,7 @@ export default function CardsScreen() {
                       accessibilityRole="button"
                       onPress={() => {
                         selectionHaptic();
-                        router.push({
-                          params: { cardId: card.id },
-                          pathname: "/targets/details",
-                        } as never);
+                        setSelectedCardId(card.id);
                       }}
                     >
                       <WalletCardPreview card={card} width={cardWidth} />
@@ -135,6 +137,28 @@ export default function CardsScreen() {
               })}
             </View>
           )}
+          {selectedCard ? (
+            <View className="mt-8 items-center">
+              <WalletCardPreview card={selectedCard} width={Math.min(cardWidth, 210)} />
+              <Pressable
+                accessibilityLabel={`Gestionar tarjeta terminada en ${selectedCard.lastDigits}`}
+                accessibilityRole="button"
+                className="mt-4 rounded-full px-5 py-2.5"
+                onPress={() => {
+                  selectionHaptic();
+                  router.push({
+                    params: { cardId: selectedCard.id },
+                    pathname: "/targets/details",
+                  } as never);
+                }}
+                style={{ backgroundColor: theme.card, borderColor: theme.border, borderWidth: 1 }}
+              >
+                <Text className="text-[14px] font-black" style={{ color: theme.text }}>
+                  Gestionar
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
       </View>
     </SafeAreaView>

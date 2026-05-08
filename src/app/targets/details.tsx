@@ -121,19 +121,6 @@ export default function DetailsTargetScreen() {
         <Animated.View entering={sectionEnter(30)}>
           <AppScreenHeader
             fallbackHref={"/cards" as never}
-            rightSlot={
-              <View
-                className="rounded-full px-4 py-3"
-                style={{ backgroundColor: isBlocked ? `${theme.danger}18` : theme.primarySoft }}
-              >
-                <Text
-                  className="text-[13px] font-black uppercase tracking-[1.5px]"
-                  style={{ color: isBlocked ? theme.danger : theme.primary }}
-                >
-                  {isBlocked ? "Bloqueada" : "Activa"}
-                </Text>
-              </View>
-            }
             title="Detalle de la tarjeta"
           />
         </Animated.View>
@@ -145,6 +132,19 @@ export default function DetailsTargetScreen() {
           <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
             Aqui puedes ver el CVC y gestionar el estado de tu tarjeta.
           </Text>
+          <View className="mt-3 items-end">
+            <View
+              className="rounded-full px-4 py-3"
+              style={{ backgroundColor: isBlocked ? `${theme.danger}18` : theme.primarySoft }}
+            >
+              <Text
+                className="text-[13px] font-black uppercase tracking-[1.5px]"
+                style={{ color: isBlocked ? theme.danger : theme.primary }}
+              >
+                {isBlocked ? "Bloqueada" : "Activa"}
+              </Text>
+            </View>
+          </View>
         </Animated.View>
 
         <Animated.View entering={sectionEnter(150)}>
