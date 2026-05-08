@@ -53,7 +53,7 @@ export default function CardsScreen() {
 
       <ScrollView
         bounces={false}
-        contentContainerClassName="px-5 pb-10 pt-8"
+        contentContainerClassName="px-5 pb-10 pt-5"
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
@@ -86,10 +86,9 @@ export default function CardsScreen() {
               </Pressable>
             </View>
           }
-          title="Cartera"
         />
 
-        <View className="mt-6">
+        <View className="mt-3">
           {isLoading ? (
             <View
               className="h-[188px] items-center justify-center rounded-[30px]"
@@ -152,9 +151,6 @@ export default function CardsScreen() {
             </View>
           ) : (
             <View>
-              <Text className="mb-3 text-[12px] font-black uppercase tracking-[1.8px]" style={{ color: theme.primary }}>
-                Tus tarjetas
-              </Text>
               <View className="gap-4">
                 {displayedCards.map((card) => (
                   <Pressable

@@ -264,10 +264,10 @@ export default function DashboardScreen() {
 
       <ScrollView
         bounces={false}
-        contentContainerClassName="px-5 pb-10 pt-6"
+        contentContainerClassName="px-5 pb-10 pt-5"
         showsVerticalScrollIndicator={false}
       >
-        <AppScreenHeader title="Perfil" />
+        <AppScreenHeader />
         <View>
           <SectionLabel label={t("dashboard.profileSection")} theme={theme} />
           <View

@@ -40,11 +40,9 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
       mode === "send"
         ? {
             title: "Enviar Bizum",
-            subtitle: "Selecciona un contacto y completa los datos para realizar el envio.",
           }
         : {
             title: "Pedir Bizum",
-            subtitle: "Selecciona a quien le solicitas el pago y anade el importe.",
           },
     [mode],
   );
@@ -131,7 +129,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
       <KeyboardAwareScrollView
         bottomOffset={132}
         bounces={false}
-        contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 20, paddingTop: 32 }}
+        contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 20, paddingTop: 20 }}
         contentInsetAdjustmentBehavior="automatic"
         extraKeyboardSpace={16}
         keyboardDismissMode="interactive"
@@ -139,7 +137,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
         showsVerticalScrollIndicator={false}
       >
         <AppScreenHeader fallbackHref={"/assets" as never} title={copy.title} />
-        <View className="mb-6 rounded-[22px] border px-4 py-3" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+        <View className="mb-4 border-b pb-3" style={{ borderColor: theme.border }}>
           <View className="flex-row items-center">
             <View className="h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: theme.primarySoft }}>
               {mode === "send" ? (
@@ -149,10 +147,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
               )}
             </View>
             <View className="ml-3 flex-1">
-              <Text className="text-[13px] leading-5" style={{ color: theme.mutedText }}>
-                {copy.subtitle}
-              </Text>
-              <Text className="mt-1 text-[13px] font-black" style={{ color: theme.text }}>
+              <Text className="text-[13px] font-black" style={{ color: theme.text }}>
                 {(availableBalanceCents / 100).toFixed(2).replace(".", ",")} EUR disponibles
               </Text>
             </View>

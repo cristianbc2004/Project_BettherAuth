@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { weeklyBalance } from "@/features/finance/mocks";
@@ -267,8 +268,8 @@ export default function HomeGraphicScreen() {
   }
 
   return (
-    <View className="flex-1" style={{ backgroundColor: theme.background }}>
-      <View className="px-5 pt-20">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
+      <View className="px-5 pt-5">
         <PersonScreenHeader backHref="/home" title="Grafica de balance" />
       </View>
 
@@ -317,7 +318,7 @@ export default function HomeGraphicScreen() {
 
           <AnimatedNumber
             animateOnMount={true}
-            className="mt-2 text-[36px] font-black"
+            className="mt-2 text-[32px] font-black"
             formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
             style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
             value={highlightedPoint.value}
@@ -347,7 +348,7 @@ export default function HomeGraphicScreen() {
         </View>
 
         <View className="mt-6 border-t pt-6" style={{ borderColor: theme.border }}>
-          <Text className="text-[28px] font-black" style={{ color: theme.text }}>
+          <Text className="text-[18px] font-black" style={{ color: theme.text }}>
             Datos
           </Text>
           <Text className="mt-3 text-[16px]" style={{ color: theme.mutedText }}>
@@ -450,6 +451,6 @@ export default function HomeGraphicScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }

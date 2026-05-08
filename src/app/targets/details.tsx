@@ -44,7 +44,7 @@ function ActionButton({ disabled = false, icon: Icon, label, onPress, tone = "de
         <Icon color={isDanger ? theme.danger : theme.text} size={21} strokeWidth={2.3} />
       </View>
 
-      <Text className="mt-4 text-[16px] font-black" style={{ color: isDanger ? theme.danger : theme.text }}>
+      <Text className="mt-3 text-[14px] font-black" style={{ color: isDanger ? theme.danger : theme.text }}>
         {label}
       </Text>
     </Pressable>
@@ -55,10 +55,7 @@ function InfoTile({ label, value }: { label: string; value: string }) {
   const { theme } = useAppTheme();
 
   return (
-    <View
-      className="flex-1 rounded-[22px] border px-4 py-4"
-      style={{ backgroundColor: theme.card, borderColor: theme.border }}
-    >
+    <View className="flex-1 border-t px-1 py-4" style={{ borderColor: theme.border }}>
       <Text className="text-[12px] font-black uppercase tracking-[1.8px]" style={{ color: theme.mutedText }}>
         {label}
       </Text>
@@ -111,7 +108,7 @@ export default function DetailsTargetScreen() {
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
       <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
 
-      <View className="px-5 pt-5">
+      <View className="px-5 pt-4">
         <AppScreenHeader
           fallbackHref={"/cards" as never}
           title="Detalle de la tarjeta"
@@ -120,18 +117,11 @@ export default function DetailsTargetScreen() {
 
       <ScrollView
         bounces={false}
-        contentContainerClassName="gap-6 px-5 pb-12"
+        contentContainerClassName="gap-5 px-5 pb-12"
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View entering={sectionEnter(90)}>
-          <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
-            Tarjeta
-          </Text>
-          <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-            Aqui puedes ver el CVC y gestionar el estado de tu tarjeta.
-          </Text>
-          <View className="mt-3 items-end">
+        <Animated.View entering={sectionEnter(90)} className="items-end">
             <View
               className="rounded-full px-4 py-3"
               style={{ backgroundColor: isBlocked ? `${theme.danger}18` : theme.primarySoft }}
@@ -143,7 +133,6 @@ export default function DetailsTargetScreen() {
                 {isBlocked ? "Bloqueada" : "Activa"}
               </Text>
             </View>
-          </View>
         </Animated.View>
 
         <Animated.View entering={sectionEnter(150)}>
@@ -185,7 +174,7 @@ export default function DetailsTargetScreen() {
             PIN
           </Text>
           <Text
-            className="mt-3 text-[38px] font-black tracking-[8px]"
+            className="mt-3 text-[28px] font-black tracking-[5px]"
             style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
           >
             {displayedPin}

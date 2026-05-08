@@ -1,21 +1,18 @@
 import type { PropsWithChildren } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
 type FinanceScreenShellProps = PropsWithChildren<{
-  eyebrow: string;
-  subtitle: string;
-  title: string;
+  eyebrow?: string;
+  subtitle?: string;
+  title?: string;
 }>;
 
 export function FinanceScreenShell({
   children,
-  eyebrow,
-  subtitle,
-  title,
 }: FinanceScreenShellProps) {
   const { theme } = useAppTheme();
 
@@ -24,19 +21,11 @@ export function FinanceScreenShell({
       <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
       <ScrollView
         bounces={false}
-        contentContainerClassName="gap-6 px-5 pb-12 pt-8"
+        contentContainerClassName="gap-5 px-5 pb-12 pt-5"
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
-        <View>
-          <AppScreenHeader title={title} />
-          <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
-            {eyebrow}
-          </Text>
-          <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-            {subtitle}
-          </Text>
-        </View>
+        <AppScreenHeader />
         {children}
       </ScrollView>
     </SafeAreaView>

@@ -1,6 +1,6 @@
 import { Redirect } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { Animated, FlatList, Pressable, Text, TextInput, View, type ListRenderItem } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { FlatList, Modal, Pressable, Text, TextInput, View, type ListRenderItem } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Filter, Search } from "lucide-react-native";
 
@@ -21,12 +21,10 @@ export default function MovementsScreen() {
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
   const [searchQuery, setSearchQuery] = useState("");
-  const [isFilterDrawerMounted, setIsFilterDrawerMounted] = useState(false);
+  const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [selectedTone, setSelectedTone] = useState<"all" | Transaction["tone"]>("all");
   const [draftTone, setDraftTone] = useState<"all" | Transaction["tone"]>("all");
   const [visibleCount, setVisibleCount] = useState<number>(financeConfig.transactionBatchSize);
-  const drawerTranslateX = useRef(new Animated.Value(340)).current;
-  const overlayOpacity = useRef(new Animated.Value(0)).current;
   const trimmedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery]);
   const filteredTransactions = useMemo(() => {
     return allTransactions.filter((transaction) => {
@@ -60,57 +58,20 @@ export default function MovementsScreen() {
   );
   const keyExtractor = useCallback((item: Transaction) => item.id, []);
   const renderSeparator = useCallback(() => <View className="h-3" />, []);
-  const animateDrawerIn = useCallback(() => {
-    Animated.parallel([
-      Animated.timing(drawerTranslateX, {
-        duration: 220,
-        toValue: 0,
-        useNativeDriver: true,
-      }),
-      Animated.timing(overlayOpacity, {
-        duration: 220,
-        toValue: 1,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [drawerTranslateX, overlayOpacity]);
-  const animateDrawerOut = useCallback(
-    (onEnd?: () => void) => {
-      Animated.parallel([
-        Animated.timing(drawerTranslateX, {
-          duration: 180,
-          toValue: 340,
-          useNativeDriver: true,
-        }),
-        Animated.timing(overlayOpacity, {
-          duration: 180,
-          toValue: 0,
-          useNativeDriver: true,
-        }),
-      ]).start(({ finished }) => {
-        if (finished) {
-          setIsFilterDrawerMounted(false);
-          onEnd?.();
-        }
-      });
-    },
-    [drawerTranslateX, overlayOpacity],
-  );
   const openFilters = useCallback(() => {
     setDraftTone(selectedTone);
-    setIsFilterDrawerMounted(true);
-    animateDrawerIn();
-  }, [animateDrawerIn, selectedTone]);
-  const closeFilters = useCallback(() => animateDrawerOut(), [animateDrawerOut]);
+    setIsFilterModalVisible(true);
+  }, [selectedTone]);
+  const closeFilters = useCallback(() => setIsFilterModalVisible(false), []);
   const applyFilters = useCallback(() => {
     setSelectedTone(draftTone);
-    animateDrawerOut();
-  }, [animateDrawerOut, draftTone]);
+    setIsFilterModalVisible(false);
+  }, [draftTone]);
   const clearFilters = useCallback(() => {
     setDraftTone("all");
     setSelectedTone("all");
-    animateDrawerOut();
-  }, [animateDrawerOut]);
+    setIsFilterModalVisible(false);
+  }, []);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -136,12 +97,9 @@ export default function MovementsScreen() {
           </View>
         }
         ListHeaderComponent={
-          <View className="gap-5 pb-5 pt-8">
+          <View className="gap-4 pb-4 pt-5">
             <View>
-              <AppScreenHeader title="Movimientos" />
-              <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.primary }}>
-                Actividad
-              </Text>
+              <AppScreenHeader />
             </View>
 
             <View className="flex-row gap-3">
@@ -183,17 +141,25 @@ export default function MovementsScreen() {
         updateCellsBatchingPeriod={24}
         windowSize={9}
       />
-      {isFilterDrawerMounted ? (
-        <View className="absolute inset-0 flex-row">
-          <Animated.View className="flex-1" style={{ opacity: overlayOpacity }}>
-            <Pressable className="flex-1" onPress={closeFilters} style={{ backgroundColor: "rgba(7, 10, 18, 0.45)" }} />
-          </Animated.View>
-          <Animated.View
-            className="h-full w-[84%] max-w-[340px] px-5 pb-7 pt-8"
-            style={{ backgroundColor: theme.card, transform: [{ translateX: drawerTranslateX }] }}
+      <Modal
+        animationType="fade"
+        onRequestClose={closeFilters}
+        transparent
+        visible={isFilterModalVisible}
+      >
+        <View className="flex-1 justify-end px-5 pb-7">
+          <Pressable
+            accessibilityLabel="Cerrar filtros"
+            className="absolute inset-0"
+            onPress={closeFilters}
+            style={{ backgroundColor: "rgba(7, 10, 18, 0.45)" }}
+          />
+          <View
+            className="rounded-[24px] border px-5 pb-5 pt-5"
+            style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}
           >
             <View className="flex-row items-center justify-between">
-              <Text className="text-[22px] font-black" style={{ color: theme.text }}>
+              <Text className="text-[18px] font-black" style={{ color: theme.text }}>
                 Filtros
               </Text>
               <Pressable onPress={closeFilters}>
@@ -203,13 +169,13 @@ export default function MovementsScreen() {
               </Pressable>
             </View>
 
-            <View className="mt-8">
+            <View className="mt-5">
               <Text className="text-[12px] font-black uppercase tracking-[1px]" style={{ color: theme.primary }}>
                 Tipo
               </Text>
-              <View className="mt-4 gap-3">
+              <View className="mt-4 gap-2">
                 <Pressable
-                  className="rounded-[16px] px-4 py-4"
+                  className="rounded-[16px] px-4 py-3.5"
                   onPress={() => setDraftTone("all")}
                   style={{ backgroundColor: draftTone === "all" ? theme.primary : theme.background }}
                 >
@@ -218,7 +184,7 @@ export default function MovementsScreen() {
                   </Text>
                 </Pressable>
                 <Pressable
-                  className="rounded-[16px] px-4 py-4"
+                  className="rounded-[16px] px-4 py-3.5"
                   onPress={() => setDraftTone("income")}
                   style={{ backgroundColor: draftTone === "income" ? theme.primary : theme.background }}
                 >
@@ -227,7 +193,7 @@ export default function MovementsScreen() {
                   </Text>
                 </Pressable>
                 <Pressable
-                  className="rounded-[16px] px-4 py-4"
+                  className="rounded-[16px] px-4 py-3.5"
                   onPress={() => setDraftTone("expense")}
                   style={{ backgroundColor: draftTone === "expense" ? theme.primary : theme.background }}
                 >
@@ -238,7 +204,7 @@ export default function MovementsScreen() {
               </View>
             </View>
 
-            <View className="mt-auto flex-row gap-3">
+            <View className="mt-6 flex-row gap-3 border-t pt-4" style={{ borderColor: theme.border }}>
               <Pressable
                 className="flex-1 items-center rounded-[16px] px-4 py-4"
                 onPress={clearFilters}
@@ -258,9 +224,9 @@ export default function MovementsScreen() {
                 </Text>
               </Pressable>
             </View>
-          </Animated.View>
+          </View>
         </View>
-      ) : null}
+      </Modal>
     </SafeAreaView>
   );
 }

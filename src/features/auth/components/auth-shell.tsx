@@ -89,7 +89,7 @@ export function AuthShell({
       >
         <ScrollView
           bounces={false}
-          contentContainerClassName={`${keyboardVisible ? "px-6 pb-8 pt-4" : "flex-grow px-6 pb-10 pt-8"}`}
+          contentContainerClassName={`${keyboardVisible ? "px-6 pb-8 pt-4" : "flex-grow px-6 pb-10 pt-5"}`}
           contentContainerStyle={
             keyboardVisible && shouldAdjustForFocusedInput
               ? {
@@ -113,12 +113,12 @@ export function AuthShell({
 
           {!keyboardVisible ? (
             <Animated.View
-              className="mt-10 items-center"
+              className="mt-6 items-center"
               entering={FadeInDown.duration(420).easing(Easing.out(Easing.quad))}
             >
               <AuthBrandMark />
               <Text
-                className="mt-9 px-8 text-center text-[30px] font-black leading-[36px]"
+                className="mt-6 px-8 text-center text-[24px] font-black leading-[30px]"
                 style={{ color: theme.text }}
               >
                 {title}

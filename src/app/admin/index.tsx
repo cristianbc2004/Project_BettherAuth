@@ -1,6 +1,7 @@
 import { Redirect, router } from "expo-router";
+import { UserPlus, Users, UserX } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
-import { View, type ImageSourcePropType } from "react-native";
+import { View } from "react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { AuthShell } from "@/features/auth/components/auth-shell";
@@ -11,10 +12,10 @@ import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
 export default function AdminPanelScreen() {
   const dashboardIcons = {
-    createUser: require("../../../assets/newuser.png"),
-    deleteUser: require("../../../assets/delete_user.png"),
-    listUsers: require("../../../assets/list_user.png"),
-  } satisfies Record<string, ImageSourcePropType>;
+    createUser: UserPlus,
+    deleteUser: UserX,
+    listUsers: Users,
+  };
 
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);

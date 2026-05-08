@@ -1,6 +1,5 @@
-import { ChevronRight } from "lucide-react-native";
-import type { ImageSourcePropType } from "react-native";
-import { Image, Pressable, Text, View } from "react-native";
+import { ChevronRight, type LucideIcon } from "lucide-react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
 
@@ -8,7 +7,7 @@ type AdminActionRowProps = {
   accent: string;
   description: string;
   eyebrow: string;
-  icon?: ImageSourcePropType;
+  icon?: LucideIcon;
   onPress: () => void;
   title: string;
 };
@@ -22,6 +21,7 @@ export function AdminActionRow({
   title,
 }: AdminActionRowProps) {
   const { theme } = useAppTheme();
+  const Icon = icon;
 
   return (
     <Pressable
@@ -35,13 +35,8 @@ export function AdminActionRow({
         className="mr-4 h-14 w-14 items-center justify-center rounded-full"
         style={{ backgroundColor: accent }}
       >
-        {icon ? (
-          <Image
-            className="h-6 w-6"
-            resizeMode="contain"
-            source={icon}
-            style={{ tintColor: theme.textOnPrimary }}
-          />
+        {Icon ? (
+          <Icon color={theme.textOnPrimary} size={22} strokeWidth={2.4} />
         ) : (
           <View className="h-3 w-3 rounded-full bg-white/85" />
         )}

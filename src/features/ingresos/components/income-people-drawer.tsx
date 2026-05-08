@@ -1,4 +1,5 @@
 import { router } from "expo-router";
+import { ChevronRight, X } from "lucide-react-native";
 import { memo, useCallback } from "react";
 import { FlatList, Modal, Pressable, Text, View, type ListRenderItem } from "react-native";
 import Animated, { Easing, FadeIn, FadeInDown, SlideInLeft } from "react-native-reanimated";
@@ -44,13 +45,11 @@ const IncomePersonRow = memo(function IncomePersonRow({ nombre, onPress }: Incom
       onPress={onPress}
       style={{ borderColor: theme.border }}
     >
-      <Text className="flex-1 text-[18px] font-bold" style={{ color: theme.text }}>
+      <Text className="flex-1 text-[16px] font-bold" style={{ color: theme.text }}>
         {nombre}
       </Text>
       <View className="h-11 w-11 items-center justify-center">
-        <Text className="text-2xl font-semibold" style={{ color: theme.text }}>
-          {">"}
-        </Text>
+        <ChevronRight color={theme.mutedText} size={22} strokeWidth={2.3} />
       </View>
     </Pressable>
   );
@@ -93,13 +92,13 @@ export function IncomePeopleDrawer({
         style={{ backgroundColor: "rgba(0, 0, 0, 0.42)" }}
       >
         <Animated.View
-          className="h-full w-[88%]"
+          className="h-full w-full"
           entering={SlideInLeft.duration(280).easing(Easing.out(Easing.cubic))}
           style={{ backgroundColor: theme.background }}
         >
           <SafeAreaView className="flex-1">
             <View className="flex-1 px-5 pb-10 pt-5">
-              <View className="mb-7 flex-row items-center justify-between">
+              <View className="mb-5 flex-row items-center justify-between">
                 <Pressable
                   accessibilityLabel="Open account"
                   accessibilityRole="button"
@@ -111,7 +110,7 @@ export function IncomePeopleDrawer({
                   }}
                 >
                   <View
-                    className="mr-4 h-20 w-20 items-center justify-center rounded-[28px] border"
+                    className="mr-4 h-16 w-16 items-center justify-center rounded-[22px] border"
                     style={{
                       backgroundColor: theme.card,
                       borderColor: theme.border,
@@ -123,13 +122,13 @@ export function IncomePeopleDrawer({
                   </View>
                   <View className="flex-1">
                     <Text
-                      className="text-[24px] font-bold"
+                      className="text-[20px] font-bold"
                       numberOfLines={1}
                       style={{ color: theme.text }}
                     >
                       {name}
                     </Text>
-                    <Text className="mt-1 text-[16px] font-semibold" style={{ color: theme.mutedText }}>
+                    <Text className="mt-1 text-[14px] font-semibold" style={{ color: theme.mutedText }}>
                       {role}
                     </Text>
                     <Text className="mt-1 text-xs" numberOfLines={1} style={{ color: theme.mutedText }}>
@@ -141,21 +140,19 @@ export function IncomePeopleDrawer({
                 <Pressable
                   accessibilityLabel="Close menu"
                   accessibilityRole="button"
-                  className="ml-4 h-14 w-14 items-center justify-center"
+                  className="ml-4 h-11 w-11 items-center justify-center rounded-full"
                   onPress={() => {
                     selectionHaptic();
                     onClose();
                   }}
                 >
-                  <Text className="text-3xl" style={{ color: theme.text }}>
-                    x
-                  </Text>
+                  <X color={theme.text} size={22} strokeWidth={2.4} />
                 </Pressable>
               </View>
 
               <View className="mb-6 h-px" style={{ backgroundColor: theme.border }} />
 
-              <Text className="mb-1 text-[20px] font-bold" style={{ color: theme.text }}>
+              <Text className="mb-1 text-[18px] font-bold" style={{ color: theme.text }}>
                 {mockIngresos.general.titulo}
               </Text>
               <Text className="mb-4 text-[15px]" style={{ color: theme.mutedText }}>
@@ -172,8 +169,6 @@ export function IncomePeopleDrawer({
             </View>
           </SafeAreaView>
         </Animated.View>
-
-        <Pressable accessibilityLabel="Close menu overlay" className="flex-1" onPress={onClose} />
       </Animated.View>
     </Modal>
   );

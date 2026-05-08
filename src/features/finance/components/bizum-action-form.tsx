@@ -102,7 +102,7 @@ export function BizumActionForm({
   return (
     <View>
       <View
-        className="overflow-hidden rounded-[32px] border p-5"
+        className="overflow-hidden rounded-[28px] border p-5"
         style={{
           backgroundColor: theme.card,
           borderColor: theme.border,
@@ -110,7 +110,7 @@ export function BizumActionForm({
           boxShadow: "0 18px 40px rgba(7, 17, 31, 0.08)",
         }}
       >
-        <Text className="text-[28px] font-black" style={{ color: theme.text }}>
+        <Text className="text-[22px] font-black" style={{ color: theme.text }}>
           {copy.title}
         </Text>
 
@@ -122,7 +122,7 @@ export function BizumActionForm({
             >
               <ActivityIndicator color={theme.primary} size="large" />
             </View>
-            <Text className="text-[22px] font-black" style={{ color: theme.text }}>
+            <Text className="text-[18px] font-black" style={{ color: theme.text }}>
               {copy.loadingTitle}
             </Text>
             <Text className="mt-3 text-center text-[14px] leading-6" style={{ color: theme.mutedText }}>
@@ -287,7 +287,7 @@ export function BizumActionForm({
                   selectionColor={theme.primary}
                   style={{
                     color: theme.text,
-                    fontSize: 21,
+                    fontSize: 19,
                     fontWeight: "900",
                     lineHeight: 26,
                     minHeight: 28,

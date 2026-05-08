@@ -11,7 +11,7 @@ type AppScreenHeaderProps = {
   fallbackHref?: Parameters<typeof backOrReplace>[0];
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
-  title: string;
+  title?: string;
 };
 
 export function AppScreenHeader({
@@ -31,17 +31,19 @@ export function AppScreenHeader({
 
   return (
     <View
-      className="mb-8 flex-row items-center"
+      className="mb-4 flex-row items-center"
       pointerEvents="box-none"
       style={[styles.container, { backgroundColor: resolvedBackgroundColor }]}
     >
       <View style={styles.actionLayer}>{leftContent}</View>
 
-      <View className="absolute left-0 right-0 items-center" pointerEvents="none">
-        <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>
-          {title}
-        </Text>
-      </View>
+      {title ? (
+        <View className="absolute left-0 right-0 items-center" pointerEvents="none">
+          <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>
+            {title}
+          </Text>
+        </View>
+      ) : null}
 
       <View className="ml-auto" style={styles.actionLayer}>
         {rightSlot ? rightSlot : <View className="h-11 w-11" />}
