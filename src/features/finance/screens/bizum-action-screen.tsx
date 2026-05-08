@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { Redirect, router } from "expo-router";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -127,10 +128,14 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
-      <ScrollView
+      <KeyboardAwareScrollView
+        bottomOffset={132}
         bounces={false}
-        contentContainerClassName="px-5 pb-10 pt-8"
+        contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 20, paddingTop: 32 }}
         contentInsetAdjustmentBehavior="automatic"
+        extraKeyboardSpace={16}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <AppScreenHeader fallbackHref={"/assets" as never} title={copy.title} />
@@ -172,7 +177,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
             onSubmit={handleSubmit}
           />
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

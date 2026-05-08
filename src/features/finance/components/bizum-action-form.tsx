@@ -1,11 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -63,27 +59,7 @@ export function BizumActionForm({
   const [isAmountFocused, setIsAmountFocused] = useState(false);
   const [isConceptFocused, setIsConceptFocused] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
-  const formScrollRef = useRef<ScrollView>(null);
   const conceptInputRef = useRef<TextInput>(null);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [amountSectionY, setAmountSectionY] = useState(0);
-  const [conceptSectionY, setConceptSectionY] = useState(0);
-
-  useEffect(() => {
-    const showEvent = process.env.EXPO_OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvent = process.env.EXPO_OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-    const showSubscription = Keyboard.addListener(showEvent, (event) => {
-      setKeyboardHeight(Math.max(0, event.endCoordinates.height));
-    });
-    const hideSubscription = Keyboard.addListener(hideEvent, () => {
-      setKeyboardHeight(0);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
 
   const selectedContact = useMemo(
     () => contacts.find((contact) => contact.id === selectedContactId) ?? null,
@@ -124,11 +100,7 @@ export function BizumActionForm({
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.select({ ios: "padding", android: "height", default: undefined })}
-      keyboardVerticalOffset={12}
-      style={{ marginBottom: keyboardHeight > 0 ? 8 : 0 }}
-    >
+    <View>
       <View
         className="overflow-hidden rounded-[32px] border p-5"
         style={{
@@ -158,20 +130,7 @@ export function BizumActionForm({
             </Text>
           </View>
         ) : (
-          <>
-            <ScrollView
-              ref={formScrollRef}
-              bounces={false}
-              contentContainerStyle={{
-                gap: 14,
-                paddingTop: 18,
-                paddingBottom: keyboardHeight > 0 ? keyboardHeight + 80 : 12,
-              }}
-              keyboardDismissMode="interactive"
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-              style={styles.formScroll}
-            >
+          <View className="gap-3.5 pt-[18px]">
             <View className="gap-3">
               <Text className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
                 {copy.contactLabel}
@@ -296,12 +255,7 @@ export function BizumActionForm({
               ) : null}
             </View>
 
-            <View
-              className="gap-3"
-              onLayout={(event) => {
-                setAmountSectionY(event.nativeEvent.layout.y);
-              }}
-            >
+            <View className="gap-3">
               <Text className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
                 Importe
               </Text>
@@ -323,12 +277,6 @@ export function BizumActionForm({
                   }}
                   onFocus={() => {
                     setIsAmountFocused(true);
-                    setTimeout(() => {
-                      formScrollRef.current?.scrollTo({
-                        animated: true,
-                        y: Math.max(0, amountSectionY - 72),
-                      });
-                    }, 90);
                   }}
                   onSubmitEditing={() => {
                     conceptInputRef.current?.focus();
@@ -353,12 +301,7 @@ export function BizumActionForm({
               </View>
             </View>
 
-            <View
-              className="gap-3"
-              onLayout={(event) => {
-                setConceptSectionY(event.nativeEvent.layout.y);
-              }}
-            >
+            <View className="gap-3">
               <Text className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
                 Concepto
               </Text>
@@ -377,12 +320,6 @@ export function BizumActionForm({
                   onChangeText={setConcept}
                   onFocus={() => {
                     setIsConceptFocused(true);
-                    setTimeout(() => {
-                      formScrollRef.current?.scrollTo({
-                        animated: true,
-                        y: Math.max(0, conceptSectionY - 120),
-                      });
-                    }, 90);
                   }}
                   placeholder="Cena, regalo, entradas..."
                   placeholderTextColor={theme.mutedText}
@@ -410,7 +347,6 @@ export function BizumActionForm({
                 </Text>
               </View>
             ) : null}
-            </ScrollView>
 
             <View className="border-t pt-3" style={{ borderColor: theme.border }}>
               <View className="flex-row gap-3">
@@ -454,15 +390,9 @@ export function BizumActionForm({
                 </Pressable>
               </View>
             </View>
-          </>
+          </View>
         )}
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  formScroll: {
-    flexShrink: 1,
-  },
-});
