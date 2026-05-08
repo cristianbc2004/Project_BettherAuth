@@ -311,6 +311,7 @@ export default function HomeScreen() {
                     onGestureStart={handleGestureStart}
                     onPointSelected={handlePointSelected}
                     onPress={openBalanceGraph}
+                    panGestureDelay={40}
                     points={balancePoints}
                     verticalPadding={20}
                   />

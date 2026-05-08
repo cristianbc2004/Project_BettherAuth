@@ -214,6 +214,7 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
           onGestureEnd={handleGestureEnd}
           onGestureStart={handleGestureStart}
           onPointSelected={handlePointSelected}
+          panGestureDelay={80}
           points={priceHistory}
           verticalPadding={24}
         />
