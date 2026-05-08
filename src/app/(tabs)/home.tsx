@@ -121,7 +121,11 @@ export default function HomeScreen() {
   const { resolvedThemeName, theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const cardNavigationLockRef = useRef(false);
-  const cardWidth = width - 40;
+  const cardGap = 16;
+  const cardsViewportWidth = Math.max(width - 52, 250);
+  const nextCardPeek = Math.round(Math.min(Math.max(cardsViewportWidth * 0.12, 32), 56));
+  const cardWidth = Math.max(Math.round(cardsViewportWidth - cardGap - nextCardPeek), 190);
+  const cardSnapInterval = cardWidth + cardGap;
   const chartWidth = Math.max(width - 82, 260);
   const graphColor = resolvedThemeName === "dark" ? "#78a9ff" : "#3467d6";
   const firstName = session?.user.name.split(" ")[0] || session?.user.name || "Cristian";
@@ -322,11 +326,12 @@ export default function HomeScreen() {
             />
             <ScrollView
               className="mt-4"
-              contentContainerClassName="pr-4"
+              contentContainerStyle={{ paddingLeft: 4, paddingRight: 16 }}
               decelerationRate="fast"
               horizontal
               showsHorizontalScrollIndicator={false}
-              snapToInterval={cardWidth + 16}
+              snapToAlignment="start"
+              snapToInterval={cardSnapInterval}
             >
               {cards.map((card) => (
                 <Pressable
