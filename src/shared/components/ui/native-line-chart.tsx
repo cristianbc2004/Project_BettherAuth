@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   PanResponder,
   StyleSheet,
@@ -7,7 +7,7 @@ import {
   type PanResponderGestureState,
   type ViewStyle,
 } from "react-native";
-import Svg, { Circle, Defs, LinearGradient, Path, Stop } from "react-native-svg";
+import { Canvas, Circle, LinearGradient, Line, Path, vec } from "@shopify/react-native-skia";
 
 export type NativeLineChartPoint = {
   date: Date;
@@ -25,6 +25,7 @@ type NativeLineChartProps<TPoint extends NativeLineChartPoint> = {
   onGestureStart?: () => void;
   onPointSelected?: (point: TPoint) => void;
   onPress?: () => void;
+  panGestureDelay?: number;
   points: TPoint[];
   style?: ViewStyle;
   tapMaxDurationMs?: number;
@@ -37,14 +38,61 @@ type ChartCoordinate = {
   y: number;
 };
 
+type ChartSelection<TPoint extends NativeLineChartPoint> = {
+  coordinate: ChartCoordinate;
+  point: TPoint;
+};
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
+function cubicAt(start: number, controlA: number, controlB: number, end: number, progress: number) {
+  const inverseProgress = 1 - progress;
+
+  return (
+    inverseProgress ** 3 * start +
+    3 * inverseProgress ** 2 * progress * controlA +
+    3 * inverseProgress * progress ** 2 * controlB +
+    progress ** 3 * end
+  );
+}
+
+function findCubicProgressForX(startX: number, controlX: number, endX: number, targetX: number) {
+  let low = 0;
+  let high = 1;
+
+  for (let index = 0; index < 12; index += 1) {
+    const middle = (low + high) / 2;
+    const x = cubicAt(startX, controlX, controlX, endX, middle);
+
+    if (x < targetX) {
+      low = middle;
+    } else {
+      high = middle;
+    }
+  }
+
+  return (low + high) / 2;
+}
+
 function buildLinePath(coordinates: ChartCoordinate[]) {
-  return coordinates
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-    .join(" ");
+  if (coordinates.length === 0) {
+    return "";
+  }
+
+  if (coordinates.length === 1) {
+    return `M ${coordinates[0].x} ${coordinates[0].y}`;
+  }
+
+  // SVG paths use commands like "M x y" to move and "L x y" to draw lines.
+  // Cubic curves keep the line closer to react-native-graph's smooth look.
+  return coordinates.slice(1).reduce((path, point, index) => {
+    const previousPoint = coordinates[index];
+    const middleX = previousPoint.x + (point.x - previousPoint.x) / 2;
+
+    return `${path} C ${middleX} ${previousPoint.y}, ${middleX} ${point.y}, ${point.x} ${point.y}`;
+  }, `M ${coordinates[0].x} ${coordinates[0].y}`);
 }
 
 function buildAreaPath(coordinates: ChartCoordinate[], baselineY: number) {
@@ -54,11 +102,18 @@ function buildAreaPath(coordinates: ChartCoordinate[], baselineY: number) {
 
   const firstPoint = coordinates[0];
   const lastPoint = coordinates[coordinates.length - 1];
+  const curveSegments = coordinates.slice(1).map((point, index) => {
+    const previousPoint = coordinates[index];
+    const middleX = previousPoint.x + (point.x - previousPoint.x) / 2;
 
+    return `C ${middleX} ${previousPoint.y}, ${middleX} ${point.y}, ${point.x} ${point.y}`;
+  });
+
+  // The filled area follows the line, then closes down to the chart baseline.
   return [
     `M ${firstPoint.x} ${baselineY}`,
     `L ${firstPoint.x} ${firstPoint.y}`,
-    ...coordinates.slice(1).map((point) => `L ${point.x} ${point.y}`),
+    ...curveSegments,
     `L ${lastPoint.x} ${baselineY}`,
     "Z",
   ].join(" ");
@@ -82,6 +137,7 @@ export function NativeLineChart<TPoint extends NativeLineChartPoint>({
   onGestureStart,
   onPointSelected,
   onPress,
+  panGestureDelay = 40,
   points,
   style,
   tapMaxDurationMs = 250,
@@ -89,12 +145,12 @@ export function NativeLineChart<TPoint extends NativeLineChartPoint>({
   verticalPadding = 20,
 }: NativeLineChartProps<TPoint>) {
   const [width, setWidth] = useState(0);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [activeCoordinate, setActiveCoordinate] = useState<ChartCoordinate | null>(null);
   const gestureStartRef = useRef<{ moved: boolean; startedAt: number; x: number; y: number } | null>(null);
   const isInteractingRef = useRef(false);
-  const gradientId = `lineChartGradient${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
   const chart = useMemo(() => {
+    // Convert each data value into a canvas coordinate inside the chart bounds.
     const safeWidth = Math.max(width, 1);
     const chartWidth = Math.max(safeWidth - horizontalPadding * 2, 1);
     const chartHeight = Math.max(height - verticalPadding * 2, 1);
@@ -106,6 +162,7 @@ export function NativeLineChart<TPoint extends NativeLineChartPoint>({
     const coordinates = points.map((point, index) => {
       const x = horizontalPadding + (chartWidth * index) / lastIndex;
       const normalizedValue = (point.value - minValue) / valueRange;
+      // Canvas y=0 starts at the top, so higher values need smaller y coordinates.
       const y = verticalPadding + chartHeight - normalizedValue * chartHeight;
 
       return { x, y };
@@ -113,33 +170,109 @@ export function NativeLineChart<TPoint extends NativeLineChartPoint>({
 
     return {
       areaPath: buildAreaPath(coordinates, height - verticalPadding),
+      chartHeight,
       coordinates,
       linePath: buildLinePath(coordinates),
+      minValue,
+      valueRange,
     };
   }, [height, horizontalPadding, points, verticalPadding, width]);
 
-  const selectNearestPoint = (x: number) => {
-    if (chart.coordinates.length === 0) {
+  const getSelectionAtX = (x: number): ChartSelection<TPoint> | null => {
+    const coordinates = chart.coordinates;
+
+    if (coordinates.length === 0 || points.length === 0) {
+      return null;
+    }
+
+    if (coordinates.length === 1) {
+      return {
+        coordinate: coordinates[0],
+        point: points[0],
+      };
+    }
+
+    const clampedX = clamp(x, coordinates[0].x, coordinates[coordinates.length - 1].x);
+    const segmentIndex = coordinates.findIndex((coordinate, index) => {
+      const nextCoordinate = coordinates[index + 1];
+      return Boolean(nextCoordinate) && clampedX >= coordinate.x && clampedX <= nextCoordinate.x;
+    });
+    const safeSegmentIndex = Math.max(segmentIndex, 0);
+    const startCoordinate = coordinates[safeSegmentIndex];
+    const endCoordinate = coordinates[safeSegmentIndex + 1];
+
+    if (!endCoordinate) {
+      const nearestIndex = findNearestCoordinateIndex(coordinates, clampedX);
+
+      return {
+        coordinate: coordinates[nearestIndex],
+        point: points[nearestIndex],
+      };
+    }
+
+    const middleX = startCoordinate.x + (endCoordinate.x - startCoordinate.x) / 2;
+    const curveProgress = findCubicProgressForX(startCoordinate.x, middleX, endCoordinate.x, clampedX);
+    const y = cubicAt(startCoordinate.y, startCoordinate.y, endCoordinate.y, endCoordinate.y, curveProgress);
+    const segmentProgress =
+      endCoordinate.x === startCoordinate.x
+        ? 0
+        : (clampedX - startCoordinate.x) / (endCoordinate.x - startCoordinate.x);
+    const startPoint = points[safeSegmentIndex];
+    const endPoint = points[safeSegmentIndex + 1];
+    const nearestPoint = segmentProgress < 0.5 ? startPoint : endPoint;
+    const valueRatio = clamp((verticalPadding + chart.chartHeight - y) / chart.chartHeight, 0, 1);
+    const value = chart.minValue + valueRatio * chart.valueRange;
+    const date = new Date(
+      startPoint.date.getTime() + (endPoint.date.getTime() - startPoint.date.getTime()) * segmentProgress,
+    );
+
+    return {
+      coordinate: {
+        x: clampedX,
+        y,
+      },
+      point: {
+        ...nearestPoint,
+        date,
+        value,
+      },
+    };
+  };
+
+  const selectPointAtX = (x: number) => {
+    const selection = getSelectionAtX(x);
+
+    if (!selection) {
       return;
     }
 
-    const nearestIndex = findNearestCoordinateIndex(chart.coordinates, clamp(x, 0, width));
-    setActiveIndex(nearestIndex);
-    onPointSelected?.(points[nearestIndex]);
+    setActiveCoordinate(selection.coordinate);
+    onPointSelected?.(selection.point);
   };
 
   const endInteraction = () => {
+    // Notify the parent once per drag so it can restore scroll or clear interaction state.
     if (isInteractingRef.current) {
       isInteractingRef.current = false;
       onGestureEnd?.();
     }
 
-    setActiveIndex(null);
+    setActiveCoordinate(null);
+  };
+
+  const startInteraction = (x: number) => {
+    if (!isInteractingRef.current) {
+      isInteractingRef.current = true;
+      onGestureStart?.();
+    }
+
+    selectPointAtX(x);
   };
 
   const handleGestureStart = (event: GestureResponderEvent) => {
     const { locationX, locationY } = event.nativeEvent;
 
+    // Store the first touch so release can decide whether it was a tap or a drag.
     gestureStartRef.current = {
       moved: false,
       startedAt: Date.now(),
@@ -161,17 +294,13 @@ export function NativeLineChart<TPoint extends NativeLineChartPoint>({
 
     const movedFarEnough = Math.hypot(gestureState.dx, gestureState.dy) > tapMoveThreshold;
 
+    // Small finger jitter still counts as a tap; only a real move becomes chart scrubbing.
     if (movedFarEnough) {
       gestureStart.moved = true;
     }
 
-    if (!isInteractingRef.current && gestureStart.moved) {
-      isInteractingRef.current = true;
-      onGestureStart?.();
-    }
-
-    if (gestureStart.moved) {
-      selectNearestPoint(event.nativeEvent.locationX);
+    if (gestureStart.moved && Date.now() - gestureStart.startedAt >= panGestureDelay) {
+      startInteraction(event.nativeEvent.locationX);
     }
   };
 
@@ -186,6 +315,7 @@ export function NativeLineChart<TPoint extends NativeLineChartPoint>({
 
     const isTap = !gestureStart.moved && Date.now() - gestureStart.startedAt < tapMaxDurationMs;
 
+    // Taps and drags intentionally do different things: tap may navigate, drag selects points.
     if (isTap) {
       onPress?.();
     }
@@ -197,6 +327,7 @@ export function NativeLineChart<TPoint extends NativeLineChartPoint>({
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_, gestureState) =>
+          // Let vertical page scroll win until the movement clearly belongs to the chart.
           enablePanGesture && Math.hypot(gestureState.dx, gestureState.dy) > tapMoveThreshold,
         onPanResponderGrant: handleGestureStart,
         onPanResponderMove: handleGestureMove,
@@ -207,10 +338,23 @@ export function NativeLineChart<TPoint extends NativeLineChartPoint>({
         },
         onStartShouldSetPanResponder: () => true,
       }),
-    [chart.coordinates, enablePanGesture, onGestureEnd, onGestureStart, onPointSelected, onPress, points, width],
+    [
+      chart.coordinates,
+      chart.chartHeight,
+      chart.minValue,
+      chart.valueRange,
+      enablePanGesture,
+      onGestureEnd,
+      onGestureStart,
+      onPointSelected,
+      onPress,
+      panGestureDelay,
+      points,
+      tapMoveThreshold,
+      width,
+    ],
   );
 
-  const activeCoordinate = activeIndex === null ? null : chart.coordinates[activeIndex];
   const gradientStart = gradientFillColors?.[0] ?? `${color}55`;
   const gradientEnd = gradientFillColors?.[1] ?? `${color}00`;
 
@@ -221,37 +365,47 @@ export function NativeLineChart<TPoint extends NativeLineChartPoint>({
       {...panResponder.panHandlers}
     >
       {width > 0 ? (
-        <Svg height={height} width={width}>
-          <Defs>
-            <LinearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-              <Stop offset="0" stopColor={gradientStart} />
-              <Stop offset="1" stopColor={gradientEnd} />
-            </LinearGradient>
-          </Defs>
-          {chart.areaPath ? <Path d={chart.areaPath} fill={`url(#${gradientId})`} /> : null}
+        <Canvas style={{ height, width }}>
+          {chart.areaPath ? (
+            <Path path={chart.areaPath}>
+              <LinearGradient
+                colors={[gradientStart, gradientEnd]}
+                end={vec(0, height)}
+                start={vec(0, 0)}
+              />
+            </Path>
+          ) : null}
           {chart.linePath ? (
             <Path
-              d={chart.linePath}
-              fill="none"
-              stroke={color}
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              color={color}
+              path={chart.linePath}
+              strokeCap="round"
+              strokeJoin="round"
               strokeWidth={lineThickness}
+              style="stroke"
             />
           ) : null}
           {activeCoordinate ? (
             <>
-              <Path
-                d={`M ${activeCoordinate.x} ${verticalPadding} L ${activeCoordinate.x} ${height - verticalPadding}`}
-                stroke={color}
-                strokeOpacity={0.24}
+              <Line
+                color={color}
+                opacity={0.24}
+                p1={vec(activeCoordinate.x, verticalPadding)}
+                p2={vec(activeCoordinate.x, height - verticalPadding)}
                 strokeWidth={1}
               />
-              <Circle cx={activeCoordinate.x} cy={activeCoordinate.y} fill={color} r={6} />
-              <Circle cx={activeCoordinate.x} cy={activeCoordinate.y} fill="transparent" r={11} stroke={color} strokeWidth={2} />
+              <Circle color={color} cx={activeCoordinate.x} cy={activeCoordinate.y} r={6} />
+              <Circle
+                color={color}
+                cx={activeCoordinate.x}
+                cy={activeCoordinate.y}
+                r={11}
+                strokeWidth={2}
+                style="stroke"
+              />
             </>
           ) : null}
-        </Svg>
+        </Canvas>
       ) : null}
     </View>
   );

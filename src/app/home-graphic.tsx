@@ -337,6 +337,7 @@ export default function HomeGraphicScreen() {
                 onGestureEnd={handleGestureEnd}
                 onGestureStart={handleGestureStart}
                 onPointSelected={handlePointSelected}
+                panGestureDelay={40}
                 points={graphPoints}
                 verticalPadding={20}
               />
