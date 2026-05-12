@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Text, View } from "react-native";
+import { Alert, View } from "react-native";
 import { z } from "zod";
 
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
@@ -13,6 +13,7 @@ import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { AppText } from "@/shared/components/ui/app-text";
 
 export default function ChangePasswordScreen() {
   const { t } = useTranslation();
@@ -155,7 +156,7 @@ export default function ChangePasswordScreen() {
 
         {serverError ? (
           <View className="mb-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3">
-            <Text className="text-sm text-red-300">{serverError}</Text>
+            <AppText className="text-sm" tone="danger">{serverError}</AppText>
           </View>
         ) : null}
 

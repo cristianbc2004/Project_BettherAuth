@@ -1,8 +1,9 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { CardNetworkBadge } from "@/features/finance/components/card-network-badge";
 import type { WalletCard } from "@/shared/types/finance";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type WalletCardPreviewProps = {
   card: WalletCard;
@@ -40,12 +41,12 @@ export function WalletCardPreview({ card, width }: WalletCardPreviewProps) {
 
       <View className="flex-row items-start justify-between">
         <View>
-          <Text className="text-[12px] font-semibold uppercase tracking-[1.8px]" style={{ color: `${card.textColor}bb` }}>
+          <AppText className="text-[12px] font-semibold uppercase tracking-[1.8px]" style={{ color: `${card.textColor}bb` }}>
             {card.status}
-          </Text>
-          <Text className="mt-2 text-[18px] font-bold" style={{ color: card.textColor }}>
+          </AppText>
+          <AppText className="mt-2 text-[18px] font-bold" style={{ color: card.textColor }}>
             {card.balance}
-          </Text>
+          </AppText>
         </View>
         <CardNetworkBadge color={card.textColor} network={card.network} />
       </View>
@@ -56,16 +57,16 @@ export function WalletCardPreview({ card, width }: WalletCardPreviewProps) {
 
       <View className="mt-auto flex-row items-end justify-between">
         <View className="flex-1 pr-4">
-          <Text className="text-[11px] font-semibold uppercase tracking-[1.3px]" style={{ color: `${card.textColor}aa` }}>
+          <AppText className="text-[11px] font-semibold uppercase tracking-[1.3px]" style={{ color: `${card.textColor}aa` }}>
             Titular
-          </Text>
-          <Text className="mt-1 text-[15px] font-bold" numberOfLines={1} style={{ color: card.textColor }}>
+          </AppText>
+          <AppText className="mt-1 text-[15px] font-bold" numberOfLines={1} style={{ color: card.textColor }}>
             {card.name}
-          </Text>
+          </AppText>
         </View>
-        <Text className="text-[15px] font-bold" style={{ color: card.textColor }}>
+        <AppText className="text-[15px] font-bold" style={{ color: card.textColor }}>
           **** {card.lastDigits}
-        </Text>
+        </AppText>
       </View>
     </LinearGradient>
   );

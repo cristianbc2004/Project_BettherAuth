@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Pressable, View } from "react-native";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthShell } from "@/features/auth/components/auth-shell";
@@ -10,6 +10,7 @@ import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 export default function TwoFactorVerifyScreen() {
   const { t } = useTranslation();
@@ -97,7 +98,7 @@ export default function TwoFactorVerifyScreen() {
         value={code}
       />
 
-      {serverError ? <Text className="mb-4 text-sm" style={{ color: theme.danger }}>{serverError}</Text> : null}
+      {serverError ? <AppText className="mb-4 text-sm" style={{ color: theme.danger }}>{serverError}</AppText> : null}
 
       <AuthSubmitButton
         isPending={isPending}
@@ -123,7 +124,7 @@ export default function TwoFactorVerifyScreen() {
           router.replace("/sign-in");
         }}
       >
-        <Text className="text-center text-sm font-semibold" style={{ color: theme.text }}>{t("twoFactorVerify.backToSignIn")}</Text>
+        <AppText className="text-center text-sm font-semibold" style={{ color: theme.text }}>{t("twoFactorVerify.backToSignIn")}</AppText>
       </Pressable>
     </AuthShell>
   );

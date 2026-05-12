@@ -1,6 +1,6 @@
 import { Redirect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, Modal, Pressable, Text, TextInput, View, type ListRenderItem } from "react-native";
+import { FlatList, Modal, Pressable, TextInput, View, type ListRenderItem } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Filter, Search } from "lucide-react-native";
 
@@ -12,6 +12,7 @@ import {
 } from "@/features/finance/mocks";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
+import { AppText } from "@/shared/components/ui/app-text";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { useFloatingTabBarMetrics } from "@/shared/lib/floating-tab-bar";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -90,13 +91,13 @@ export default function MovementsScreen() {
       <FlatList
         ListFooterComponent={
           <View className="items-center pb-10 pt-4">
-            <Text className="text-[12px] font-semibold" style={{ color: theme.mutedText }}>
+            <AppText tone="muted" variant="caption">
               {trimmedQuery
                 ? `Resultados: ${visibleTransactions.length}`
                 : hasMoreTransactions
                   ? `Mostrando ${visibleTransactions.length} de ${financeConfig.totalTransactionCount}`
                   : "Todos los movimientos cargados"}
-            </Text>
+            </AppText>
           </View>
         }
         ListHeaderComponent={
@@ -163,47 +164,47 @@ export default function MovementsScreen() {
             style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}
           >
             <View className="flex-row items-center justify-between">
-              <Text className="text-[18px] font-black" style={{ color: theme.text }}>
+              <AppText variant="sectionTitle">
                 Filtros
-              </Text>
+              </AppText>
               <Pressable onPress={cancelFilters}>
-                <Text className="text-[13px] font-semibold" style={{ color: theme.mutedText }}>
+                <AppText className="text-[13px] font-semibold" tone="muted">
                   Cerrar
-                </Text>
+                </AppText>
               </Pressable>
             </View>
 
             <View className="mt-5">
-              <Text className="text-[12px] font-black uppercase tracking-[1px]" style={{ color: theme.primary }}>
+              <AppText className="tracking-[1px]" tone="primary" variant="eyebrow">
                 Tipo
-              </Text>
+              </AppText>
               <View className="mt-4 gap-2">
                 <Pressable
                   className="rounded-[16px] px-4 py-3.5"
                   onPress={() => setSelectedTone("all")}
                   style={{ backgroundColor: selectedTone === "all" ? theme.primary : theme.background }}
                 >
-                  <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
+                  <AppText className="text-[14px] font-bold">
                     Todos
-                  </Text>
+                  </AppText>
                 </Pressable>
                 <Pressable
                   className="rounded-[16px] px-4 py-3.5"
                   onPress={() => setSelectedTone("income")}
                   style={{ backgroundColor: selectedTone === "income" ? theme.primary : theme.background }}
                 >
-                  <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
+                  <AppText className="text-[14px] font-bold">
                     Ingresos
-                  </Text>
+                  </AppText>
                 </Pressable>
                 <Pressable
                   className="rounded-[16px] px-4 py-3.5"
                   onPress={() => setSelectedTone("expense")}
                   style={{ backgroundColor: selectedTone === "expense" ? theme.primary : theme.background }}
                 >
-                  <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
+                  <AppText className="text-[14px] font-bold">
                     Gastos
-                  </Text>
+                  </AppText>
                 </Pressable>
               </View>
             </View>
@@ -214,18 +215,18 @@ export default function MovementsScreen() {
                 onPress={cancelFilters}
                 style={{ backgroundColor: theme.background }}
               >
-                <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
+                <AppText className="text-[14px] font-bold">
                   Cancelar
-                </Text>
+                </AppText>
               </Pressable>
               <Pressable
                 className="flex-1 items-center rounded-[16px] px-4 py-4"
                 onPress={acceptFilters}
                 style={{ backgroundColor: theme.primary }}
               >
-                <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
+                <AppText className="text-[14px] font-bold">
                   Aceptar
-                </Text>
+                </AppText>
               </Pressable>
             </View>
           </View>

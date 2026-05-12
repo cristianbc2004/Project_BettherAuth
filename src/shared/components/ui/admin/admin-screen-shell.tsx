@@ -1,9 +1,10 @@
 import type { PropsWithChildren, ReactNode } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type AdminScreenShellProps = PropsWithChildren<{
   eyebrow: string;
@@ -35,10 +36,10 @@ export function AdminScreenShell({
         <AppScreenHeader fallbackHref="/admin" rightSlot={trailingAction} title="Admin" />
 
         <View className="border-t pt-4" style={{ borderColor: theme.border }}>
-          <Text className="mb-4 text-[11px] font-semibold uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
+          <AppText className="mb-4 text-[11px] font-semibold uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
             {eyebrow}
-          </Text>
-          <Text className="text-[22px] font-semibold leading-[28px]" style={{ color: theme.text }}>{title}</Text>
+          </AppText>
+          <AppText className="text-[22px] font-semibold leading-[28px]" style={{ color: theme.text }}>{title}</AppText>
         </View>
 
         <View className="mt-4 gap-4">{children}</View>

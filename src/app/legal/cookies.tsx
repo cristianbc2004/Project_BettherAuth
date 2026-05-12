@@ -1,5 +1,5 @@
 import { Redirect } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -7,6 +7,7 @@ import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+import { AppText } from "@/shared/components/ui/app-text";
 
 const cookieSections = [
   {
@@ -48,12 +49,12 @@ export default function CookiePolicyScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <View className="pb-5">
-          <Text className="text-[18px] font-bold leading-6" style={{ color: theme.text }}>
+          <AppText className="text-[18px] font-bold leading-6" style={{ color: theme.text }}>
             Transparencia sobre datos locales
-          </Text>
-          <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
+          </AppText>
+          <AppText className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
             Esta pantalla es informativa y ayuda a que la app se sienta mas completa antes de conectar textos legales reales.
-          </Text>
+          </AppText>
         </View>
 
         {cookieSections.map((section) => (
@@ -62,12 +63,12 @@ export default function CookiePolicyScreen() {
             key={section.title}
             style={{ borderColor: theme.border }}
           >
-            <Text className="text-[16px] font-bold" style={{ color: theme.text }}>
+            <AppText className="text-[16px] font-bold" style={{ color: theme.text }}>
               {section.title}
-            </Text>
-            <Text className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
+            </AppText>
+            <AppText className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
               {section.body}
-            </Text>
+            </AppText>
           </View>
         ))}
       </ScrollView>

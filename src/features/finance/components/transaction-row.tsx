@@ -1,9 +1,10 @@
 import { memo } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import type { Transaction } from "@/shared/types/finance";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type TransactionRowProps = {
   transaction: Transaction;
@@ -26,17 +27,17 @@ function TransactionRowComponent({ transaction }: TransactionRowProps) {
       </View>
 
       <View className="flex-1 pr-3">
-        <Text className="text-[15px] font-bold" numberOfLines={1} style={{ color: theme.text }}>
+        <AppText className="text-[15px] font-bold" numberOfLines={1} style={{ color: theme.text }}>
           {transaction.merchant}
-        </Text>
-        <Text className="mt-1 text-[12px]" numberOfLines={1} style={{ color: theme.mutedText }}>
+        </AppText>
+        <AppText className="mt-1 text-[12px]" numberOfLines={1} style={{ color: theme.mutedText }}>
           {transaction.time} - {transaction.category}
-        </Text>
+        </AppText>
       </View>
 
-      <Text className="text-[15px] font-black" selectable style={{ color: amountColor, fontVariant: ["tabular-nums"] }}>
+      <AppText className="text-[15px] font-black" selectable style={{ color: amountColor, fontVariant: ["tabular-nums"] }}>
         {transaction.amount}
-      </Text>
+      </AppText>
     </Pressable>
   );
 }

@@ -3,7 +3,7 @@ import { Redirect } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { z } from "zod";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
@@ -18,6 +18,7 @@ import { StatusMessage } from "@/shared/components/ui/status-message";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+import { AppText } from "@/shared/components/ui/app-text";
 
 export default function CreateUserScreen() {
   const { data: session, isPending } = authClient.useSession();
@@ -189,12 +190,12 @@ export default function CreateUserScreen() {
                   }}
                   style={{ backgroundColor: isSelected ? theme.primary : "transparent" }}
                 >
-                  <Text
+                  <AppText
                     className="text-sm font-semibold uppercase tracking-[1.1px]"
                     style={{ color: isSelected ? theme.textOnPrimary : theme.mutedText }}
                   >
                     {option}
-                  </Text>
+                  </AppText>
                 </Pressable>
               );
             })}

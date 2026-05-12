@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Bell, Menu } from "lucide-react-native";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type HeaderButtonProps = {
   accessibilityLabel: string;
@@ -42,9 +43,9 @@ export function HomeHeader({ canOpenMenu = true, onOpenMenu, onOpenNotifications
       ) : (
         <View className="h-12 w-12" />
       )}
-      <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>
+      <AppText className="text-[24px] font-semibold" style={{ color: theme.text }}>
         Home
-      </Text>
+      </AppText>
       <HeaderButton accessibilityLabel="Open notifications" onPress={onOpenNotifications}>
         <Bell color={theme.text} size={25} strokeWidth={2.1} />
       </HeaderButton>

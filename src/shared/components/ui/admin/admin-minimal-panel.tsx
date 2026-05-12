@@ -1,7 +1,8 @@
 import type { PropsWithChildren } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 export function AdminMinimalPanel({ children }: PropsWithChildren) {
   return <View>{children}</View>;
@@ -17,7 +18,7 @@ export function AdminMinimalSection({ children, title }: AdminMinimalSectionProp
 
   return (
     <View className="border-t py-5" style={{ borderColor: theme.border }}>
-      <Text className="text-base font-semibold" style={{ color: theme.text }}>{title}</Text>
+      <AppText className="text-base font-semibold" style={{ color: theme.text }}>{title}</AppText>
       {children ? <View className="mt-5">{children}</View> : null}
     </View>
   );

@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -8,6 +8,7 @@ import { PersonDetailsSkeleton } from "@/features/ingresos/components/person/per
 import { mockIngresos } from "@/features/ingresos/mocks";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+import { AppText } from "@/shared/components/ui/app-text";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("es-ES", {
@@ -58,73 +59,73 @@ export default function PersonDetailsScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <View className="mt-6">
-          <Text className="text-[20px] font-bold" style={{ color: theme.text }}>
+          <AppText className="text-[20px] font-bold" style={{ color: theme.text }}>
             {selectedPerson.nombre}
-          </Text>
-          <Text className="mt-2 text-[16px]" style={{ color: theme.mutedText }}>
+          </AppText>
+          <AppText className="mt-2 text-[16px]" style={{ color: theme.mutedText }}>
             Detalle de ingresos - {mockIngresos.general.periodo}
-          </Text>
+          </AppText>
         </View>
 
         <View className="mt-8">
           <View className="flex-row items-start justify-between gap-4">
             <View className="flex-1">
-              <Text className="text-[20px] font-bold" style={{ color: theme.text }}>
+              <AppText className="text-[20px] font-bold" style={{ color: theme.text }}>
                 {selectedPerson.nombre}
-              </Text>
-              <Text className="mt-1 text-[15px] font-semibold" style={{ color: theme.mutedText }}>
+              </AppText>
+              <AppText className="mt-1 text-[15px] font-semibold" style={{ color: theme.mutedText }}>
                 {selectedPerson.cargo}
-              </Text>
+              </AppText>
             </View>
             <View className="px-3 py-2">
-              <Text className="text-[13px] font-bold" style={{ color: theme.text }}>
+              <AppText className="text-[13px] font-bold" style={{ color: theme.text }}>
                 {selectedPerson.porcentajeDelTotal}%
-              </Text>
+              </AppText>
             </View>
           </View>
 
           <View className="mt-5 flex-row gap-3">
             <View className="flex-1">
-              <Text className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
+              <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
                 Ingresos
-              </Text>
-              <Text className="mt-1 text-[22px] font-bold" style={{ color: theme.text }}>
+              </AppText>
+              <AppText className="mt-1 text-[22px] font-bold" style={{ color: theme.text }}>
                 {formatCurrency(selectedPerson.ingresos)}
-              </Text>
+              </AppText>
             </View>
             <View className="flex-1">
-              <Text className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
+              <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
                 {"Comisi\u00f3n"}
-              </Text>
-              <Text className="mt-1 text-[22px] font-bold" style={{ color: theme.text }}>
+              </AppText>
+              <AppText className="mt-1 text-[22px] font-bold" style={{ color: theme.text }}>
                 {formatCurrency(selectedPerson.comision)}
-              </Text>
+              </AppText>
             </View>
           </View>
 
           <View className="mt-5 flex-row gap-8">
             <View className="flex-1">
-              <Text className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
+              <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
                 Ventas
-              </Text>
-              <Text className="mt-1 text-[20px] font-bold" style={{ color: theme.text }}>
+              </AppText>
+              <AppText className="mt-1 text-[20px] font-bold" style={{ color: theme.text }}>
                 {selectedPerson.ventasRealizadas}
-              </Text>
+              </AppText>
             </View>
             <View className="flex-1">
-              <Text className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
+              <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
                 % Del total
-              </Text>
-              <Text className="mt-1 text-[20px] font-bold" style={{ color: theme.text }}>
+              </AppText>
+              <AppText className="mt-1 text-[20px] font-bold" style={{ color: theme.text }}>
                 {selectedPerson.porcentajeDelTotal}%
-              </Text>
+              </AppText>
             </View>
           </View>
 
           <View className="mt-5 h-px" style={{ backgroundColor: theme.border }} />
-          <Text className="mt-4 text-[15px] leading-6" style={{ color: theme.mutedText }}>
+          <AppText className="mt-4 text-[15px] leading-6" style={{ color: theme.mutedText }}>
             {selectedPerson.observacion}
-          </Text>
+          </AppText>
         </View>
       </ScrollView>
     </SafeAreaView>

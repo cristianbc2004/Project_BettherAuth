@@ -1,8 +1,9 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 export function LanguageToggle() {
   const { locale, setLocale } = useLanguage();
@@ -26,12 +27,12 @@ export function LanguageToggle() {
         }}
         style={{ backgroundColor: locale === "es" ? theme.primary : "transparent" }}
       >
-        <Text
+        <AppText
           className="text-xs font-bold uppercase"
           style={{ color: locale === "es" ? theme.textOnPrimary : theme.text }}
         >
           ES
-        </Text>
+        </AppText>
       </Pressable>
 
       <Pressable
@@ -44,12 +45,12 @@ export function LanguageToggle() {
         }}
         style={{ backgroundColor: locale === "en" ? theme.primary : "transparent" }}
       >
-        <Text
+        <AppText
           className="text-xs font-bold uppercase"
           style={{ color: locale === "en" ? theme.textOnPrimary : theme.text }}
         >
           EN
-        </Text>
+        </AppText>
       </Pressable>
     </View>
   );

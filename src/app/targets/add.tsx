@@ -3,16 +3,7 @@ import { Redirect, router } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { CreditCard } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -34,6 +25,7 @@ import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { selectionHaptic, successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type SelectorFieldProps<TValue extends string> = {
   label: string;
@@ -70,9 +62,9 @@ function SelectorField<TValue extends string>({
 
   return (
     <View className="mb-5">
-      <Text className="mb-3 text-sm font-medium" style={{ color: theme.text }}>
+      <AppText className="mb-3 text-sm font-medium" style={{ color: theme.text }}>
         {label}
-      </Text>
+      </AppText>
       <View
         className="flex-row rounded-[24px] border p-1"
         style={{ backgroundColor: theme.inputBackground, borderColor: theme.border }}
@@ -97,12 +89,12 @@ function SelectorField<TValue extends string>({
                 marginLeft: index === 0 ? 0 : 6,
               }}
             >
-              <Text
+              <AppText
                 className="text-center text-[14px] font-black"
                 style={{ color: isSelected ? theme.textOnPrimary : theme.mutedText }}
               >
                 {option}
-              </Text>
+              </AppText>
             </Pressable>
           );
         })}
@@ -237,12 +229,12 @@ export default function AddTargetScreen() {
                 <CreditCard color={theme.primary} size={20} strokeWidth={2.4} />
               </View>
               <View className="ml-3 flex-1">
-                <Text className="text-[17px] font-black" style={{ color: theme.text }}>
+                <AppText className="text-[17px] font-black" style={{ color: theme.text }}>
                   Datos de la tarjeta
-                </Text>
-                <Text className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
+                </AppText>
+                <AppText className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
                   El alta se guarda directamente en la tabla de tarjetas.
-                </Text>
+                </AppText>
               </View>
             </View>
 
@@ -303,9 +295,9 @@ export default function AddTargetScreen() {
               )}
             />
 
-            <Text className="mb-5 text-[13px] leading-5" style={{ color: theme.mutedText }}>
+            <AppText className="mb-5 text-[13px] leading-5" style={{ color: theme.mutedText }}>
               Saldo inicial actual: {formatEurosFromCents(parseAmountInputToCents(previewValues.initialBalance ?? "") ?? 0)}
-            </Text>
+            </AppText>
 
             <Controller
               control={form.control}

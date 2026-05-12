@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { Redirect, router } from "expo-router";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -20,6 +20,7 @@ import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { successHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type BizumActionScreenProps = {
   mode: BizumActionMode;
@@ -147,9 +148,9 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
               )}
             </View>
             <View className="ml-3 flex-1">
-              <Text className="text-[13px] font-black" style={{ color: theme.text }}>
+              <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
                 {(availableBalanceCents / 100).toFixed(2).replace(".", ",")} EUR disponibles
-              </Text>
+              </AppText>
             </View>
           </View>
         </View>
@@ -157,9 +158,9 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
         {isDataLoading ? (
           <View className="items-center justify-center py-10">
             <ActivityIndicator color={theme.primary} size="large" />
-            <Text className="mt-3 text-[13px]" style={{ color: theme.mutedText }}>
+            <AppText className="mt-3 text-[13px]" style={{ color: theme.mutedText }}>
               Cargando datos de Bizum...
-            </Text>
+            </AppText>
           </View>
         ) : (
           <BizumActionForm

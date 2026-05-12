@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -8,6 +8,7 @@ import { PersonGeneralSkeleton } from "@/features/ingresos/components/person/per
 import { mockIngresos } from "@/features/ingresos/mocks";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+import { AppText } from "@/shared/components/ui/app-text";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("es-ES", {
@@ -57,24 +58,24 @@ export default function PersonGeneralScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <View className="mt-5">
-          <Text className="text-[22px] font-bold" style={{ color: theme.text }}>
+          <AppText className="text-[22px] font-bold" style={{ color: theme.text }}>
             {selectedPerson.nombre}
-          </Text>
-          <Text className="mt-2 text-[16px]" style={{ color: theme.mutedText }}>
+          </AppText>
+          <AppText className="mt-2 text-[16px]" style={{ color: theme.mutedText }}>
             {selectedPerson.cargo}
-          </Text>
+          </AppText>
         </View>
 
         <View className="mt-7">
-          <Text className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
+          <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
             Ingreso del periodo
-          </Text>
-          <Text className="mt-2 text-[30px] font-bold" style={{ color: theme.text }}>
+          </AppText>
+          <AppText className="mt-2 text-[30px] font-bold" style={{ color: theme.text }}>
             {formatCurrency(selectedPerson.ingresos)}
-          </Text>
-          <Text className="mt-2 text-[15px]" style={{ color: theme.mutedText }}>
+          </AppText>
+          <AppText className="mt-2 text-[15px]" style={{ color: theme.mutedText }}>
             {mockIngresos.general.periodo}
-          </Text>
+          </AppText>
         </View>
       </ScrollView>
     </SafeAreaView>

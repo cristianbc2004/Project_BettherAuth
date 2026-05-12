@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Text, View } from "react-native";
+import { Alert, View } from "react-native";
 import { z } from "zod";
 
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
@@ -13,6 +13,7 @@ import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { appConfig } from "@/shared/lib/app-config";
 import { buildLanguageHeaders, useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 export default function ResetPasswordScreen() {
   const { t } = useTranslation();
@@ -136,7 +137,7 @@ export default function ResetPasswordScreen() {
         />
       </View>
 
-      {serverError ? <Text className="mb-2 text-sm" style={{ color: theme.danger }}>{serverError}</Text> : null}
+      {serverError ? <AppText className="mb-2 text-sm" style={{ color: theme.danger }}>{serverError}</AppText> : null}
 
       <AuthSubmitButton
         isPending={isPending}

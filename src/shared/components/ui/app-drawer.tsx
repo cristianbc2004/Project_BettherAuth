@@ -1,10 +1,11 @@
 import { router } from "expo-router";
 import { ChevronRight, Cookie, ShieldCheck, UserCircle, Users, X } from "lucide-react-native";
 import { memo, useCallback } from "react";
-import { Modal, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, View } from "react-native";
 import Animated, { Easing, FadeIn, FadeInDown, SlideInLeft } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AppText } from "@/shared/components/ui/app-text";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
@@ -62,12 +63,12 @@ const DrawerOptionRow = memo(function DrawerOptionRow({
         </View>
 
         <View className="flex-1 pr-3">
-          <Text className="text-[16px] font-bold" style={{ color: theme.text }}>
+          <AppText className="text-[16px] font-bold">
             {title}
-          </Text>
-          <Text className="mt-1 text-[13px] leading-5" style={{ color: theme.mutedText }}>
+          </AppText>
+          <AppText className="mt-1" tone="muted" variant="subtitle">
             {description}
-          </Text>
+          </AppText>
         </View>
 
         <ChevronRight color={theme.mutedText} size={22} strokeWidth={2.3} />
@@ -160,19 +161,18 @@ export function AppDrawer({
                     <UserCircle color={theme.text} size={34} strokeWidth={2.1} />
                   </View>
                   <View className="flex-1">
-                    <Text
+                    <AppText
                       className="text-[20px] font-bold"
                       numberOfLines={1}
-                      style={{ color: theme.text }}
                     >
                       {name}
-                    </Text>
-                    <Text className="mt-1 text-[14px] font-semibold" style={{ color: theme.mutedText }}>
+                    </AppText>
+                    <AppText className="mt-1 text-[14px] font-semibold" tone="muted">
                       {role}
-                    </Text>
-                    <Text className="mt-1 text-xs" numberOfLines={1} style={{ color: theme.mutedText }}>
+                    </AppText>
+                    <AppText className="mt-1 text-xs" numberOfLines={1} tone="muted">
                       {email}
-                    </Text>
+                    </AppText>
                   </View>
                 </Pressable>
 
@@ -191,9 +191,9 @@ export function AppDrawer({
 
               <View className="mb-6 h-px" style={{ backgroundColor: theme.border }} />
 
-              <Text className="mb-2 text-[18px] font-bold" style={{ color: theme.text }}>
+              <AppText className="mb-2 text-[18px] font-bold">
                 Menu
-              </Text>
+              </AppText>
 
               <View>
                 {drawerOptions.map((option, index) => (

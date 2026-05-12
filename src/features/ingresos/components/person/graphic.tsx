@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 
 import { mockIngresos } from "@/features/ingresos/mocks";
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
 import { NativeLineChart, type NativeLineChartPoint } from "@/shared/components/ui/native-line-chart";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type SelectedPersonId = "all" | number;
 
@@ -50,13 +51,13 @@ function PersonFilter({ isActive, label, onPress }: PersonFilterProps) {
         borderColor: isActive ? graphColor : theme.border,
       }}
     >
-      <Text
+      <AppText
         className="text-[14px] font-semibold"
         numberOfLines={1}
         style={{ color: isActive ? "#FFFFFF" : theme.text }}
       >
         {label}
-      </Text>
+      </AppText>
     </Pressable>
   );
 }
@@ -142,9 +143,9 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
 
   return (
     <View className="mt-6">
-      <Text className="text-[13px] font-semibold uppercase tracking-[1.3px]" style={{ color: theme.mutedText }}>
+      <AppText className="text-[13px] font-semibold uppercase tracking-[1.3px]" style={{ color: theme.mutedText }}>
         Ingresos por mes
-      </Text>
+      </AppText>
       <AnimatedNumber
         animateOnMount={true}
         className="mt-2 text-[26px] font-bold"
@@ -152,33 +153,33 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
         style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
         value={highlightedPoint.value}
       />
-      <Text className="mt-1 text-[14px]" style={{ color: theme.mutedText }}>
+      <AppText className="mt-1 text-[14px]" style={{ color: theme.mutedText }}>
         {selectedPersonName} - {highlightedPoint.month}
-      </Text>
+      </AppText>
 
       <View className="mt-5 flex-row items-center justify-between gap-4 px-1">
         <View className="flex-1">
-          <Text className="text-[11px] font-black uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
+          <AppText className="text-[11px] font-black uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
             Minimo
-          </Text>
-          <Text className="mt-1 text-[16px] font-black" style={{ color: theme.text }}>
+          </AppText>
+          <AppText className="mt-1 text-[16px] font-black" style={{ color: theme.text }}>
             {formatCurrency(min.value)}
-          </Text>
-          <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+          </AppText>
+          <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
             {min.month}
-          </Text>
+          </AppText>
         </View>
 
         <View className="flex-1 items-end">
-          <Text className="text-[11px] font-black uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
+          <AppText className="text-[11px] font-black uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
             Maximo
-          </Text>
-          <Text className="mt-1 text-[16px] font-black" style={{ color: theme.text }}>
+          </AppText>
+          <AppText className="mt-1 text-[16px] font-black" style={{ color: theme.text }}>
             {formatCurrency(max.value)}
-          </Text>
-          <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+          </AppText>
+          <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
             {max.month}
-          </Text>
+          </AppText>
         </View>
       </View>
 

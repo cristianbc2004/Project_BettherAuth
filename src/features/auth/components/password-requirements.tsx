@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type PasswordRequirementsProps = {
   confirmPassword?: string;
@@ -56,9 +57,9 @@ export function PasswordRequirements({
             className="mr-3 h-2.5 w-2.5 rounded-full"
             style={{ backgroundColor: check.met ? theme.success : theme.border }}
           />
-          <Text className="text-sm" style={{ color: check.met ? theme.success : theme.mutedText }}>
+          <AppText className="text-sm" style={{ color: check.met ? theme.success : theme.mutedText }}>
             {check.label}
-          </Text>
+          </AppText>
         </View>
       ))}
     </View>

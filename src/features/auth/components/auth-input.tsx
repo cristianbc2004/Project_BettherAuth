@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Text, TextInput, type TextInputProps, View } from "react-native";
+import { TextInput, type TextInputProps, View } from "react-native";
 import Animated, {
   interpolate,
   interpolateColor,
@@ -9,6 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type AuthInputProps = TextInputProps & {
   error?: string;
@@ -42,9 +43,9 @@ export function AuthInput({ error, label, onBlur, onFocus, ...props }: AuthInput
 
   return (
     <View className="mb-5">
-      <Text className="mb-3 text-sm font-medium" style={{ color: theme.text }}>
+      <AppText className="mb-3 text-sm font-medium" style={{ color: theme.text }}>
         {label}
-      </Text>
+      </AppText>
       <Animated.View className="rounded-[22px] border px-5" style={inputContainerStyle}>
         <TextInput
           className="py-4 text-base"
@@ -61,7 +62,7 @@ export function AuthInput({ error, label, onBlur, onFocus, ...props }: AuthInput
           {...props}
         />
       </Animated.View>
-      {error ? <Text className="mt-2 text-sm" style={{ color: theme.danger }}>{error}</Text> : null}
+      {error ? <AppText className="mt-2 text-sm" style={{ color: theme.danger }}>{error}</AppText> : null}
     </View>
   );
 }

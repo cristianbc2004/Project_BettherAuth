@@ -1,9 +1,10 @@
-import { Image, Text, View } from "react-native";
+import { Image, View } from "react-native";
 import Animated, { Easing, FadeInDown, FadeIn } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppProgressBar } from "@/shared/components/ui/app-progress-bar";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 const splashLogo = require("../../../../assets/logo.png");
 
@@ -33,12 +34,12 @@ export function StartupSplashScreen() {
             entering={FadeInDown.duration(520).delay(180).easing(Easing.out(Easing.quad))}
           >
             <AppProgressBar />
-            <Text
+            <AppText
               className="mt-5 text-center text-base font-semibold italic"
               style={{ color: brandTextColor }}
             >
               Better Auth
-            </Text>
+            </AppText>
           </Animated.View>
         </Animated.View>
       </View>

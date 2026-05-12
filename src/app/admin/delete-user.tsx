@@ -1,7 +1,7 @@
 import { Redirect } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthShell } from "@/features/auth/components/auth-shell";
@@ -15,6 +15,7 @@ import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import type { AdminUser } from "@/shared/types/admin";
+import { AppText } from "@/shared/components/ui/app-text";
 
 export default function DeleteUserScreen() {
   const { data: session, isPending } = authClient.useSession();
@@ -173,9 +174,9 @@ export default function DeleteUserScreen() {
                 })}
               </View>
             ) : (
-              <Text className="rounded-[24px] border p-4 text-[15px] leading-6" style={{ backgroundColor: theme.inputBackground, borderColor: theme.border, color: theme.mutedText }}>
+              <AppText className="rounded-[24px] border p-4 text-[15px] leading-6" style={{ backgroundColor: theme.inputBackground, borderColor: theme.border, color: theme.mutedText }}>
                 {t("admin.noUsersFound")}
-              </Text>
+              </AppText>
             )}
           </View>
         </AdminMinimalSection>
