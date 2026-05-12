@@ -19,7 +19,7 @@ import {
 } from "@/features/finance/mocks";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { authClient } from "@/features/auth/services/auth-client";
-import { IncomePeopleDrawer } from "@/features/ingresos/components/income-people-drawer";
+import { AppDrawer } from "@/shared/components/ui/app-drawer";
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
@@ -203,19 +203,15 @@ export default function HomeScreen() {
         <AppScreenHeader
           backgroundColor={screenBackgroundColor}
           leftSlot={
-            isAdmin ? (
-              <TopActionButton
-                accessibilityLabel="Open menu"
-                onPress={() => {
-                  selectionHaptic();
-                  setIsDrawerOpen(true);
-                }}
-              >
-                <Menu color={theme.text} size={28} strokeWidth={2.3} />
-              </TopActionButton>
-            ) : (
-              <View className="h-12 w-12" />
-            )
+            <TopActionButton
+              accessibilityLabel="Open menu"
+              onPress={() => {
+                selectionHaptic();
+                setIsDrawerOpen(true);
+              }}
+            >
+              <Menu color={theme.text} size={28} strokeWidth={2.3} />
+            </TopActionButton>
           }
           rightSlot={
             <TopActionButton
@@ -388,9 +384,10 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
-      <IncomePeopleDrawer
+      <AppDrawer
         email={session.user.email}
-        isVisible={isAdmin && isDrawerOpen}
+        isAdmin={isAdmin}
+        isVisible={isDrawerOpen}
         name={session.user.name}
         onClose={() => setIsDrawerOpen(false)}
         role={role}

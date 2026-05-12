@@ -1,26 +1,33 @@
 import { router } from "expo-router";
-import { ChevronRight, X } from "lucide-react-native";
+import { ChevronRight, Cookie, ShieldCheck, Users, X } from "lucide-react-native";
 import { memo, useCallback } from "react";
-import { FlatList, Modal, Pressable, Text, View, type ListRenderItem } from "react-native";
+import { Modal, Pressable, Text, View } from "react-native";
 import Animated, { Easing, FadeIn, FadeInDown, SlideInLeft } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { mockIngresos, type IncomePerson } from "@/features/ingresos/mocks";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
-type IncomePeopleDrawerProps = {
+type AppDrawerProps = {
   email: string;
+  isAdmin: boolean;
   isVisible: boolean;
   name: string;
   onClose: () => void;
   role: string;
 };
 
-type MockIncomePerson = (typeof mockIngresos.detalles)[number];
+type DrawerOption = {
+  accessibilityLabel: string;
+  description: string;
+  href: string;
+  icon: typeof Users;
+  title: string;
+};
 
-type IncomePersonRowProps = Pick<IncomePerson, "nombre"> & {
-  onPress: () => void;
+type DrawerOptionRowProps = DrawerOption & {
+  index: number;
+  onPress: (href: string) => void;
 };
 
 function getInitials(name: string) {
@@ -34,54 +41,96 @@ function getInitials(name: string) {
   return initials || "BA";
 }
 
-const IncomePersonRow = memo(function IncomePersonRow({ nombre, onPress }: IncomePersonRowProps) {
+const DrawerOptionRow = memo(function DrawerOptionRow({
+  accessibilityLabel,
+  description,
+  href,
+  icon: Icon,
+  index,
+  onPress,
+  title,
+}: DrawerOptionRowProps) {
   const { theme } = useAppTheme();
 
   return (
-    <Pressable
-      accessibilityLabel={`Ver informacion de ${nombre}`}
-      accessibilityRole="button"
-      className="flex-row items-center border-b py-5"
-      onPress={onPress}
-      style={{ borderColor: theme.border }}
+    <Animated.View
+      entering={FadeInDown.duration(360)
+        .delay(index * 70)
+        .easing(Easing.out(Easing.quad))}
     >
-      <Text className="flex-1 text-[16px] font-bold" style={{ color: theme.text }}>
-        {nombre}
-      </Text>
-      <View className="h-11 w-11 items-center justify-center">
+      <Pressable
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole="button"
+        className="flex-row items-center border-b py-4"
+        onPress={() => onPress(href)}
+        style={{ borderColor: theme.border }}
+      >
+        <View
+          className="mr-4 h-11 w-11 items-center justify-center rounded-full"
+          style={{ backgroundColor: theme.primarySoft }}
+        >
+          <Icon color={theme.primary} size={22} strokeWidth={2.2} />
+        </View>
+
+        <View className="flex-1 pr-3">
+          <Text className="text-[16px] font-bold" style={{ color: theme.text }}>
+            {title}
+          </Text>
+          <Text className="mt-1 text-[13px] leading-5" style={{ color: theme.mutedText }}>
+            {description}
+          </Text>
+        </View>
+
         <ChevronRight color={theme.mutedText} size={22} strokeWidth={2.3} />
-      </View>
-    </Pressable>
+      </Pressable>
+    </Animated.View>
   );
 });
 
-export function IncomePeopleDrawer({
+export function AppDrawer({
   email,
+  isAdmin,
   isVisible,
   name,
   onClose,
   role,
-}: IncomePeopleDrawerProps) {
+}: AppDrawerProps) {
   const { theme } = useAppTheme();
-  const handleOpenPerson = useCallback(
-    (personId: number) => {
+  const drawerOptions: DrawerOption[] = [
+    ...(isAdmin
+      ? [
+          {
+            accessibilityLabel: "Abrir trabajadores",
+            description: "Personas, detalle, grafica y mapa.",
+            href: "/person",
+            icon: Users,
+            title: "Trabajadores",
+          },
+        ]
+      : []),
+    {
+      accessibilityLabel: "Abrir politica de cookies",
+      description: "Cookies tecnicas y preferencias.",
+      href: "/legal/cookies",
+      icon: Cookie,
+      title: "Politica de cookies",
+    },
+    {
+      accessibilityLabel: "Abrir politica de privacidad",
+      description: "Datos, sesiones y seguridad.",
+      href: "/legal/privacy",
+      icon: ShieldCheck,
+      title: "Politica de privacidad",
+    },
+  ];
+
+  const handleNavigate = useCallback(
+    (href: string) => {
       selectionHaptic();
       onClose();
-      router.navigate(`/person?personId=${personId}` as never);
+      router.navigate(href as never);
     },
     [onClose],
-  );
-  const renderPerson: ListRenderItem<MockIncomePerson> = useCallback(
-    ({ index, item }) => (
-      <Animated.View
-        entering={FadeInDown.duration(420)
-          .delay(index * 90)
-          .easing(Easing.out(Easing.quad))}
-      >
-        <IncomePersonRow nombre={item.nombre} onPress={() => handleOpenPerson(item.id)} />
-      </Animated.View>
-    ),
-    [handleOpenPerson],
   );
 
   return (
@@ -103,11 +152,7 @@ export function IncomePeopleDrawer({
                   accessibilityLabel="Open account"
                   accessibilityRole="button"
                   className="flex-1 flex-row items-center"
-                  onPress={() => {
-                    selectionHaptic();
-                    onClose();
-                    router.navigate("/dashboard" as never);
-                  }}
+                  onPress={() => handleNavigate("/dashboard")}
                 >
                   <View
                     className="mr-4 h-16 w-16 items-center justify-center rounded-[22px] border"
@@ -152,20 +197,24 @@ export function IncomePeopleDrawer({
 
               <View className="mb-6 h-px" style={{ backgroundColor: theme.border }} />
 
-              <Text className="mb-1 text-[18px] font-bold" style={{ color: theme.text }}>
-                {mockIngresos.general.titulo}
-              </Text>
-              <Text className="mb-4 text-[15px]" style={{ color: theme.mutedText }}>
-                {mockIngresos.general.periodo}
+              <Text className="mb-2 text-[18px] font-bold" style={{ color: theme.text }}>
+                Menu
               </Text>
 
-              <FlatList
-                bounces={false}
-                data={mockIngresos.detalles}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={renderPerson}
-                scrollEnabled={false}
-              />
+              <View>
+                {drawerOptions.map((option, index) => (
+                  <DrawerOptionRow
+                    accessibilityLabel={option.accessibilityLabel}
+                    description={option.description}
+                    href={option.href}
+                    icon={option.icon}
+                    index={index}
+                    key={option.href}
+                    onPress={handleNavigate}
+                    title={option.title}
+                  />
+                ))}
+              </View>
             </View>
           </SafeAreaView>
         </Animated.View>
