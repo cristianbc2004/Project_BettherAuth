@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ChevronRight,
-  Globe2,
   Lock,
   LogOut,
   type LucideIcon,
@@ -12,6 +11,7 @@ import {
   ShieldCheck,
   Smartphone,
   Sun,
+  UserRound,
 } from "lucide-react-native";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -81,8 +81,8 @@ function MenuRow({ detail, icon, label, onPress, theme, tone = "default" }: Menu
 function SectionLabel({ label, theme }: { label: string; theme: AppTheme }) {
   return (
     <Text
-      className="mb-4 mt-8 px-1 text-xs font-medium uppercase tracking-[1.5px]"
-      style={{ color: theme.mutedText }}
+      className="mb-3 mt-6 px-1 text-[22px] font-bold"
+      style={{ color: theme.text }}
     >
       {label}
     </Text>
@@ -105,10 +105,8 @@ type OptionSelectorFrameProps = {
 
 function OptionSelectorFrame({ children, theme, title }: OptionSelectorFrameProps) {
   return (
-    <View
-      className="mb-5 px-1 py-2"
-    >
-      <Text className="mb-3 text-[16px] font-medium" style={{ color: theme.text }}>
+    <View className="mt-6 px-1">
+      <Text className="mb-3 text-[22px] font-bold" style={{ color: theme.text }}>
         {title}
       </Text>
       {children}
@@ -135,21 +133,22 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: Them
             <Pressable
               accessibilityLabel={`Set ${option.label} theme`}
               accessibilityRole="button"
-              className="flex-1 items-center rounded-[18px] px-3 py-3"
+              className="h-14 flex-1 flex-row items-center justify-center rounded-[16px] border px-3"
               key={option.mode}
               onPress={() => {
                 onSelect(option.mode);
                 scheduleSelectionHaptic();
               }}
               style={{
-                backgroundColor: isSelected ? theme.primarySoft : theme.backgroundMuted,
+                backgroundColor: isSelected ? theme.primarySoft : theme.background,
+                borderColor: isSelected ? theme.primary : theme.border,
               }}
             >
               <OptionIcon color={isSelected ? theme.primary : theme.text} size={24} strokeWidth={2.2} />
               <Text
-                className="mt-2 text-xs font-semibold"
+                className="ml-2 text-sm font-semibold"
                 numberOfLines={1}
-                style={{ color: isSelected ? theme.primary : theme.mutedText }}
+                style={{ color: isSelected ? theme.primary : theme.text }}
               >
                 {option.label}
               </Text>
@@ -162,18 +161,17 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: Them
 }
 
 type LanguageSelectorProps = {
-  icons: Record<AppLocale, LucideIcon>;
   onSelect: (locale: AppLocale) => void;
   selectedLocale: AppLocale;
   theme: AppTheme;
   title: string;
 };
 
-function LanguageSelector({ icons, onSelect, selectedLocale, theme, title }: LanguageSelectorProps) {
+function LanguageSelector({ onSelect, selectedLocale, theme, title }: LanguageSelectorProps) {
   const { t } = useTranslation();
-  const options: Array<{ label: string; locale: AppLocale }> = [
-    { label: t("dashboard.languageSpanish"), locale: "es" },
-    { label: t("dashboard.languageEnglish"), locale: "en" },
+  const options: Array<{ code: string; label: string; locale: AppLocale }> = [
+    { code: "ES", label: t("dashboard.languageSpanish"), locale: "es" },
+    { code: "EN", label: t("dashboard.languageEnglish"), locale: "en" },
   ];
 
   return (
@@ -181,27 +179,34 @@ function LanguageSelector({ icons, onSelect, selectedLocale, theme, title }: Lan
       <View className="flex-row gap-3">
         {options.map((option) => {
           const isSelected = selectedLocale === option.locale;
-          const OptionIcon = icons[option.locale];
 
           return (
             <Pressable
               accessibilityLabel={`Set ${option.label} language`}
               accessibilityRole="button"
-              className="flex-1 items-center rounded-[18px] px-3 py-3"
+              className="h-14 flex-1 flex-row items-center justify-center rounded-[16px] border px-3"
               key={option.locale}
               onPress={() => {
                 selectionHaptic();
                 onSelect(option.locale);
               }}
               style={{
-                backgroundColor: isSelected ? theme.primarySoft : theme.backgroundMuted,
+                backgroundColor: isSelected ? theme.primarySoft : theme.background,
+                borderColor: isSelected ? theme.primary : theme.border,
               }}
             >
-              <OptionIcon color={isSelected ? theme.primary : theme.text} size={26} strokeWidth={2.2} />
+              <View
+                className="mr-2 h-8 w-9 items-center justify-center rounded-[10px]"
+                style={{ backgroundColor: isSelected ? theme.primarySoft : theme.backgroundMuted }}
+              >
+                <Text className="text-[12px] font-bold" style={{ color: isSelected ? theme.primary : theme.text }}>
+                  {option.code}
+                </Text>
+              </View>
               <Text
-                className="mt-2 text-xs font-semibold"
+                className="text-sm font-semibold"
                 numberOfLines={1}
-                style={{ color: isSelected ? theme.primary : theme.mutedText }}
+                style={{ color: isSelected ? theme.primary : theme.text }}
               >
                 {option.label}
               </Text>
@@ -211,17 +216,6 @@ function LanguageSelector({ icons, onSelect, selectedLocale, theme, title }: Lan
       </View>
     </OptionSelectorFrame>
   );
-}
-
-function getInitials(name: string) {
-  const initials = name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-
-  return initials || "BA";
 }
 
 export default function DashboardScreen() {
@@ -249,13 +243,12 @@ export default function DashboardScreen() {
   const dashboardIcons = {
     admin: Shield,
     dark: Moon,
-    en: Globe2,
-    es: Globe2,
     light: Sun,
     out: LogOut,
     password: Lock,
     system: Smartphone,
     twoFactor: ShieldCheck,
+    user: UserRound,
   } satisfies Record<string, LucideIcon>;
 
   return (
@@ -264,127 +257,157 @@ export default function DashboardScreen() {
         <View className="absolute inset-0" style={{ backgroundColor: theme.background }} />
       </View>
 
-      <ScrollView
-        bounces={false}
-        contentContainerClassName="px-5 pt-5"
-        contentContainerStyle={{ paddingBottom: contentBottomSpacing }}
-        showsVerticalScrollIndicator={false}
-      >
-        <AppScreenHeader />
-        <View>
-          <SectionLabel label={t("dashboard.profileSection")} theme={theme} />
-          <View
-            className="flex-row items-center px-1 py-3"
-            style={{
-              borderColor: theme.border,
-            }}
-          >
+      <View className="flex-1 px-5 pt-4">
+        <AppScreenHeader
+          backgroundColor={theme.background}
+          leftSlot={<View className="h-12 w-12" />}
+          rightSlot={<View className="h-12 w-12" />}
+        />
+
+        <ScrollView
+          className="flex-1"
+          bounces={false}
+          contentContainerStyle={{ paddingBottom: contentBottomSpacing }}
+          contentInsetAdjustmentBehavior="automatic"
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="mt-5 flex-row gap-3">
             <View
-              className="mr-4 h-20 w-20 items-center justify-center rounded-[28px] border"
+              className="flex-1 rounded-[16px] border px-4 py-4"
               style={{
-                backgroundColor: theme.primarySoft,
                 borderColor: theme.border,
+                backgroundColor: theme.backgroundElevated,
               }}
             >
-              <Text className="text-[22px] font-bold" style={{ color: theme.text }}>{getInitials(session.user.name)}</Text>
+              <Text className="text-xs font-bold uppercase tracking-[1.5px]" style={{ color: theme.text }}>
+                {t("dashboard.userCardTitle")}
+              </Text>
+              <Text className="mt-3 text-[16px] font-bold" numberOfLines={1} style={{ color: theme.text }}>
+                {firstName}
+              </Text>
+              <Text className="mt-1 text-sm" numberOfLines={1} style={{ color: theme.mutedText }}>
+                {session.user.email}
+              </Text>
             </View>
 
-            <View className="flex-1 gap-1">
-              <Text className="text-[22px] font-bold" style={{ color: theme.text }}>{firstName}</Text>
-              <Text className="text-sm" numberOfLines={1} style={{ color: theme.mutedText }}>{session.user.email}</Text>
-              <Text className="mt-1 text-[11px] uppercase tracking-[1.3px]" style={{ color: theme.mutedText }}>{role}</Text>
+            <View
+              className="flex-1 rounded-[16px] border px-4 py-4"
+              style={{
+                borderColor: theme.border,
+                backgroundColor: theme.backgroundElevated,
+              }}
+            >
+              <Text className="text-xs font-bold uppercase tracking-[1.5px]" style={{ color: theme.text }}>
+                {t("dashboard.roleCardTitle")}
+              </Text>
+              <Text className="mt-3 text-[16px] font-bold uppercase" numberOfLines={1} style={{ color: theme.text }}>
+                {role}
+              </Text>
+              <Text className="mt-1 text-sm" numberOfLines={1} style={{ color: theme.mutedText }}>
+                {isAdmin ? t("dashboard.adminPanelOption") : t("dashboard.profileSection")}
+              </Text>
             </View>
           </View>
-        </View>
 
-        <View>
-          <SectionLabel label={t("dashboard.authenticationSection")} theme={theme} />
-          <MenuRow
-            icon={dashboardIcons.password}
-            label={t("dashboard.changePasswordOption")}
-            onPress={() => {
-              selectionHaptic();
-              router.navigate("/change-password" as never);
-            }}
-            theme={theme}
-          />
-          <MenuRow
-            icon={dashboardIcons.twoFactor}
-            label={t("dashboard.twoFactorOption")}
-            onPress={() => {
-              selectionHaptic();
-              router.navigate("/two-factor" as never);
-            }}
-            theme={theme}
-          />
-        </View>
+          <View className="mt-4 flex-row items-center px-1 py-2">
+            <dashboardIcons.user color={theme.text} size={22} strokeWidth={2.1} />
+            <Text className="ml-4 text-[16px] font-semibold" style={{ color: theme.text }}>
+              {t("dashboard.accountStatus")}
+            </Text>
+            <View
+              className="ml-4 rounded-full border px-3 py-1"
+              style={{ backgroundColor: `${theme.success}18`, borderColor: theme.success }}
+            >
+              <Text className="text-sm font-bold" style={{ color: theme.success }}>
+                {t("common.active")}
+              </Text>
+            </View>
+          </View>
 
-        <View>
-          <SectionLabel label={t("dashboard.appSection")} theme={theme} />
-          <LanguageSelector
-            icons={{
-              en: dashboardIcons.en,
-              es: dashboardIcons.es,
-            }}
-            onSelect={(nextLocale) => {
-              void setLocale(nextLocale);
-            }}
-            selectedLocale={locale}
-            theme={theme}
-            title={t("dashboard.languageOption")}
-          />
-          <ThemeModeSelector
-            icons={{
-              dark: dashboardIcons.dark,
-              light: dashboardIcons.light,
-              system: dashboardIcons.system,
-            }}
-            onSelect={(mode) => {
-              void setThemeMode(mode);
-            }}
-            selectedMode={themeMode}
-            theme={theme}
-            title={t("dashboard.themeOption")}
-          />
-        </View>
-
-        {isAdmin ? (
           <View>
-            <SectionLabel label={t("dashboard.adminSection")} theme={theme} />
+            <SectionLabel label={t("dashboard.authenticationSection")} theme={theme} />
             <MenuRow
-              icon={dashboardIcons.admin}
-              label={t("dashboard.adminPanelOption")}
+              icon={dashboardIcons.password}
+              label={t("dashboard.changePasswordOption")}
               onPress={() => {
                 selectionHaptic();
-                router.navigate("/admin" as never);
+                router.navigate("/change-password" as never);
+              }}
+              theme={theme}
+            />
+            <MenuRow
+              icon={dashboardIcons.twoFactor}
+              label={t("dashboard.twoFactorOption")}
+              onPress={() => {
+                selectionHaptic();
+                router.navigate("/two-factor" as never);
               }}
               theme={theme}
             />
           </View>
-        ) : null}
 
-        <View>
-          <SectionLabel label={t("dashboard.sessionSection")} theme={theme} />
-          <MenuRow
-            icon={dashboardIcons.out}
-            label={t("dashboard.signOut")}
-            onPress={() => {
-              warningHaptic();
-              void authClient.signOut({
-                ...buildAuthFetchOptions(locale),
-                fetchOptions: {
-                  headers: buildAuthFetchOptions(locale).fetchOptions.headers,
-                  onSuccess: () => {
-                    router.replace("/sign-in");
+          <View>
+            <LanguageSelector
+              onSelect={(nextLocale) => {
+                void setLocale(nextLocale);
+              }}
+              selectedLocale={locale}
+              theme={theme}
+              title={t("dashboard.languageRegionSection")}
+            />
+            <ThemeModeSelector
+              icons={{
+                dark: dashboardIcons.dark,
+                light: dashboardIcons.light,
+                system: dashboardIcons.system,
+              }}
+              onSelect={(mode) => {
+                void setThemeMode(mode);
+              }}
+              selectedMode={themeMode}
+              theme={theme}
+              title={t("dashboard.appearanceSection")}
+            />
+          </View>
+
+          {isAdmin ? (
+            <View>
+              <SectionLabel label={t("dashboard.adminSection")} theme={theme} />
+              <MenuRow
+                icon={dashboardIcons.admin}
+                label={t("dashboard.adminPanelOption")}
+                onPress={() => {
+                  selectionHaptic();
+                  router.navigate("/admin" as never);
+                }}
+                theme={theme}
+              />
+            </View>
+          ) : null}
+
+          <View>
+            <SectionLabel label={t("dashboard.sessionSection")} theme={theme} />
+            <MenuRow
+              icon={dashboardIcons.out}
+              label={t("dashboard.signOut")}
+              onPress={() => {
+                warningHaptic();
+                void authClient.signOut({
+                  ...buildAuthFetchOptions(locale),
+                  fetchOptions: {
+                    headers: buildAuthFetchOptions(locale).fetchOptions.headers,
+                    onSuccess: () => {
+                      router.replace("/sign-in");
+                    },
                   },
-                },
-              });
-            }}
-            theme={theme}
-            tone="danger"
-          />
-        </View>
-      </ScrollView>
+                });
+              }}
+              theme={theme}
+              tone="danger"
+            />
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
