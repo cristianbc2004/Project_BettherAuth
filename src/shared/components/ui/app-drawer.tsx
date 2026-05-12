@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { ChevronRight, Cookie, ShieldCheck, Users, X } from "lucide-react-native";
+import { ChevronRight, Cookie, ShieldCheck, UserCircle, Users, X } from "lucide-react-native";
 import { memo, useCallback } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
 import Animated, { Easing, FadeIn, FadeInDown, SlideInLeft } from "react-native-reanimated";
@@ -29,17 +29,6 @@ type DrawerOptionRowProps = DrawerOption & {
   index: number;
   onPress: (href: string) => void;
 };
-
-function getInitials(name: string) {
-  const initials = name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-
-  return initials || "BA";
-}
 
 const DrawerOptionRow = memo(function DrawerOptionRow({
   accessibilityLabel,
@@ -134,14 +123,21 @@ export function AppDrawer({
   );
 
   return (
-    <Modal animationType="none" onRequestClose={onClose} transparent visible={isVisible}>
+    <Modal
+      animationType="none"
+      navigationBarTranslucent
+      onRequestClose={onClose}
+      statusBarTranslucent
+      transparent
+      visible={isVisible}
+    >
       <Animated.View
         className="flex-1 flex-row"
         entering={FadeIn.duration(180)}
         style={{ backgroundColor: "rgba(0, 0, 0, 0.42)" }}
       >
         <Animated.View
-          className="h-full w-full"
+          className="flex-1"
           entering={SlideInLeft.duration(280).easing(Easing.out(Easing.cubic))}
           style={{ backgroundColor: theme.background }}
         >
@@ -161,9 +157,7 @@ export function AppDrawer({
                       borderColor: theme.border,
                     }}
                   >
-                    <Text className="text-[22px] font-bold" style={{ color: theme.text }}>
-                      {getInitials(name)}
-                    </Text>
+                    <UserCircle color={theme.text} size={34} strokeWidth={2.1} />
                   </View>
                   <View className="flex-1">
                     <Text
