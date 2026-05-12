@@ -23,6 +23,7 @@ import { IncomePeopleDrawer } from "@/features/ingresos/components/income-people
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { useFloatingTabBarMetrics } from "@/shared/lib/floating-tab-bar";
 import { NativeLineChart, type NativeLineChartPoint } from "@/shared/components/ui/native-line-chart";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -124,6 +125,7 @@ export default function HomeScreen() {
   const [selectedPoint, setSelectedPoint] = useState<HomeBalancePoint | null>(null);
   const { cards, refreshCards } = useWalletCards();
   const { resolvedThemeName, theme } = useAppTheme();
+  const { contentBottomSpacing } = useFloatingTabBarMetrics();
   const { width } = useWindowDimensions();
   const cardNavigationLockRef = useRef(false);
   const chartNavigationLockRef = useRef(false);
@@ -231,7 +233,8 @@ export default function HomeScreen() {
         <ScrollView
           className="flex-1"
           bounces={false}
-          contentContainerClassName="gap-6 pb-12"
+          contentContainerClassName="gap-6"
+          contentContainerStyle={{ paddingBottom: contentBottomSpacing }}
           contentInsetAdjustmentBehavior="automatic"
           scrollEnabled={!isChartInteracting}
           showsVerticalScrollIndicator={false}
