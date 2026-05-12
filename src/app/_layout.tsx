@@ -29,6 +29,8 @@ function AppNavigation() {
         <Stack.Screen name="notification" />
         <Stack.Screen name="bizum" />
         <Stack.Screen name="person" />
+        <Stack.Screen name="legal/cookies" />
+        <Stack.Screen name="legal/privacy" />
         <Stack.Screen name="(auth)/sign-in" />
         <Stack.Screen name="(auth)/sign-up" />
         <Stack.Screen name="(auth)/forgot-password" />
