@@ -375,8 +375,13 @@ export default function HomeScreen() {
               title="Ultimos movimientos"
             />
             <View className="gap-3">
-              {recentTransactions.map((transaction) => (
-                <TransactionRow key={transaction.id} transaction={transaction} />
+              {recentTransactions.map((transaction, index) => (
+                <View key={transaction.id}>
+                  <TransactionRow transaction={transaction} />
+                  {index < recentTransactions.length - 1 ? (
+                    <View className="ml-16 h-px" style={{ backgroundColor: theme.border }} />
+                  ) : null}
+                </View>
               ))}
             </View>
           </View>

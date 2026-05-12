@@ -18,9 +18,8 @@ function TransactionRowComponent({ transaction }: TransactionRowProps) {
     <Pressable
       accessibilityLabel={`${transaction.merchant}, ${transaction.amount}`}
       accessibilityRole="button"
-      className="flex-row items-center rounded-[24px] px-4 py-4"
+      className="flex-row items-center px-1 py-4"
       onPress={selectionHaptic}
-      style={{ backgroundColor: theme.card }}
     >
       <View className="mr-4 h-12 w-12 items-center justify-center rounded-[18px]" style={{ backgroundColor: theme.backgroundMuted }}>
         <Icon color={theme.text} size={21} strokeWidth={2.3} />
