@@ -59,21 +59,22 @@ export default function MovementsScreen() {
     [],
   );
   const keyExtractor = useCallback((item: Transaction) => item.id, []);
-  const renderSeparator = useCallback(() => <View className="h-3" />, []);
+  const renderSeparator = useCallback(
+    () => <View className="ml-16 h-px" style={{ backgroundColor: theme.border }} />,
+    [theme.border],
+  );
   const openFilters = useCallback(() => {
     setDraftTone(selectedTone);
     setIsFilterModalVisible(true);
   }, [selectedTone]);
   const closeFilters = useCallback(() => setIsFilterModalVisible(false), []);
-  const applyFilters = useCallback(() => {
+  const acceptFilters = useCallback(() => {
+    setIsFilterModalVisible(false);
+  }, []);
+  const cancelFilters = useCallback(() => {
     setSelectedTone(draftTone);
     setIsFilterModalVisible(false);
   }, [draftTone]);
-  const clearFilters = useCallback(() => {
-    setDraftTone("all");
-    setSelectedTone("all");
-    setIsFilterModalVisible(false);
-  }, []);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -154,7 +155,7 @@ export default function MovementsScreen() {
           <Pressable
             accessibilityLabel="Cerrar filtros"
             className="absolute inset-0"
-            onPress={closeFilters}
+            onPress={cancelFilters}
             style={{ backgroundColor: "rgba(7, 10, 18, 0.45)" }}
           />
           <View
@@ -165,7 +166,7 @@ export default function MovementsScreen() {
               <Text className="text-[18px] font-black" style={{ color: theme.text }}>
                 Filtros
               </Text>
-              <Pressable onPress={closeFilters}>
+              <Pressable onPress={cancelFilters}>
                 <Text className="text-[13px] font-semibold" style={{ color: theme.mutedText }}>
                   Cerrar
                 </Text>
@@ -179,8 +180,8 @@ export default function MovementsScreen() {
               <View className="mt-4 gap-2">
                 <Pressable
                   className="rounded-[16px] px-4 py-3.5"
-                  onPress={() => setDraftTone("all")}
-                  style={{ backgroundColor: draftTone === "all" ? theme.primary : theme.background }}
+                  onPress={() => setSelectedTone("all")}
+                  style={{ backgroundColor: selectedTone === "all" ? theme.primary : theme.background }}
                 >
                   <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
                     Todos
@@ -188,8 +189,8 @@ export default function MovementsScreen() {
                 </Pressable>
                 <Pressable
                   className="rounded-[16px] px-4 py-3.5"
-                  onPress={() => setDraftTone("income")}
-                  style={{ backgroundColor: draftTone === "income" ? theme.primary : theme.background }}
+                  onPress={() => setSelectedTone("income")}
+                  style={{ backgroundColor: selectedTone === "income" ? theme.primary : theme.background }}
                 >
                   <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
                     Ingresos
@@ -197,8 +198,8 @@ export default function MovementsScreen() {
                 </Pressable>
                 <Pressable
                   className="rounded-[16px] px-4 py-3.5"
-                  onPress={() => setDraftTone("expense")}
-                  style={{ backgroundColor: draftTone === "expense" ? theme.primary : theme.background }}
+                  onPress={() => setSelectedTone("expense")}
+                  style={{ backgroundColor: selectedTone === "expense" ? theme.primary : theme.background }}
                 >
                   <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
                     Gastos
@@ -210,20 +211,20 @@ export default function MovementsScreen() {
             <View className="mt-6 flex-row gap-3 border-t pt-4" style={{ borderColor: theme.border }}>
               <Pressable
                 className="flex-1 items-center rounded-[16px] px-4 py-4"
-                onPress={clearFilters}
+                onPress={cancelFilters}
                 style={{ backgroundColor: theme.background }}
               >
                 <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
-                  Limpiar
+                  Cancelar
                 </Text>
               </Pressable>
               <Pressable
                 className="flex-1 items-center rounded-[16px] px-4 py-4"
-                onPress={applyFilters}
+                onPress={acceptFilters}
                 style={{ backgroundColor: theme.primary }}
               >
                 <Text className="text-[14px] font-bold" style={{ color: theme.text }}>
-                  Aplicar
+                  Aceptar
                 </Text>
               </Pressable>
             </View>
