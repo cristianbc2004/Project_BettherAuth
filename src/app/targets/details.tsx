@@ -2,7 +2,7 @@ import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react-native";
-import Animated, { Easing, FadeInDown } from "react-native-reanimated";
+import Animated, { Easing, FadeInDown, SlideInLeft } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -85,6 +85,7 @@ export default function DetailsTargetScreen() {
   const isBlocked = selectedCard?.isBlocked ?? false;
   const sectionEnter = (delay: number) =>
     FadeInDown.duration(300).delay(delay).easing(Easing.out(Easing.cubic));
+  const cardEnter = SlideInLeft.duration(380).delay(120).easing(Easing.out(Easing.cubic));
 
   useEffect(() => {
     if (session?.user.id) {
@@ -135,7 +136,7 @@ export default function DetailsTargetScreen() {
             </View>
         </Animated.View>
 
-        <Animated.View entering={sectionEnter(150)}>
+        <Animated.View entering={cardEnter}>
           <WalletCardPreview card={selectedCard} width={cardWidth} />
         </Animated.View>
 

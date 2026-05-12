@@ -3,6 +3,7 @@ import "@/shared/lib/i18n";
 
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { WalletCardsProvider } from "@/features/finance/lib/wallet-cards-context";
@@ -50,10 +51,12 @@ function AppNavigation() {
 
 export default function RootLayout() {
   return (
-    <KeyboardProvider>
-      <WalletCardsProvider>
-        <AppNavigation />
-      </WalletCardsProvider>
-    </KeyboardProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <KeyboardProvider>
+        <WalletCardsProvider>
+          <AppNavigation />
+        </WalletCardsProvider>
+      </KeyboardProvider>
+    </GestureHandlerRootView>
   );
 }
