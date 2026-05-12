@@ -142,7 +142,7 @@ export default function AssetsScreen() {
   }
 
   return (
-    <FinanceScreenShell>
+    <FinanceScreenShell title="Bizum">
       <View
         className="overflow-hidden rounded-[28px] border p-5"
         style={{

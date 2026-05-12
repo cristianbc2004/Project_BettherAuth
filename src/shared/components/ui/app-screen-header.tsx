@@ -30,24 +30,26 @@ export function AppScreenHeader({
   const resolvedBackgroundColor = backgroundColor ?? theme.background;
 
   return (
-    <View
-      className="mb-4 flex-row items-center"
-      pointerEvents="box-none"
-      style={[styles.container, { backgroundColor: resolvedBackgroundColor }]}
-    >
-      <View style={styles.actionLayer}>{leftContent}</View>
+    <View className="mb-4" pointerEvents="box-none" style={styles.container}>
+      <View
+        className="flex-row items-center"
+        style={{ backgroundColor: resolvedBackgroundColor }}
+      >
+        <View style={styles.actionLayer}>{leftContent}</View>
 
-      {title ? (
-        <View className="absolute left-0 right-0 items-center" pointerEvents="none">
-          <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>
-            {title}
-          </Text>
+        {title ? (
+          <View className="absolute left-0 right-0 items-center" pointerEvents="none">
+            <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>
+              {title}
+            </Text>
+          </View>
+        ) : null}
+
+        <View className="ml-auto" style={styles.actionLayer}>
+          {rightSlot ? rightSlot : <View className="h-11 w-11" />}
         </View>
-      ) : null}
-
-      <View className="ml-auto" style={styles.actionLayer}>
-        {rightSlot ? rightSlot : <View className="h-11 w-11" />}
       </View>
+      <View className="mt-4 h-px" style={{ backgroundColor: theme.border }} />
     </View>
   );
 }
@@ -57,7 +59,6 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   container: {
-    elevation: 12,
     zIndex: 12,
   },
 });

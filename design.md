@@ -200,12 +200,6 @@ Use `borderCurve: "continuous"` for premium rounded cards when already used in t
 
 ### Screens
 
-Tab-accessed pages should not repeat where the user is.
-
-If a page is already accessed through a tab, do not add redundant copy such as "You are in Home", "Profile section", or explanatory location text. The tab label already provides context.
-
-Tab pages may still show useful content headers, greetings, filters, or section labels when they help the task.
-
 Avoid introductory eyebrow/subtitle blocks at the top of operational screens, especially tab screens. Do not add text such as "Payments", "Activity", "Cards", or explanatory copy like "Send, request, and review..." when the current tab, header, or primary content already makes the purpose obvious.
 
 Screens should start as high as safely possible after the status bar/safe area. Use only the top padding needed for a comfortable header and touch targets. Avoid large empty top gaps before the first useful content.
@@ -216,7 +210,7 @@ The first visible content should usually be the primary data, action group, sear
 
 Use compact headers.
 
-For tab screens, avoid unnecessary back buttons and avoid repeating navigation context. For pushed screens, use a clear back affordance and a short title.
+For tab screens, avoid unnecessary back buttons. For pushed screens, use a clear back affordance and a short title.
 
 Header titles should stay short.
 

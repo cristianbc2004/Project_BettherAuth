@@ -14,6 +14,7 @@ type FinanceScreenShellProps = PropsWithChildren<{
 
 export function FinanceScreenShell({
   children,
+  title,
 }: FinanceScreenShellProps) {
   const { theme } = useAppTheme();
   const { contentBottomSpacing } = useFloatingTabBarMetrics();
@@ -28,7 +29,7 @@ export function FinanceScreenShell({
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
-        <AppScreenHeader />
+        <AppScreenHeader title={title} />
         {children}
       </ScrollView>
     </SafeAreaView>

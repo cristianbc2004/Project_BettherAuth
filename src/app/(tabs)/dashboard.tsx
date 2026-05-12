@@ -258,12 +258,7 @@ export default function DashboardScreen() {
       </View>
 
       <View className="flex-1 px-5 pt-4">
-        <AppScreenHeader
-          backgroundColor={theme.background}
-          leftSlot={<View className="h-12 w-12" />}
-          rightSlot={<View className="h-12 w-12" />}
-        />
-
+        <AppScreenHeader title="Perfil" />
         <ScrollView
           className="flex-1"
           bounces={false}

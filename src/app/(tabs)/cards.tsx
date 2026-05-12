@@ -169,6 +169,7 @@ export default function CardsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <AppScreenHeader
+          title="Tarjetas"
           rightSlot={
             <View className="flex-row items-center gap-3">
               <Pressable

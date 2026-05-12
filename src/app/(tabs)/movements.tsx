@@ -102,7 +102,7 @@ export default function MovementsScreen() {
         ListHeaderComponent={
           <View className="gap-4 pb-4 pt-5">
             <View>
-              <AppScreenHeader />
+              <AppScreenHeader title="Movimientos" />
             </View>
 
             <View className="flex-row gap-3">
