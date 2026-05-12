@@ -1,6 +1,7 @@
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type AuthSubmitButtonProps = {
   isPending: boolean;
@@ -35,7 +36,7 @@ export function AuthSubmitButton({ isPending, label, onPress }: AuthSubmitButton
         {isPending ? (
           <ActivityIndicator color="#ffffff" size="small" />
         ) : null}
-        <Text
+        <AppText
           style={{
             color: theme.textOnPrimary,
             fontSize: 16,
@@ -44,7 +45,7 @@ export function AuthSubmitButton({ isPending, label, onPress }: AuthSubmitButton
           }}
         >
           {label}
-        </Text>
+        </AppText>
       </View>
     </Pressable>
   );

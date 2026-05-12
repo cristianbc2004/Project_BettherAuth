@@ -1,9 +1,10 @@
 import { type ComponentProps } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Tabs } from "expo-router";
 
 import { FLOATING_TAB_BAR_HEIGHT, useFloatingTabBarMetrics } from "@/shared/lib/floating-tab-bar";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type ExpoTabsProps = ComponentProps<typeof Tabs>;
 type AppFloatingTabBarProps = Parameters<NonNullable<ExpoTabsProps["tabBar"]>>[0];
@@ -72,9 +73,9 @@ export function AppFloatingTabBar({ descriptors, navigation, state }: AppFloatin
               focused,
               size: ICON_SIZE,
             })}
-            <Text numberOfLines={1} style={[styles.label, { color }]}>
+            <AppText numberOfLines={1} style={[styles.label, { color }]}>
               {label}
-            </Text>
+            </AppText>
           </Pressable>
         );
       })}

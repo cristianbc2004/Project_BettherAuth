@@ -1,6 +1,6 @@
 import { Redirect, router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { ArrowDownLeft, ArrowUpRight, Zap } from "lucide-react-native";
 import Animated, { Easing, FadeInDown, FadeOutUp, LinearTransition } from "react-native-reanimated";
@@ -11,6 +11,7 @@ import {
   type BizumGetResponse,
 } from "@/features/finance/lib/bizum-api";
 import { authClient } from "@/features/auth/services/auth-client";
+import { AppText } from "@/shared/components/ui/app-text";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -45,18 +46,18 @@ function SectionHeader({ onPress, title }: { onPress: () => void; title: string 
 
   return (
     <View className="flex-row items-center justify-between px-1">
-      <Text className="text-[18px] font-black" style={{ color: theme.text }}>
+      <AppText variant="sectionTitle">
         {title}
-      </Text>
+      </AppText>
       <Pressable
         accessibilityLabel="Ver todos los movimientos"
         accessibilityRole="button"
         hitSlop={10}
         onPress={onPress}
       >
-        <Text className="text-[15px] font-black" style={{ color: theme.primary }}>
+        <AppText className="text-[15px] font-black" tone="primary">
           Ver todos
-        </Text>
+        </AppText>
       </Pressable>
     </View>
   );
@@ -160,12 +161,12 @@ export default function AssetsScreen() {
             <Zap color={theme.primary} size={24} strokeWidth={2.7} />
           </View>
           <View className="ml-4 flex-1">
-            <Text className="text-[18px] font-black" style={{ color: theme.text }}>
+            <AppText variant="sectionTitle">
               {availableBalanceLabel}
-            </Text>
-            <Text className="mt-1 text-[13px]" style={{ color: theme.mutedText }}>
+            </AppText>
+            <AppText className="mt-1 text-[13px]" tone="muted">
               {isBizumDataLoading ? "Cargando movimientos..." : movementCountLabel}
-            </Text>
+            </AppText>
           </View>
         </View>
 
@@ -184,9 +185,9 @@ export default function AssetsScreen() {
             >
               <ArrowUpRight color={theme.text} size={26} strokeWidth={2.8} />
             </View>
-            <Text className="mt-3 text-[15px] font-black" style={{ color: theme.text }}>
+            <AppText className="mt-3 text-[15px] font-black">
               Enviar
-            </Text>
+            </AppText>
           </Pressable>
 
           <Pressable
@@ -203,9 +204,9 @@ export default function AssetsScreen() {
             >
               <ArrowDownLeft color={theme.text} size={26} strokeWidth={2.8} />
             </View>
-            <Text className="mt-3 text-[15px] font-black" style={{ color: theme.text }}>
+            <AppText className="mt-3 text-[15px] font-black">
               Pedir
-            </Text>
+            </AppText>
           </Pressable>
         </View>
       </View>
@@ -221,9 +222,9 @@ export default function AssetsScreen() {
               borderColor: theme.border,
             }}
           >
-            <Text className="text-[14px] font-black leading-5" style={{ color: theme.text }}>
+            <AppText className="text-[14px] font-black leading-5">
               {bizumError}
-            </Text>
+            </AppText>
           </Animated.View>
         ) : null}
 
@@ -260,30 +261,29 @@ export default function AssetsScreen() {
                       backgroundColor: theme.backgroundMuted,
                     }}
                   >
-                    <Text
+                    <AppText
                       className="text-[14px] font-black tracking-[1px]"
-                      style={{ color: theme.text }}
                     >
                       {movement.initials}
-                    </Text>
+                    </AppText>
                   </View>
                   <View className="flex-1 pr-3">
-                    <Text className="text-[16px] font-black" numberOfLines={1} style={{ color: theme.text }}>
+                    <AppText className="text-[16px] font-black" numberOfLines={1}>
                       {movement.name}
-                    </Text>
+                    </AppText>
                     <View className="mt-1 flex-row items-center">
-                      <Text className="text-[13px]" numberOfLines={1} style={{ color: theme.mutedText }}>
+                      <AppText className="text-[13px]" numberOfLines={1} tone="muted">
                         {movement.date}
-                      </Text>
+                      </AppText>
                     </View>
                   </View>
-                  <Text
+                  <AppText
                     className="text-[16px] font-black"
                     selectable
                     style={{ color: amountColor, fontVariant: ["tabular-nums"] }}
                   >
                     {movement.amount}
-                  </Text>
+                  </AppText>
                 </Pressable>
                 {index < movements.length - 1 ? (
                   <View className="ml-16 h-px" style={{ backgroundColor: theme.border }} />

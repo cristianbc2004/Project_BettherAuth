@@ -1,11 +1,6 @@
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { memo, useCallback, useMemo, useRef, useState } from "react";
-import {
-  Platform,
-  Pressable,
-  Text,
-  View,
-} from "react-native";
+import { Platform, Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Briefcase, Clock3, MapPin } from "lucide-react-native";
 
@@ -15,6 +10,7 @@ import { mockIngresos, type IncomePerson } from "@/features/ingresos/mocks";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+import { AppText } from "@/shared/components/ui/app-text";
 
 const PERSON_SKELETON_MINIMUM_MS = 3000;
 const STADIA_MAPS_API_KEY = process.env.EXPO_PUBLIC_STADIA_MAPS_API_KEY?.trim() ?? "";
@@ -173,12 +169,12 @@ export default function PersonMapScreen() {
               borderColor: theme.border,
             }}
           >
-            <Text className="text-[18px] font-bold" style={{ color: theme.text }}>
+            <AppText className="text-[18px] font-bold" style={{ color: theme.text }}>
               El mapa estara disponible en iOS y Android
-            </Text>
-            <Text className="mt-3 text-[15px] leading-6" style={{ color: theme.mutedText }}>
+            </AppText>
+            <AppText className="mt-3 text-[15px] leading-6" style={{ color: theme.mutedText }}>
               Esta ruta usa MapLibre nativo. En web dejamos esta vista de apoyo para no romper el proyecto mientras seguimos desarrollando la experiencia movil.
-            </Text>
+            </AppText>
           </View>
         </View>
       </SafeAreaView>
@@ -196,12 +192,12 @@ export default function PersonMapScreen() {
               borderColor: theme.border,
             }}
           >
-            <Text className="text-[18px] font-bold" style={{ color: theme.text }}>
+            <AppText className="text-[18px] font-bold" style={{ color: theme.text }}>
               Falta configurar Stadia Maps
-            </Text>
-            <Text className="mt-3 text-[15px] leading-6" style={{ color: theme.mutedText }}>
+            </AppText>
+            <AppText className="mt-3 text-[15px] leading-6" style={{ color: theme.mutedText }}>
               Añade `EXPO_PUBLIC_STADIA_MAPS_API_KEY` en el `.env` y reinicia Expo para que el mapa pueda cargar el estilo de calles.
-            </Text>
+            </AppText>
           </View>
         </View>
       </SafeAreaView>
@@ -264,24 +260,24 @@ export default function PersonMapScreen() {
           >
             <View className="flex-row items-start justify-between gap-4">
               <View className="flex-1">
-                <Text className="text-[22px] font-bold" style={{ color: theme.text }}>
+                <AppText className="text-[22px] font-bold" style={{ color: theme.text }}>
                   {selectedPerson.nombre}
-                </Text>
-                <Text className="mt-1 text-[15px]" style={{ color: theme.mutedText }}>
+                </AppText>
+                <AppText className="mt-1 text-[15px]" style={{ color: theme.mutedText }}>
                   {selectedPerson.cargo}
-                </Text>
+                </AppText>
               </View>
 
               <View
                 className="rounded-full px-3 py-2"
                 style={{ backgroundColor: getStatusColors(selectedPerson.location.status, theme).soft }}
               >
-                <Text
+                <AppText
                   className="text-[12px] font-semibold"
                   style={{ color: getStatusColors(selectedPerson.location.status, theme).accent }}
                 >
                   {getStatusLabel(selectedPerson.location.status)}
-                </Text>
+                </AppText>
               </View>
             </View>
 
@@ -295,13 +291,13 @@ export default function PersonMapScreen() {
               >
                 <View className="flex-row items-center gap-2">
                   <MapPin color={theme.primary} size={16} strokeWidth={2.2} />
-                  <Text className="text-[12px] font-semibold uppercase" style={{ color: theme.mutedText }}>
+                  <AppText className="text-[12px] font-semibold uppercase" style={{ color: theme.mutedText }}>
                     Coordenadas
-                  </Text>
+                  </AppText>
                 </View>
-                <Text className="mt-2 text-[14px] font-semibold" style={{ color: theme.text }}>
+                <AppText className="mt-2 text-[14px] font-semibold" style={{ color: theme.text }}>
                   {selectedPerson.location.latitude.toFixed(4)}, {selectedPerson.location.longitude.toFixed(4)}
-                </Text>
+                </AppText>
               </View>
 
               <View
@@ -313,13 +309,13 @@ export default function PersonMapScreen() {
               >
                 <View className="flex-row items-center gap-2">
                   <Clock3 color={theme.primary} size={16} strokeWidth={2.2} />
-                  <Text className="text-[12px] font-semibold uppercase" style={{ color: theme.mutedText }}>
+                  <AppText className="text-[12px] font-semibold uppercase" style={{ color: theme.mutedText }}>
                     Ultima señal
-                  </Text>
+                  </AppText>
                 </View>
-                <Text className="mt-2 text-[14px] font-semibold" style={{ color: theme.text }}>
+                <AppText className="mt-2 text-[14px] font-semibold" style={{ color: theme.text }}>
                   {formatLastUpdated(selectedPerson.location.lastUpdatedAt)}
-                </Text>
+                </AppText>
               </View>
             </View>
 
@@ -333,9 +329,9 @@ export default function PersonMapScreen() {
               }}
               style={{ backgroundColor: theme.primary }}
             >
-              <Text className="text-[15px] font-semibold" style={{ color: theme.textOnPrimary }}>
+              <AppText className="text-[15px] font-semibold" style={{ color: theme.textOnPrimary }}>
                 Ver detalle del trabajador
-              </Text>
+              </AppText>
             </Pressable>
           </View>
         </View>

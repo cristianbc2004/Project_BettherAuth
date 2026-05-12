@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Text } from "react-native";
+
+import { AppText } from "@/shared/components/ui/app-text";
 import Animated, {
   Easing,
   cancelAnimation,
@@ -66,7 +67,7 @@ export function StatusMessage({ autoHideAfterMs, message, tone }: StatusMessageP
       }`}
       style={animatedStyle}
     >
-      <Text className="text-[15px] font-medium leading-6 text-white">{message}</Text>
+      <AppText className="text-[15px] font-medium leading-6 text-white">{message}</AppText>
     </Animated.View>
   );
 }

@@ -1,13 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { useEffect, useRef, useState } from "react";
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -15,6 +8,7 @@ import { AuthBrandMark } from "@/features/auth/components/auth-brand-mark";
 import { AppBackButton } from "@/shared/components/ui/app-back-button";
 import { backOrReplace } from "@/shared/lib/navigation";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type AuthShellProps = PropsWithChildren<{
   backAccessibilityLabel?: string;
@@ -117,12 +111,12 @@ export function AuthShell({
               entering={FadeInDown.duration(420).easing(Easing.out(Easing.quad))}
             >
               <AuthBrandMark />
-              <Text
+              <AppText
                 className="mt-6 px-8 text-center text-[24px] font-black leading-[30px]"
                 style={{ color: theme.text }}
               >
                 {title}
-              </Text>
+              </AppText>
             </Animated.View>
           ) : null}
 

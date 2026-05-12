@@ -1,17 +1,11 @@
 import { useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { Check, ChevronDown, SendHorizontal } from "lucide-react-native";
 
 import type { BizumActionMode, BizumContact } from "@/features/finance/lib/bizum-api";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 export type BizumActionPayload = {
   amount: number;
@@ -110,9 +104,9 @@ export function BizumActionForm({
           boxShadow: "0 18px 40px rgba(7, 17, 31, 0.08)",
         }}
       >
-        <Text className="text-[22px] font-black" style={{ color: theme.text }}>
+        <AppText className="text-[22px] font-black" style={{ color: theme.text }}>
           {copy.title}
-        </Text>
+        </AppText>
 
         {isSubmitting ? (
           <View className="items-center justify-center px-3 py-12">
@@ -122,19 +116,19 @@ export function BizumActionForm({
             >
               <ActivityIndicator color={theme.primary} size="large" />
             </View>
-            <Text className="text-[18px] font-black" style={{ color: theme.text }}>
+            <AppText className="text-[18px] font-black" style={{ color: theme.text }}>
               {copy.loadingTitle}
-            </Text>
-            <Text className="mt-3 text-center text-[14px] leading-6" style={{ color: theme.mutedText }}>
+            </AppText>
+            <AppText className="mt-3 text-center text-[14px] leading-6" style={{ color: theme.mutedText }}>
               {copy.loadingDescription}
-            </Text>
+            </AppText>
           </View>
         ) : (
           <View className="gap-3.5 pt-[18px]">
             <View className="gap-3">
-              <Text className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
+              <AppText className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
                 {copy.contactLabel}
-              </Text>
+              </AppText>
               <Pressable
                 accessibilityLabel="Seleccionar destinatario"
                 accessibilityRole="button"
@@ -155,27 +149,27 @@ export function BizumActionForm({
                         className="mr-3 h-10 w-10 items-center justify-center rounded-full"
                         style={{ backgroundColor: theme.primarySoft }}
                       >
-                        <Text className="text-[14px] font-black tracking-[1px]" style={{ color: theme.primary }}>
+                        <AppText className="text-[14px] font-black tracking-[1px]" style={{ color: theme.primary }}>
                           {selectedContact.initials}
-                        </Text>
+                        </AppText>
                       </View>
                       <View className="flex-1">
-                        <Text className="text-[15px] font-black" style={{ color: theme.text }}>
+                        <AppText className="text-[15px] font-black" style={{ color: theme.text }}>
                           {selectedContact.name}
-                        </Text>
-                        <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+                        </AppText>
+                        <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
                           {selectedContact.detail}
-                        </Text>
+                        </AppText>
                       </View>
                     </>
                   ) : (
                     <View className="flex-1">
-                      <Text className="text-[15px] font-black" style={{ color: theme.text }}>
+                      <AppText className="text-[15px] font-black" style={{ color: theme.text }}>
                         Elige un contacto
-                      </Text>
-                      <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+                      </AppText>
+                      <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
                         Lista real de usuarios registrados
-                      </Text>
+                      </AppText>
                     </View>
                   )}
                   <ChevronDown
@@ -220,20 +214,20 @@ export function BizumActionForm({
                           className="mr-3 h-10 w-10 items-center justify-center rounded-full"
                           style={{ backgroundColor: isSelected ? theme.primary : theme.backgroundMuted }}
                         >
-                          <Text
+                          <AppText
                             className="text-[13px] font-black tracking-[1px]"
                             style={{ color: isSelected ? theme.textOnPrimary : theme.text }}
                           >
                             {contact.initials}
-                          </Text>
+                          </AppText>
                         </View>
                         <View className="flex-1">
-                          <Text className="text-[14px] font-black" style={{ color: theme.text }}>
+                          <AppText className="text-[14px] font-black" style={{ color: theme.text }}>
                             {contact.name}
-                          </Text>
-                          <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+                          </AppText>
+                          <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
                             {contact.detail}
-                          </Text>
+                          </AppText>
                         </View>
                         {isSelected ? <Check color={theme.primary} size={18} strokeWidth={2.8} /> : null}
                       </Pressable>
@@ -245,20 +239,20 @@ export function BizumActionForm({
                   className="rounded-[20px] border px-4 py-3"
                   style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}
                 >
-                  <Text className="text-[13px] font-black" style={{ color: theme.text }}>
+                  <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
                     No hay usuarios disponibles
-                  </Text>
-                  <Text className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+                  </AppText>
+                  <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
                     Crea otro usuario para probar envios o solicitudes de Bizum.
-                  </Text>
+                  </AppText>
                 </View>
               ) : null}
             </View>
 
             <View className="gap-3">
-              <Text className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
+              <AppText className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
                 Importe
-              </Text>
+              </AppText>
               <View
                 className="rounded-[22px] border px-4 py-3.5"
                 style={{
@@ -295,16 +289,16 @@ export function BizumActionForm({
                   }}
                   value={amount}
                 />
-                <Text className="mt-1.5 text-[12px]" style={{ color: theme.mutedText }}>
+                <AppText className="mt-1.5 text-[12px]" style={{ color: theme.mutedText }}>
                   Vista previa: {formatAmountPreview(amount)}
-                </Text>
+                </AppText>
               </View>
             </View>
 
             <View className="gap-3">
-              <Text className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
+              <AppText className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
                 Concepto
-              </Text>
+              </AppText>
               <View
                 className="rounded-[20px] border px-4 py-3"
                 style={{
@@ -342,9 +336,9 @@ export function BizumActionForm({
                 className="rounded-[18px] border px-3 py-2.5"
                 style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}
               >
-                <Text className="text-[13px] font-black" style={{ color: theme.text }}>
+                <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
                   {errorMessage}
-                </Text>
+                </AppText>
               </View>
             ) : null}
 
@@ -360,9 +354,9 @@ export function BizumActionForm({
                   }}
                   style={{ backgroundColor: theme.backgroundMuted }}
                 >
-                  <Text className="text-[15px] font-black" style={{ color: theme.text }}>
+                  <AppText className="text-[15px] font-black" style={{ color: theme.text }}>
                     Cancelar
-                  </Text>
+                  </AppText>
                 </Pressable>
 
                 <Pressable
@@ -381,12 +375,12 @@ export function BizumActionForm({
                     size={18}
                     strokeWidth={2.4}
                   />
-                  <Text
+                  <AppText
                     className="ml-2 text-[15px] font-black"
                     style={{ color: isFormValid ? theme.textOnPrimary : theme.mutedText }}
                   >
                     {copy.buttonLabel}
-                  </Text>
+                  </AppText>
                 </Pressable>
               </View>
             </View>

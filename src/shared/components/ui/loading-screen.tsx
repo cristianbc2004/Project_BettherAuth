@@ -1,9 +1,10 @@
-import { Image, Text, View } from "react-native";
+import { Image, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppProgressBar } from "@/shared/components/ui/app-progress-bar";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 const appLogo = require("../../../../assets/logo.png");
 
@@ -29,9 +30,9 @@ export function LoadingScreen() {
             />
           </View>
           <AppProgressBar />
-          <Text className="mt-5 text-center text-base font-semibold" style={{ color: theme.text }}>
+          <AppText className="mt-5 text-center text-base font-semibold" style={{ color: theme.text }}>
             {t("common.loadingSession")}
-          </Text>
+          </AppText>
         </View>
       </View>
     </SafeAreaView>

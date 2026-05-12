@@ -1,7 +1,8 @@
 import type { PropsWithChildren } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type DashboardCardProps = PropsWithChildren<{
   eyebrow: string;
@@ -13,8 +14,8 @@ export function DashboardCard({ children, eyebrow, title }: DashboardCardProps) 
 
   return (
     <View className="rounded-[28px] border p-5" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
-      <Text className="text-xs font-semibold uppercase tracking-[3px]" style={{ color: theme.mutedText }}>{eyebrow}</Text>
-      <Text className="mt-3 text-2xl font-black" style={{ color: theme.text }}>{title}</Text>
+      <AppText className="text-xs font-semibold uppercase tracking-[3px]" style={{ color: theme.mutedText }}>{eyebrow}</AppText>
+      <AppText className="mt-3 text-2xl font-black" style={{ color: theme.text }}>{title}</AppText>
       <View className="mt-4">{children}</View>
     </View>
   );

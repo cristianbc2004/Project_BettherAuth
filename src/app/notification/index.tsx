@@ -1,5 +1,5 @@
 import { useCallback, type ComponentType, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { Redirect, router } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { ArrowDownLeft, ArrowRightLeft, Bell, CircleAlert, Send, Wallet } from "lucide-react-native";
@@ -13,6 +13,7 @@ import { appConfig } from "@/shared/lib/app-config";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type NotificationActionPayload = {
   bizumRequestId?: string;
@@ -134,17 +135,17 @@ function NotificationRow({
       </View>
 
       <View className="flex-1">
-        <Text className="text-[17px] font-semibold" style={{ color: theme.text }}>
+        <AppText className="text-[17px] font-semibold" style={{ color: theme.text }}>
           {title}
-        </Text>
+        </AppText>
         {body ? (
-          <Text className="mt-1 text-[13px] leading-5" numberOfLines={2} style={{ color: theme.mutedText }}>
+          <AppText className="mt-1 text-[13px] leading-5" numberOfLines={2} style={{ color: theme.mutedText }}>
             {body}
-          </Text>
+          </AppText>
         ) : null}
-        <Text className="mt-1 text-sm" style={{ color: theme.mutedText }}>
+        <AppText className="mt-1 text-sm" style={{ color: theme.mutedText }}>
           {timestamp}
-        </Text>
+        </AppText>
       </View>
 
       {unread ? <View className="ml-3 h-3 w-3 rounded-full" style={{ backgroundColor: theme.primary }} /> : null}
@@ -215,16 +216,16 @@ export default function NotificationsScreen() {
         contentContainerClassName="px-5 pb-10"
         showsVerticalScrollIndicator={false}
       >
-        <Text className="mb-4 px-1 text-xs font-medium uppercase tracking-[1.5px]" style={{ color: theme.mutedText }}>
+        <AppText className="mb-4 px-1 text-xs font-medium uppercase tracking-[1.5px]" style={{ color: theme.mutedText }}>
           Ultima actividad
-        </Text>
+        </AppText>
 
         {isLoading ? (
           // Estado de carga mientras se resuelve la peticion.
           <Animated.View entering={FadeInDown.duration(260)} exiting={FadeOut.duration(180)}>
-            <Text className="px-2 text-sm" style={{ color: theme.mutedText }}>
+            <AppText className="px-2 text-sm" style={{ color: theme.mutedText }}>
               Cargando notificaciones...
-            </Text>
+            </AppText>
           </Animated.View>
         ) : null}
 
@@ -235,9 +236,9 @@ export default function NotificationsScreen() {
             className="mb-3 rounded-[18px] border px-3 py-2.5"
             style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}
           >
-            <Text className="text-[13px] font-black" style={{ color: theme.text }}>
+            <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
               {errorMessage}
-            </Text>
+            </AppText>
           </Animated.View>
         ) : null}
 
@@ -245,12 +246,12 @@ export default function NotificationsScreen() {
           // Estado vacio cuando no existe actividad en Notification.
           <View className="rounded-[20px] border px-4 py-4" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
             <Bell color={theme.mutedText} size={20} strokeWidth={2.4} />
-            <Text className="mt-3 text-[15px] font-black" style={{ color: theme.text }}>
+            <AppText className="mt-3 text-[15px] font-black" style={{ color: theme.text }}>
               No tienes notificaciones
-            </Text>
-            <Text className="mt-1 text-[13px] leading-5" style={{ color: theme.mutedText }}>
+            </AppText>
+            <AppText className="mt-1 text-[13px] leading-5" style={{ color: theme.mutedText }}>
               Cuando alguien te mande una solicitud de Bizum, aparecera aqui.
-            </Text>
+            </AppText>
           </View>
         ) : null}
 

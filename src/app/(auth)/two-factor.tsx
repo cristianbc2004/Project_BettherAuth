@@ -1,7 +1,7 @@
 import { Redirect } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
@@ -13,6 +13,7 @@ import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type TwoFactorSetup = {
   backupCodes: string[];
@@ -52,7 +53,7 @@ function MinimalSection({
 
   return (
     <View className="border-t px-4 py-5" style={{ borderColor: theme.border }}>
-      <Text className="text-base font-semibold" style={{ color: theme.text }}>{title}</Text>
+      <AppText className="text-base font-semibold" style={{ color: theme.text }}>{title}</AppText>
       {children ? <View className="mt-5">{children}</View> : null}
     </View>
   );
@@ -63,8 +64,8 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
   return (
     <View className="mb-3 rounded-[20px] border px-4 py-4" style={{ backgroundColor: theme.inputBackground, borderColor: theme.border }}>
-      <Text className="text-xs font-medium uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>{label}</Text>
-      <Text className="mt-2 text-[15px]" style={{ color: theme.text }}>{value || "-"}</Text>
+      <AppText className="text-xs font-medium uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>{label}</AppText>
+      <AppText className="mt-2 text-[15px]" style={{ color: theme.text }}>{value || "-"}</AppText>
     </View>
   );
 }
@@ -262,7 +263,7 @@ export default function TwoFactorScreen() {
             <View className="gap-3">
               {setup.backupCodes.map((backupCode) => (
                 <View className="rounded-[20px] border px-4 py-4" key={backupCode} style={{ backgroundColor: theme.inputBackground, borderColor: theme.border }}>
-                  <Text className="text-[15px] font-medium" style={{ color: theme.text }}>{backupCode}</Text>
+                  <AppText className="text-[15px] font-medium" style={{ color: theme.text }}>{backupCode}</AppText>
                 </View>
               ))}
             </View>
@@ -272,13 +273,13 @@ export default function TwoFactorScreen() {
 
       {message ? (
         <View className="mt-4 rounded-[22px] border border-emerald-500/25 bg-emerald-500/10 px-4 py-3">
-          <Text className="text-sm leading-6" style={{ color: theme.text }}>{message}</Text>
+          <AppText className="text-sm leading-6" style={{ color: theme.text }}>{message}</AppText>
         </View>
       ) : null}
 
       {errorMessage ? (
         <View className="mt-4 rounded-[22px] border border-red-500/25 bg-red-500/10 px-4 py-3">
-          <Text className="text-sm leading-6" style={{ color: theme.danger }}>{errorMessage}</Text>
+          <AppText className="text-sm leading-6" style={{ color: theme.danger }}>{errorMessage}</AppText>
         </View>
       ) : null}
     </AuthShell>

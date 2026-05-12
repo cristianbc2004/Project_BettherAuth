@@ -1,5 +1,6 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { Text, type StyleProp, type TextStyle } from "react-native";
+import { type StyleProp, type TextStyle } from "react-native";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type AnimatedNumberProps = {
   animateOnMount?: boolean;
@@ -91,9 +92,9 @@ function AnimatedNumberComponent({
   }, [animateOnMount, duration, value]);
 
   return (
-    <Text className={className} style={style}>
+    <AppText className={className} style={style}>
       {displayText}
-    </Text>
+    </AppText>
   );
 }
 

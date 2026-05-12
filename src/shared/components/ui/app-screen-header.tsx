@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { AppBackButton } from "@/shared/components/ui/app-back-button";
+import { AppText } from "@/shared/components/ui/app-text";
 import { backOrReplace } from "@/shared/lib/navigation";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
@@ -39,9 +40,9 @@ export function AppScreenHeader({
 
         {title ? (
           <View className="absolute left-0 right-0 items-center" pointerEvents="none">
-            <Text className="text-[24px] font-semibold" style={{ color: theme.text }}>
+            <AppText variant="screenTitle">
               {title}
-            </Text>
+            </AppText>
           </View>
         ) : null}
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 import Animated, {
   interpolate,
   interpolateColor,
@@ -9,6 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type AuthPasswordInputProps = {
   error?: string;
@@ -56,9 +57,9 @@ export function AuthPasswordInput({
 
   return (
     <View className="mb-5">
-      <Text className="mb-3 text-sm font-medium" style={{ color: theme.text }}>
+      <AppText className="mb-3 text-sm font-medium" style={{ color: theme.text }}>
         {label}
-      </Text>
+      </AppText>
       <Animated.View className="flex-row items-center rounded-[22px] border px-5" style={inputContainerStyle}>
         <TextInput
           className="flex-1 py-4 text-base"
@@ -85,12 +86,12 @@ export function AuthPasswordInput({
             setIsVisible((currentValue) => !currentValue);
           }}
         >
-          <Text className="text-xs font-medium" style={{ color: theme.mutedText }}>
+          <AppText className="text-xs font-medium" style={{ color: theme.mutedText }}>
             {isVisible ? "Hide" : "Show"}
-          </Text>
+          </AppText>
         </Pressable>
       </Animated.View>
-      {error ? <Text className="mt-2 text-sm" style={{ color: theme.danger }}>{error}</Text> : null}
+      {error ? <AppText className="mt-2 text-sm" style={{ color: theme.danger }}>{error}</AppText> : null}
     </View>
   );
 }

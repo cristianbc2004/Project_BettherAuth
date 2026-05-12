@@ -1,15 +1,6 @@
 import { Redirect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
@@ -19,6 +10,7 @@ import { AnimatedNumber } from "@/shared/components/ui/animated-number";
 import { NativeLineChart, type NativeLineChartPoint } from "@/shared/components/ui/native-line-chart";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type HomeGraphFilter = "3d" | "1m" | "3m" | "custom";
 
@@ -51,12 +43,12 @@ function FilterChip({ isActive, label, onPress }: FilterChipProps) {
         borderColor: isActive ? theme.primary : theme.border,
       }}
     >
-      <Text
+      <AppText
         className="text-center text-[14px] font-semibold"
         style={{ color: isActive ? theme.textOnPrimary : theme.text }}
       >
         {label}
-      </Text>
+      </AppText>
     </Pressable>
   );
 }
@@ -306,15 +298,15 @@ export default function HomeGraphicScreen() {
                 borderColor: selectedFilter === "custom" ? theme.primary : theme.border,
               }}
             >
-              <Text className="text-[14px] font-semibold" style={{ color: theme.text }}>
+              <AppText className="text-[14px] font-semibold" style={{ color: theme.text }}>
                 Rango personalizado
-              </Text>
+              </AppText>
             </Pressable>
           </View>
 
-          <Text className="mt-4 text-[14px] font-semibold" style={{ color: theme.mutedText }}>
+          <AppText className="mt-4 text-[14px] font-semibold" style={{ color: theme.mutedText }}>
             Rango activo: {rangeSummary}
-          </Text>
+          </AppText>
 
           <AnimatedNumber
             animateOnMount={true}
@@ -323,9 +315,9 @@ export default function HomeGraphicScreen() {
             style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
             value={highlightedPoint.value}
           />
-          <Text className="mt-1 text-[14px]" style={{ color: theme.mutedText }}>
+          <AppText className="mt-1 text-[14px]" style={{ color: theme.mutedText }}>
             Balance en {highlightedPoint.label}
-          </Text>
+          </AppText>
 
           <View className="mt-5">
             <View className="h-[220px]">
@@ -348,18 +340,18 @@ export default function HomeGraphicScreen() {
         </View>
 
         <View className="mt-6 border-t pt-6" style={{ borderColor: theme.border }}>
-          <Text className="text-[18px] font-black" style={{ color: theme.text }}>
+          <AppText className="text-[18px] font-black" style={{ color: theme.text }}>
             Datos
-          </Text>
-          <Text className="mt-3 text-[16px]" style={{ color: theme.mutedText }}>
+          </AppText>
+          <AppText className="mt-3 text-[16px]" style={{ color: theme.mutedText }}>
             Minimo: {formatCurrency(minValue)}
-          </Text>
-          <Text className="mt-1 text-[16px]" style={{ color: theme.mutedText }}>
+          </AppText>
+          <AppText className="mt-1 text-[16px]" style={{ color: theme.mutedText }}>
             Maximo: {formatCurrency(maxValue)}
-          </Text>
-          <Text className="mt-1 text-[16px]" style={{ color: theme.mutedText }}>
+          </AppText>
+          <AppText className="mt-1 text-[16px]" style={{ color: theme.mutedText }}>
             Promedio: {formatCurrency(averageValue)}
-          </Text>
+          </AppText>
         </View>
       </ScrollView>
 
@@ -383,15 +375,15 @@ export default function HomeGraphicScreen() {
             className="w-full max-w-[360px] rounded-2xl border p-5"
             style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}
           >
-            <Text className="text-[20px] font-black" style={{ color: theme.text }}>
+            <AppText className="text-[20px] font-black" style={{ color: theme.text }}>
               Rango personalizado
-            </Text>
+            </AppText>
 
             <View className="mt-4 gap-4">
               <View>
-                <Text className="mb-2 text-[13px] font-semibold" style={{ color: theme.mutedText }}>
+                <AppText className="mb-2 text-[13px] font-semibold" style={{ color: theme.mutedText }}>
                   Inicio
-                </Text>
+                </AppText>
                 <TextInput
                   autoCapitalize="none"
                   className="rounded-xl border px-4 py-3 text-[15px]"
@@ -405,9 +397,9 @@ export default function HomeGraphicScreen() {
               </View>
 
               <View>
-                <Text className="mb-2 text-[13px] font-semibold" style={{ color: theme.mutedText }}>
+                <AppText className="mb-2 text-[13px] font-semibold" style={{ color: theme.mutedText }}>
                   Fin
-                </Text>
+                </AppText>
                 <TextInput
                   autoCapitalize="none"
                   className="rounded-xl border px-4 py-3 text-[15px]"
@@ -422,9 +414,9 @@ export default function HomeGraphicScreen() {
             </View>
 
             {rangeError ? (
-              <Text className="mt-3 text-[13px] font-medium" style={{ color: theme.danger }}>
+              <AppText className="mt-3 text-[13px] font-medium" style={{ color: theme.danger }}>
                 {rangeError}
-              </Text>
+              </AppText>
             ) : null}
 
             <View className="mt-6 flex-row justify-end gap-3">
@@ -433,9 +425,9 @@ export default function HomeGraphicScreen() {
                 onPress={() => setIsCustomModalOpen(false)}
                 style={{ borderColor: theme.border }}
               >
-                <Text className="text-[14px] font-semibold" style={{ color: theme.text }}>
+                <AppText className="text-[14px] font-semibold" style={{ color: theme.text }}>
                   Cancelar
-                </Text>
+                </AppText>
               </Pressable>
 
               <Pressable
@@ -443,9 +435,9 @@ export default function HomeGraphicScreen() {
                 onPress={applyCustomRange}
                 style={{ backgroundColor: theme.primary }}
               >
-                <Text className="text-[14px] font-semibold" style={{ color: theme.textOnPrimary }}>
+                <AppText className="text-[14px] font-semibold" style={{ color: theme.textOnPrimary }}>
                   Aplicar
-                </Text>
+                </AppText>
               </Pressable>
             </View>
           </View>

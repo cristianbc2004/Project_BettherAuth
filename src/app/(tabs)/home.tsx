@@ -1,13 +1,7 @@
 import { Redirect, router } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Bell, Menu } from "lucide-react-native";
 
@@ -28,6 +22,7 @@ import { NativeLineChart, type NativeLineChartPoint } from "@/shared/components/
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type SectionHeaderProps = {
   action?: string;
@@ -91,16 +86,16 @@ function isAdminRole(role: string) {
 function SectionHeader({ action, onActionPress, title }: SectionHeaderProps) {
   const { theme } = useAppTheme();
   const actionContent = action ? (
-    <Text className="text-[15px] font-black" style={{ color: theme.primary }}>
+    <AppText className="text-[15px] font-black" style={{ color: theme.primary }}>
       {action}
-    </Text>
+    </AppText>
   ) : null;
 
   return (
     <View className="flex-row items-center justify-between px-1">
-      <Text className="text-[18px] font-black" style={{ color: theme.text }}>
+      <AppText className="text-[18px] font-black" style={{ color: theme.text }}>
         {title}
-      </Text>
+      </AppText>
       {action && onActionPress ? (
         <Pressable
           accessibilityLabel={action}
@@ -236,12 +231,12 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View className="pr-3">
-            <Text className="text-[24px] font-black leading-8" style={{ color: theme.text }}>
+            <AppText className="text-[24px] font-black leading-8" style={{ color: theme.text }}>
               {getGreeting()}, {firstName}
-            </Text>
-            <Text className="mt-1 text-[13px] font-medium" style={{ color: theme.mutedText }}>
+            </AppText>
+            <AppText className="mt-1 text-[13px] font-medium" style={{ color: theme.mutedText }}>
               Aqui tienes tu resumen semanal
-            </Text>
+            </AppText>
           </View>
 
           <View>
@@ -262,9 +257,9 @@ export default function HomeScreen() {
             >
               <View className="flex-row items-start justify-between">
                 <View className="flex-1 pr-3">
-                  <Text className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
+                  <AppText className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
                     Balance total
-                  </Text>
+                  </AppText>
                   <AnimatedNumber
                     animateOnMount={true}
                     className="mt-3 text-[32px] font-black"
@@ -290,9 +285,9 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              <Text className="mt-1 text-[14px] font-semibold" style={{ color: theme.mutedText }}>
+              <AppText className="mt-1 text-[14px] font-semibold" style={{ color: theme.mutedText }}>
                 {selectedPoint ? highlightedPoint.label : "Resumen semanal"}
-              </Text>
+              </AppText>
 
               <View className="mt-5">
                 <View className="h-[208px]" style={{ width: chartWidth }}>
@@ -313,9 +308,9 @@ export default function HomeScreen() {
                   />
                 </View>
               </View>
-              <Text className="mt-3 text-[12px] font-semibold" style={{ color: theme.mutedText }}>
+              <AppText className="mt-3 text-[12px] font-semibold" style={{ color: theme.mutedText }}>
                 Toca la grafica para ver el detalle por rango
-              </Text>
+              </AppText>
             </Pressable>
           </View>
 

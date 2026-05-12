@@ -1,6 +1,6 @@
 import { Redirect, router } from "expo-router";
 import { memo, useCallback, useEffect, useMemo } from "react";
-import { Pressable, Text, useWindowDimensions, View } from "react-native";
+import { Pressable, useWindowDimensions, View } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -19,6 +19,7 @@ import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
+import { AppText } from "@/shared/components/ui/app-text";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { useFloatingTabBarMetrics } from "@/shared/lib/floating-tab-bar";
 import { selectionHaptic } from "@/shared/lib/haptics";
@@ -206,21 +207,21 @@ export default function CardsScreen() {
               className="h-[188px] items-center justify-center rounded-[30px]"
               style={{ backgroundColor: theme.card, width: cardWidth }}
             >
-              <Text className="text-[15px] font-black" style={{ color: theme.mutedText }}>
+              <AppText className="text-[15px] font-black" tone="muted">
                 Cargando tarjetas...
-              </Text>
+              </AppText>
             </View>
           ) : displayedCards.length === 0 ? (
             <View
               className="h-[188px] items-center justify-center rounded-[30px] border border-dashed px-6"
               style={{ backgroundColor: theme.card, borderColor: theme.border, width: cardWidth }}
             >
-              <Text className="text-center text-[17px] font-black" style={{ color: theme.text }}>
+              <AppText className="text-center text-[17px] font-black">
                 No hay tarjetas guardadas
-              </Text>
-              <Text className="mt-2 text-center text-[14px] leading-5" style={{ color: theme.mutedText }}>
+              </AppText>
+              <AppText className="mt-2 text-center" tone="muted" variant="subtitle">
                 Anade tu primera tarjeta para verla aqui.
-              </Text>
+              </AppText>
             </View>
           ) : (
             <View className="items-center">

@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type AdminUserNotificationRowProps = {
   email: string;
@@ -61,8 +62,8 @@ export function AdminUserNotificationRow({
       </View>
 
       <View className="flex-1">
-        <Text className="text-[17px] font-semibold" style={{ color: theme.text }}>{name}</Text>
-        <Text className="mt-1 text-sm" style={{ color: theme.mutedText }}>{email}</Text>
+        <AppText className="text-[17px] font-semibold" style={{ color: theme.text }}>{name}</AppText>
+        <AppText className="mt-1 text-sm" style={{ color: theme.mutedText }}>{email}</AppText>
       </View>
 
       {trailing ? (

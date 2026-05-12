@@ -1,6 +1,7 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import type { WalletCardNetwork } from "@/shared/types/finance";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type CardNetworkBadgeProps = {
   color: string;
@@ -20,12 +21,12 @@ export function CardNetworkBadge({ color, compact = false, network }: CardNetwor
           className={compact ? "-ml-2 h-5 w-5 rounded-full" : "-ml-3 h-7 w-7 rounded-full"}
           style={{ backgroundColor: "#eb001b" }}
         />
-        <Text
+        <AppText
           className={compact ? "ml-2 text-[10px] font-black tracking-[1px]" : "ml-3 text-[11px] font-black tracking-[1.2px]"}
           style={{ color }}
         >
           MASTERCARD
-        </Text>
+        </AppText>
       </View>
     );
   }
@@ -33,12 +34,12 @@ export function CardNetworkBadge({ color, compact = false, network }: CardNetwor
   if (network === "VISA" || network === "ORO" || network === "CHASBACK") {
     return (
       <View className="rounded-full px-3 py-2" style={{ backgroundColor: `${color}14` }}>
-        <Text
+        <AppText
           className={compact ? "text-[11px] font-black italic tracking-[1.5px]" : "text-[13px] font-black italic tracking-[1.8px]"}
           style={{ color }}
         >
           {network}
-        </Text>
+        </AppText>
       </View>
     );
   }

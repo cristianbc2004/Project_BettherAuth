@@ -1,7 +1,8 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 const modeLabels = {
   dark: "Dark",
@@ -37,12 +38,12 @@ export function ThemeToggle() {
         }}
         style={{ backgroundColor: theme.primarySoft }}
       >
-        <Text
+        <AppText
           className="text-xs font-bold uppercase"
           style={{ color: theme.text }}
         >
           {modeLabels[themeMode]}
-        </Text>
+        </AppText>
       </Pressable>
     </View>
   );

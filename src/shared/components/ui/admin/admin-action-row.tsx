@@ -1,7 +1,8 @@
 import { ChevronRight, type LucideIcon } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type AdminActionRowProps = {
   accent: string;
@@ -43,11 +44,11 @@ export function AdminActionRow({
       </View>
 
       <View className="flex-1">
-        <Text className="text-[11px] font-semibold uppercase tracking-[1.4px]" style={{ color: theme.mutedText }}>
+        <AppText className="text-[11px] font-semibold uppercase tracking-[1.4px]" style={{ color: theme.mutedText }}>
           {eyebrow}
-        </Text>
-        <Text className="mt-1 text-[17px] font-semibold" style={{ color: theme.text }}>{title}</Text>
-        <Text className="mt-1 text-sm leading-5" style={{ color: theme.mutedText }}>{description}</Text>
+        </AppText>
+        <AppText className="mt-1 text-[17px] font-semibold" style={{ color: theme.text }}>{title}</AppText>
+        <AppText className="mt-1 text-sm leading-5" style={{ color: theme.mutedText }}>{description}</AppText>
       </View>
 
       <ChevronRight color={theme.mutedText} size={22} strokeWidth={2.2} />

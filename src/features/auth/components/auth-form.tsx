@@ -3,7 +3,7 @@ import { Link, router } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Text, View } from "react-native";
+import { Alert, View } from "react-native";
 import { z } from "zod";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
@@ -15,6 +15,7 @@ import { appConfig } from "@/shared/lib/app-config";
 import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type AuthMode = "signIn" | "signUp";
 
@@ -43,16 +44,16 @@ function AuthFormFrame({
       <View>{children}</View>
       {serverError ? (
         <View className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3">
-          <Text className="text-sm" style={{ color: theme.danger }}>{serverError}</Text>
+          <AppText className="text-sm" style={{ color: theme.danger }}>{serverError}</AppText>
         </View>
       ) : null}
       <View className="mt-8">
-        <Text className="text-center text-sm" style={{ color: theme.mutedText }}>
+        <AppText className="text-center text-sm" style={{ color: theme.mutedText }}>
           {ctaHref === "/sign-up" ? t("authForm.needAccount") : t("authForm.alreadyHaveAccount")}
           <Link href={ctaHref} className="font-bold" style={{ color: theme.primary }}>
             {ctaLabel}
           </Link>
-        </Text>
+        </AppText>
       </View>
     </View>
   );

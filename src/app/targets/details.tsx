@@ -1,6 +1,6 @@
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { Alert, Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react-native";
 import Animated, { Easing, FadeInDown, SlideInLeft } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -10,6 +10,7 @@ import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { type WalletCard } from "@/features/finance/mocks";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
+import { AppText } from "@/shared/components/ui/app-text";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -44,9 +45,9 @@ function ActionButton({ disabled = false, icon: Icon, label, onPress, tone = "de
         <Icon color={isDanger ? theme.danger : theme.text} size={21} strokeWidth={2.3} />
       </View>
 
-      <Text className="mt-3 text-[14px] font-black" style={{ color: isDanger ? theme.danger : theme.text }}>
+      <AppText className="mt-3 text-[14px] font-black" tone={isDanger ? "danger" : "default"}>
         {label}
-      </Text>
+      </AppText>
     </Pressable>
   );
 }
@@ -56,12 +57,12 @@ function InfoTile({ label, value }: { label: string; value: string }) {
 
   return (
     <View className="flex-1 border-t px-1 py-4" style={{ borderColor: theme.border }}>
-      <Text className="text-[12px] font-black uppercase tracking-[1.8px]" style={{ color: theme.mutedText }}>
+      <AppText className="tracking-[1.8px]" tone="muted" variant="eyebrow">
         {label}
-      </Text>
-      <Text className="mt-3 text-[16px] font-black" style={{ color: theme.text }}>
+      </AppText>
+      <AppText className="mt-3 text-[16px] font-black">
         {value}
-      </Text>
+      </AppText>
     </View>
   );
 }
@@ -127,12 +128,9 @@ export default function DetailsTargetScreen() {
               className="rounded-full px-4 py-3"
               style={{ backgroundColor: isBlocked ? `${theme.danger}18` : theme.primarySoft }}
             >
-              <Text
-                className="text-[13px] font-black uppercase tracking-[1.5px]"
-                style={{ color: isBlocked ? theme.danger : theme.primary }}
-              >
+              <AppText className="tracking-[1.5px]" tone={isBlocked ? "danger" : "primary"} variant="eyebrow">
                 {isBlocked ? "Bloqueada" : "Activa"}
-              </Text>
+              </AppText>
             </View>
         </Animated.View>
 
@@ -171,20 +169,20 @@ export default function DetailsTargetScreen() {
         </Animated.View>
 
         <Animated.View entering={sectionEnter(270)} className="px-2 py-2">
-          <Text className="text-[12px] font-black uppercase tracking-[1.8px]" style={{ color: theme.mutedText }}>
+          <AppText className="tracking-[1.8px]" tone="muted" variant="eyebrow">
             PIN
-          </Text>
-          <Text
+          </AppText>
+          <AppText
             className="mt-3 text-[28px] font-black tracking-[5px]"
-            style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
+            style={{ fontVariant: ["tabular-nums"] }}
           >
             {displayedPin}
-          </Text>
-          <Text className="mt-3 text-[14px] leading-6" style={{ color: theme.mutedText }}>
+          </AppText>
+          <AppText className="mt-3" tone="muted" variant="info">
             {isPinVisible
               ? "No compartas este codigo con nadie."
               : "Pulsa en Ver PIN para mostrar el CVC de seguridad."}
-          </Text>
+          </AppText>
         </Animated.View>
 
         <Animated.View entering={sectionEnter(330)} className="flex-row gap-3">

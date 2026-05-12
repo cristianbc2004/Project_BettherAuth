@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { CheckCircle2, X } from "lucide-react-native";
 import Animated, { FadeIn, FadeInDown, FadeOut } from "react-native-reanimated";
@@ -10,6 +10,7 @@ import { appConfig } from "@/shared/lib/app-config";
 import { selectionHaptic, successHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
+import { AppText } from "@/shared/components/ui/app-text";
 
 type RequestDetailResponse = {
   amountCents: number;
@@ -171,42 +172,42 @@ export default function NotificationPayRequestScreen() {
         {isLoading ? (
           <Animated.View entering={FadeIn.duration(180)} className="items-center py-12">
             <ActivityIndicator color={theme.primary} size="large" />
-            <Text className="mt-4 text-[14px]" style={{ color: theme.mutedText }}>
+            <AppText className="mt-4 text-[14px]" style={{ color: theme.mutedText }}>
               Cargando solicitud...
-            </Text>
+            </AppText>
           </Animated.View>
         ) : requestData ? (
           <View className="gap-4">
             <View className="rounded-[24px] border p-4" style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}>
-              <Text className="text-[12px] font-black uppercase tracking-[1.8px]" style={{ color: theme.mutedText }}>
+              <AppText className="text-[12px] font-black uppercase tracking-[1.8px]" style={{ color: theme.mutedText }}>
                 Solicitado por
-              </Text>
-              <Text className="mt-2 text-[19px] font-black" style={{ color: theme.text }}>
+              </AppText>
+              <AppText className="mt-2 text-[19px] font-black" style={{ color: theme.text }}>
                 {requestData.requester.name}
-              </Text>
-              <Text className="mt-1 text-[13px]" style={{ color: theme.mutedText }}>
+              </AppText>
+              <AppText className="mt-1 text-[13px]" style={{ color: theme.mutedText }}>
                 Importe: {amountLabel}
-              </Text>
+              </AppText>
               {requestData.concept ? (
-                <Text className="mt-1 text-[13px]" style={{ color: theme.mutedText }}>
+                <AppText className="mt-1 text-[13px]" style={{ color: theme.mutedText }}>
                   Concepto: {requestData.concept}
-                </Text>
+                </AppText>
               ) : null}
             </View>
 
             {!requestData.isPayable ? (
               <View className="rounded-[18px] border px-3 py-2.5" style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}>
-                <Text className="text-[13px] font-black" style={{ color: theme.text }}>
+                <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
                   Esta solicitud ya no esta disponible para pago.
-                </Text>
+                </AppText>
               </View>
             ) : null}
 
             {errorMessage ? (
               <View className="rounded-[18px] border px-3 py-2.5" style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}>
-                <Text className="text-[13px] font-black" style={{ color: theme.text }}>
+                <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
                   {errorMessage}
-                </Text>
+                </AppText>
               </View>
             ) : null}
 
@@ -219,9 +220,9 @@ export default function NotificationPayRequestScreen() {
                 }}
                 style={{ backgroundColor: theme.backgroundMuted }}
               >
-                <Text className="text-[15px] font-black" style={{ color: theme.text }}>
+                <AppText className="text-[15px] font-black" style={{ color: theme.text }}>
                   Cancelar
-                </Text>
+                </AppText>
               </Pressable>
 
               <Pressable
@@ -238,9 +239,9 @@ export default function NotificationPayRequestScreen() {
                 ) : (
                   <>
                     <CheckCircle2 color={theme.textOnPrimary} size={18} strokeWidth={2.5} />
-                    <Text className="ml-2 text-[15px] font-black" style={{ color: theme.textOnPrimary }}>
+                    <AppText className="ml-2 text-[15px] font-black" style={{ color: theme.textOnPrimary }}>
                       Pagar
-                    </Text>
+                    </AppText>
                   </>
                 )}
               </Pressable>
@@ -248,9 +249,9 @@ export default function NotificationPayRequestScreen() {
           </View>
         ) : (
           <View className="rounded-[18px] border px-3 py-2.5" style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}>
-            <Text className="text-[13px] font-black" style={{ color: theme.text }}>
+            <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
               No se encontro la solicitud.
-            </Text>
+            </AppText>
           </View>
         )}
       </Animated.View>

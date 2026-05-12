@@ -13,11 +13,12 @@ import {
   Sun,
   UserRound,
 } from "lucide-react-native";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
+import { AppText } from "@/shared/components/ui/app-text";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { useFloatingTabBarMetrics } from "@/shared/lib/floating-tab-bar";
 import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
@@ -64,15 +65,15 @@ function MenuRow({ detail, icon, label, onPress, theme, tone = "default" }: Menu
       </View>
 
       <View className="flex-1">
-        <Text
-          className="text-[16px] font-medium"
-          style={{ color: tone === "danger" ? theme.danger : theme.text }}
-        >
-          {label}
-        </Text>
+      <AppText
+        className="text-[16px] font-medium"
+        tone={tone === "danger" ? "danger" : "default"}
+      >
+        {label}
+      </AppText>
       </View>
 
-      {detail ? <Text className="mr-3 text-xs" style={{ color: theme.mutedText }}>{detail}</Text> : null}
+      {detail ? <AppText className="mr-3 text-xs" tone="muted">{detail}</AppText> : null}
       <ChevronRight color={theme.mutedText} size={22} strokeWidth={2.2} />
     </Pressable>
   );
@@ -80,12 +81,11 @@ function MenuRow({ detail, icon, label, onPress, theme, tone = "default" }: Menu
 
 function SectionLabel({ label, theme }: { label: string; theme: AppTheme }) {
   return (
-    <Text
+    <AppText
       className="mb-3 mt-6 px-1 text-[22px] font-bold"
-      style={{ color: theme.text }}
     >
       {label}
-    </Text>
+    </AppText>
   );
 }
 
@@ -106,9 +106,9 @@ type OptionSelectorFrameProps = {
 function OptionSelectorFrame({ children, theme, title }: OptionSelectorFrameProps) {
   return (
     <View className="mt-6 px-1">
-      <Text className="mb-3 text-[22px] font-bold" style={{ color: theme.text }}>
+      <AppText className="mb-3 text-[22px] font-bold">
         {title}
-      </Text>
+      </AppText>
       {children}
     </View>
   );
@@ -145,13 +145,13 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: Them
               }}
             >
               <OptionIcon color={isSelected ? theme.primary : theme.text} size={24} strokeWidth={2.2} />
-              <Text
+              <AppText
                 className="ml-2 text-sm font-semibold"
                 numberOfLines={1}
-                style={{ color: isSelected ? theme.primary : theme.text }}
+                tone={isSelected ? "primary" : "default"}
               >
                 {option.label}
-              </Text>
+              </AppText>
             </Pressable>
           );
         })}
@@ -199,17 +199,17 @@ function LanguageSelector({ onSelect, selectedLocale, theme, title }: LanguageSe
                 className="mr-2 h-8 w-9 items-center justify-center rounded-[10px]"
                 style={{ backgroundColor: isSelected ? theme.primarySoft : theme.backgroundMuted }}
               >
-                <Text className="text-[12px] font-bold" style={{ color: isSelected ? theme.primary : theme.text }}>
+                <AppText className="text-[12px] font-bold" tone={isSelected ? "primary" : "default"}>
                   {option.code}
-                </Text>
+                </AppText>
               </View>
-              <Text
+              <AppText
                 className="text-sm font-semibold"
                 numberOfLines={1}
-                style={{ color: isSelected ? theme.primary : theme.text }}
+                tone={isSelected ? "primary" : "default"}
               >
                 {option.label}
-              </Text>
+              </AppText>
             </Pressable>
           );
         })}
@@ -274,15 +274,15 @@ export default function DashboardScreen() {
                 backgroundColor: theme.backgroundElevated,
               }}
             >
-              <Text className="text-xs font-bold uppercase tracking-[1.5px]" style={{ color: theme.text }}>
+              <AppText className="tracking-[1.5px]" variant="eyebrow">
                 {t("dashboard.userCardTitle")}
-              </Text>
-              <Text className="mt-3 text-[16px] font-bold" numberOfLines={1} style={{ color: theme.text }}>
+              </AppText>
+              <AppText className="mt-3 text-[16px] font-bold" numberOfLines={1}>
                 {firstName}
-              </Text>
-              <Text className="mt-1 text-sm" numberOfLines={1} style={{ color: theme.mutedText }}>
+              </AppText>
+              <AppText className="mt-1 text-sm" numberOfLines={1} tone="muted">
                 {session.user.email}
-              </Text>
+              </AppText>
             </View>
 
             <View
@@ -292,30 +292,30 @@ export default function DashboardScreen() {
                 backgroundColor: theme.backgroundElevated,
               }}
             >
-              <Text className="text-xs font-bold uppercase tracking-[1.5px]" style={{ color: theme.text }}>
+              <AppText className="tracking-[1.5px]" variant="eyebrow">
                 {t("dashboard.roleCardTitle")}
-              </Text>
-              <Text className="mt-3 text-[16px] font-bold uppercase" numberOfLines={1} style={{ color: theme.text }}>
+              </AppText>
+              <AppText className="mt-3 text-[16px] font-bold uppercase" numberOfLines={1}>
                 {role}
-              </Text>
-              <Text className="mt-1 text-sm" numberOfLines={1} style={{ color: theme.mutedText }}>
+              </AppText>
+              <AppText className="mt-1 text-sm" numberOfLines={1} tone="muted">
                 {isAdmin ? t("dashboard.adminPanelOption") : t("dashboard.profileSection")}
-              </Text>
+              </AppText>
             </View>
           </View>
 
           <View className="mt-4 flex-row items-center px-1 py-2">
             <dashboardIcons.user color={theme.text} size={22} strokeWidth={2.1} />
-            <Text className="ml-4 text-[16px] font-semibold" style={{ color: theme.text }}>
+            <AppText className="ml-4 text-[16px] font-semibold">
               {t("dashboard.accountStatus")}
-            </Text>
+            </AppText>
             <View
               className="ml-4 rounded-full border px-3 py-1"
               style={{ backgroundColor: `${theme.success}18`, borderColor: theme.success }}
             >
-              <Text className="text-sm font-bold" style={{ color: theme.success }}>
+              <AppText className="text-sm font-bold" tone="success">
                 {t("common.active")}
-              </Text>
+              </AppText>
             </View>
           </View>
 
