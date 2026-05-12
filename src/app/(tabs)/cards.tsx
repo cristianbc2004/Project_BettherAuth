@@ -9,6 +9,7 @@ import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { useFloatingTabBarMetrics } from "@/shared/lib/floating-tab-bar";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
@@ -17,6 +18,7 @@ export default function CardsScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
+  const { contentBottomSpacing } = useFloatingTabBarMetrics();
   const { width } = useWindowDimensions();
   const { cards, isLoading, refreshCards } = useWalletCards();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -53,7 +55,8 @@ export default function CardsScreen() {
 
       <ScrollView
         bounces={false}
-        contentContainerClassName="px-5 pb-10 pt-5"
+        contentContainerClassName="px-5 pt-5"
+        contentContainerStyle={{ paddingBottom: contentBottomSpacing }}
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >

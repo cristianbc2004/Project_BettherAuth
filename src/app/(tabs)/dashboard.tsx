@@ -19,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { useFloatingTabBarMetrics } from "@/shared/lib/floating-tab-bar";
 import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { buildAuthFetchOptions, type AppLocale, useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -228,6 +229,7 @@ export default function DashboardScreen() {
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { locale, setLocale } = useLanguage();
   const { theme, themeMode, setThemeMode } = useAppTheme();
+  const { contentBottomSpacing } = useFloatingTabBarMetrics();
   const { t } = useTranslation();
   const role = (session?.user as { role?: string } | undefined)?.role ?? "user";
   const isAdmin = role
@@ -264,7 +266,8 @@ export default function DashboardScreen() {
 
       <ScrollView
         bounces={false}
-        contentContainerClassName="px-5 pb-10 pt-5"
+        contentContainerClassName="px-5 pt-5"
+        contentContainerStyle={{ paddingBottom: contentBottomSpacing }}
         showsVerticalScrollIndicator={false}
       >
         <AppScreenHeader />

@@ -13,6 +13,7 @@ import {
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { useFloatingTabBarMetrics } from "@/shared/lib/floating-tab-bar";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 
@@ -20,6 +21,7 @@ export default function MovementsScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
+  const { contentBottomSpacing } = useFloatingTabBarMetrics();
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [selectedTone, setSelectedTone] = useState<"all" | Transaction["tone"]>("all");
@@ -127,7 +129,8 @@ export default function MovementsScreen() {
         }
         ItemSeparatorComponent={renderSeparator}
         bounces={false}
-        contentContainerClassName="px-5 pb-12"
+        contentContainerClassName="px-5"
+        contentContainerStyle={{ paddingBottom: contentBottomSpacing }}
         contentInsetAdjustmentBehavior="automatic"
         data={visibleTransactions}
         initialNumToRender={18}
