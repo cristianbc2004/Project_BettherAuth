@@ -50,9 +50,8 @@ export function WalletCardPreview({ card, width }: WalletCardPreviewProps) {
         <CardNetworkBadge color={card.textColor} network={card.network} />
       </View>
 
-      <View className="mt-9 flex-row items-center justify-between">
+      <View className="mt-9">
         <ChipPlate color={card.textColor} />
-        <CardNetworkBadge color={card.textColor} compact={true} network={card.network} />
       </View>
 
       <View className="mt-auto flex-row items-end justify-between">
