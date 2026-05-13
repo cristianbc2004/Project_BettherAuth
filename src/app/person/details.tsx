@@ -1,6 +1,7 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { CalendarDays, MapPin } from "lucide-react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
@@ -16,6 +17,13 @@ function formatCurrency(value: number) {
     maximumFractionDigits: 0,
     style: "currency",
   }).format(value);
+}
+
+function formatSaleDate(value: string) {
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "2-digit",
+    month: "short",
+  }).format(new Date(value));
 }
 
 function getSelectedPerson(personId?: string) {
@@ -134,6 +142,76 @@ export default function PersonDetailsScreen() {
           <AppText className="mt-4 text-[15px] leading-6" style={{ color: theme.mutedText }}>
             {selectedPerson.observacion}
           </AppText>
+        </View>
+
+        <View className="mt-8">
+          <View className="flex-row items-end justify-between gap-4">
+            <View className="min-w-0 flex-1">
+              <AppText className="text-[18px] font-bold leading-6" style={{ color: theme.text }}>
+                Ubicacion de ventas
+              </AppText>
+              <AppText className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
+                Cada venta incluye el punto donde se registro.
+              </AppText>
+            </View>
+            <AppText
+              className="text-[13px] font-semibold leading-5"
+              style={{ color: theme.mutedText, fontVariant: ["tabular-nums"] }}
+            >
+              {selectedPerson.ventas.length}
+            </AppText>
+          </View>
+
+          <View className="mt-4 gap-3">
+            {selectedPerson.ventas.map((sale) => (
+              <View
+                className="rounded-[22px] border px-4 py-4"
+                key={sale.id}
+                style={{
+                  backgroundColor: theme.card,
+                  borderColor: theme.border,
+                }}
+              >
+                <View className="flex-row items-start justify-between gap-4">
+                  <View className="min-w-0 flex-1">
+                    <AppText className="text-[15px] font-bold leading-5" numberOfLines={1} style={{ color: theme.text }}>
+                      {sale.cliente}
+                    </AppText>
+                    <View className="mt-2 flex-row items-start gap-2">
+                      <MapPin color={theme.primary} size={15} strokeWidth={2.2} />
+                      <AppText className="min-w-0 flex-1 text-[13px] leading-5" numberOfLines={2} style={{ color: theme.mutedText }}>
+                        {sale.location.address}, {sale.location.city}
+                      </AppText>
+                    </View>
+                  </View>
+
+                  <AppText
+                    className="text-[15px] font-bold leading-5"
+                    numberOfLines={1}
+                    style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
+                  >
+                    {formatCurrency(sale.importe)}
+                  </AppText>
+                </View>
+
+                <View className="mt-3 flex-row items-center justify-between gap-3">
+                  <View className="flex-row items-center gap-2">
+                    <CalendarDays color={theme.mutedText} size={14} strokeWidth={2.1} />
+                    <AppText className="text-[12px] font-semibold leading-4" style={{ color: theme.mutedText }}>
+                      {formatSaleDate(sale.fecha)}
+                    </AppText>
+                  </View>
+                  <AppText
+                    className="text-[12px] font-semibold leading-4"
+                    numberOfLines={1}
+                    style={{ color: theme.mutedText, fontVariant: ["tabular-nums"] }}
+                  >
+                    {sale.location.latitude.toFixed(4)}, {sale.location.longitude.toFixed(4)}
+                  </AppText>
+                </View>
+              </View>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

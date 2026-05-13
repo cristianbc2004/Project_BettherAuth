@@ -5,6 +5,21 @@ export type IncomePersonLocation = {
   status: "moving" | "offline" | "online";
 };
 
+export type IncomeSaleLocation = {
+  address: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+};
+
+export type IncomePersonSale = {
+  cliente: string;
+  fecha: string;
+  id: string;
+  importe: number;
+  location: IncomeSaleLocation;
+};
+
 export type IncomePerson = {
   cargo: string;
   comision: number;
@@ -14,6 +29,7 @@ export type IncomePerson = {
   nombre: string;
   observacion: string;
   porcentajeDelTotal: number;
+  ventas: IncomePersonSale[];
   ventasRealizadas: number;
 };
 

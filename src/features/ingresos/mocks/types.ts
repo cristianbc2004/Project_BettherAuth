@@ -1,1 +1,7 @@
-export type { IncomePerson, IncomePersonLocation, MonthlyIncomePoint } from "@/shared/types/ingresos";
+export type {
+  IncomePerson,
+  IncomePersonLocation,
+  IncomePersonSale,
+  IncomeSaleLocation,
+  MonthlyIncomePoint,
+} from "@/shared/types/ingresos";
