@@ -34,6 +34,69 @@ const transactionSeeds = [
 
 const cardLastDigits = ["8979", "9489", "2469", "3887"];
 
+const merchantLocations: Record<string, Transaction["location"]> = {
+  "Amazon": {
+    address: "Calle de Orense 34, Madrid",
+    latitude: 40.4528,
+    longitude: -3.6945,
+  },
+  "Apple Store": {
+    address: "Puerta del Sol 1, Madrid",
+    latitude: 40.4169,
+    longitude: -3.7035,
+  },
+  "Bizum de Laura": {
+    address: "Plaza de Espana, Madrid",
+    latitude: 40.423,
+    longitude: -3.7122,
+  },
+  "Cafeteria Roma": {
+    address: "Calle de Alcala 96, Madrid",
+    latitude: 40.4216,
+    longitude: -3.6818,
+  },
+  "Decathlon": {
+    address: "Calle de Preciados 10, Madrid",
+    latitude: 40.4181,
+    longitude: -3.7058,
+  },
+  "Farmacia Central": {
+    address: "Calle de Atocha 45, Madrid",
+    latitude: 40.4132,
+    longitude: -3.7007,
+  },
+  "Iberdrola": {
+    address: "Paseo de la Castellana 20, Madrid",
+    latitude: 40.4307,
+    longitude: -3.6899,
+  },
+  "Mercadona": {
+    address: "Calle de Fuencarral 77, Madrid",
+    latitude: 40.4252,
+    longitude: -3.7004,
+  },
+  "Metro Madrid": {
+    address: "Estacion Gran Via, Madrid",
+    latitude: 40.42,
+    longitude: -3.7018,
+  },
+  "Nomina": {
+    address: "Avenida de America 6, Madrid",
+    latitude: 40.438,
+    longitude: -3.6769,
+  },
+  "Repsol": {
+    address: "Calle de Mateo Inurria 15, Madrid",
+    latitude: 40.4667,
+    longitude: -3.6889,
+  },
+  "Spotify": {
+    address: "Calle Serrano 41, Madrid",
+    latitude: 40.4261,
+    longitude: -3.6879,
+  },
+};
+
 function formatTransactionAmount(value: number) {
   const absoluteValue = Math.abs(value);
   const euros = Math.trunc(absoluteValue);
@@ -75,6 +138,7 @@ function buildTransaction(index: number): Transaction {
     },
     icon: seed.icon,
     id: `transaction-${index + 1}`,
+    location: merchantLocations[seed.merchant],
     merchant: seed.merchant,
     time,
     tone: isIncome ? "income" : "expense",

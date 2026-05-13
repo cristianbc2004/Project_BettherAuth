@@ -143,8 +143,7 @@ export default function HomeScreen() {
       })),
     [],
   );
-  const highlightedPoint = selectedPoint ?? balancePoints[balancePoints.length - 1];
-  const periodDelta = highlightedPoint.value - balancePoints[0].value;
+  const currentBalancePoint = selectedPoint ?? balancePoints[balancePoints.length - 1];
   const openBalanceGraph = useCallback(() => {
     if (chartNavigationLockRef.current) {
       return;
@@ -255,56 +254,37 @@ export default function HomeScreen() {
                   : {}),
               }}
             >
-              <View className="flex-row items-start justify-between">
-                <View className="flex-1 pr-3">
-                  <AppText className="text-[12px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
-                    Balance total
-                  </AppText>
-                  <AnimatedNumber
-                    animateOnMount={true}
-                    className="mt-3 text-[32px] font-black leading-[40px]"
-                    formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
-                    style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
-                    value={highlightedPoint.value}
-                  />
-                </View>
-
-                <View className="rounded-full px-3 py-2" style={{ backgroundColor: theme.primarySoft }}>
-                  <AnimatedNumber
-                    animateOnMount={true}
-                    className="text-[12px] font-black"
-                    formatValue={(nextValue) => {
-                      const roundedValue = Math.round(nextValue);
-                      const sign = roundedValue > 0 ? "+" : "";
-
-                      return `${sign}${formatCurrency(roundedValue)}`;
-                    }}
-                    style={{ color: theme.primary }}
-                    value={periodDelta}
-                  />
-                </View>
-              </View>
-
-              <AppText className="mt-1 text-[14px] font-semibold leading-5" style={{ color: theme.mutedText }}>
-                {selectedPoint ? highlightedPoint.label : "Resumen semanal"}
+              <AppText
+                className="text-center text-[15px] font-semibold leading-5"
+                style={{ color: theme.mutedText }}
+              >
+                Resumen semanal
               </AppText>
 
-              <View className="mt-5">
-                <View className="h-[208px]" style={{ width: chartWidth }}>
+              <AnimatedNumber
+                animateOnMount={true}
+                className="mt-2 text-center text-[34px] font-black leading-[42px]"
+                formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
+                style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
+                value={currentBalancePoint.value}
+              />
+
+              <View className="mt-6">
+                <View className="h-[128px]" style={{ width: chartWidth }}>
                   <NativeLineChart
                     color={graphColor}
                     enablePanGesture={true}
-                    gradientFillColors={[`${graphColor}66`, `${graphColor}10`]}
-                    height={208}
+                    gradientFillColors={["transparent", "transparent"]}
+                    height={128}
                     horizontalPadding={16}
-                    lineThickness={4}
+                    lineThickness={3}
                     onGestureEnd={handleGestureEnd}
                     onGestureStart={handleGestureStart}
                     onPointSelected={handlePointSelected}
                     onPress={openBalanceGraph}
                     panGestureDelay={40}
                     points={balancePoints}
-                    verticalPadding={20}
+                    verticalPadding={16}
                   />
                 </View>
               </View>

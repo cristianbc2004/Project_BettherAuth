@@ -33,6 +33,11 @@ export type Transaction = {
   };
   icon: ComponentType<any>;
   id: string;
+  location: {
+    address: string;
+    latitude: number;
+    longitude: number;
+  };
   merchant: string;
   time: string;
   tone: "expense" | "income";
