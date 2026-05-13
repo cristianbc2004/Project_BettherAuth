@@ -9,6 +9,7 @@ import { useAppTheme } from "@/shared/lib/theme-context";
 import { AppText } from "@/shared/components/ui/app-text";
 
 type SelectedPersonId = "all" | number;
+type IncomeGraphTab = "chart" | "detail";
 
 type IncomeGraphPoint = NativeLineChartPoint & {
   month: string;
@@ -16,6 +17,12 @@ type IncomeGraphPoint = NativeLineChartPoint & {
 };
 
 type PersonFilterProps = {
+  isActive: boolean;
+  label: string;
+  onPress: () => void;
+};
+
+type GraphTabButtonProps = {
   isActive: boolean;
   label: string;
   onPress: () => void;
@@ -44,17 +51,42 @@ function PersonFilter({ isActive, label, onPress }: PersonFilterProps) {
       accessibilityLabel={`Mostrar ingresos de ${label}`}
       accessibilityRole="button"
       accessibilityState={{ selected: isActive }}
-      className="mr-3 rounded-full border px-4 py-3"
+      className="min-w-[104px] rounded-xl border px-4 py-3"
       onPress={onPress}
       style={{
-        backgroundColor: isActive ? graphColor : theme.backgroundMuted,
-        borderColor: isActive ? graphColor : theme.border,
+        backgroundColor: isActive ? theme.primary : theme.backgroundElevated,
+        borderColor: isActive ? theme.primary : theme.border,
       }}
     >
       <AppText
-        className="text-[14px] font-semibold"
+        className="text-center text-[14px] font-semibold leading-5"
         numberOfLines={1}
-        style={{ color: isActive ? "#FFFFFF" : theme.text }}
+        style={{ color: isActive ? theme.textOnPrimary : theme.text }}
+      >
+        {label}
+      </AppText>
+    </Pressable>
+  );
+}
+
+function GraphTabButton({ isActive, label, onPress }: GraphTabButtonProps) {
+  const { theme } = useAppTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="tab"
+      accessibilityState={{ selected: isActive }}
+      className="flex-1 rounded-xl px-4 py-3"
+      onPress={onPress}
+      style={{
+        backgroundColor: isActive ? theme.backgroundElevated : "transparent",
+        borderColor: isActive ? theme.border : "transparent",
+        borderWidth: 1,
+      }}
+    >
+      <AppText
+        className="text-center text-[14px] font-black leading-5"
+        style={{ color: isActive ? theme.text : theme.mutedText }}
       >
         {label}
       </AppText>
@@ -78,6 +110,7 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
   const [selectedPersonId, setSelectedPersonId] = useState<SelectedPersonId>(
     initialSelectedPersonId ?? "all",
   );
+  const [selectedTab, setSelectedTab] = useState<IncomeGraphTab>("chart");
   const [selectedPoint, setSelectedPoint] = useState<IncomeGraphPoint | null>(null);
 
   useEffect(() => {
@@ -111,20 +144,37 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
     [selectedPersonId],
   );
 
-  const max = useMemo(
-    () => priceHistory.reduce((currentMax, point) => (point.value > currentMax.value ? point : currentMax)),
-    [priceHistory],
-  );
-  const min = useMemo(
-    () => priceHistory.reduce((currentMin, point) => (point.value < currentMin.value ? point : currentMin)),
-    [priceHistory],
-  );
   const highlightedPoint = selectedPoint ?? priceHistory[priceHistory.length - 1];
+  const highlightedPointIndex = Math.max(
+    priceHistory.findIndex((point) => point.date.getTime() === highlightedPoint.date.getTime()),
+    0,
+  );
+  const comparisonPoint = priceHistory[Math.max(highlightedPointIndex - 1, 0)];
+  const totalIncome = mockIngresos.detalles.reduce((total, person) => total + person.ingresos, 0);
+  const rangeSummary = `${mockIngresos.general.periodo} - ${priceHistory[0].month} - ${priceHistory[priceHistory.length - 1].month}`;
+  const previousPeriodDelta = highlightedPoint.value - comparisonPoint.value;
+  const isPositiveDelta = previousPeriodDelta >= 0;
+  const deltaTextColor = isPositiveDelta ? theme.success : theme.danger;
+  const deltaBackgroundColor = isPositiveDelta ? "rgba(5, 150, 105, 0.12)" : "rgba(220, 38, 38, 0.12)";
+  const deltaDirection = isPositiveDelta ? "\u25B3" : "\u25BD";
+
+  const workerDetails = useMemo(() => {
+    if (selectedPersonId === "all") {
+      return [...mockIngresos.detalles].sort((first, second) => second.ingresos - first.ingresos);
+    }
+
+    return mockIngresos.detalles.filter((person) => person.id === selectedPersonId);
+  }, [selectedPersonId]);
 
   const handlePersonPress = useCallback((personId: SelectedPersonId) => {
     selectionHaptic();
     setSelectedPoint(null);
     setSelectedPersonId(personId);
+  }, []);
+
+  const handleTabPress = useCallback((tab: IncomeGraphTab) => {
+    selectionHaptic();
+    setSelectedTab(tab);
   }, []);
 
   const handlePointSelected = useCallback((point: IncomeGraphPoint) => {
@@ -143,90 +193,72 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
 
   return (
     <View className="mt-6">
-      <AppText className="text-[13px] font-semibold uppercase tracking-[1.3px]" style={{ color: theme.mutedText }}>
-        Ingresos por mes
+      <AppText className="text-[12px] font-black uppercase tracking-[1.4px]" style={{ color: theme.mutedText }}>
+        Rango
       </AppText>
-      <AnimatedNumber
-        animateOnMount={true}
-        className="mt-2 text-[26px] font-bold leading-[34px]"
-        formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
-        style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
-        value={highlightedPoint.value}
-      />
-      <AppText className="mt-1 text-[14px] leading-5" numberOfLines={2} style={{ color: theme.mutedText }}>
-        {selectedPersonName} - {highlightedPoint.month}
+      <AppText className="mt-1 text-[14px] font-semibold leading-5" style={{ color: theme.mutedText }}>
+        {rangeSummary}
       </AppText>
 
-      <View className="mt-5 flex-row items-center justify-between gap-4 px-1">
+      <View className="mt-4 flex-row items-end justify-between gap-4">
         <View className="flex-1">
-          <AppText className="text-[11px] font-black uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
-            Minimo
+          <AppText className="text-[13px] font-semibold leading-5" style={{ color: theme.mutedText }}>
+            Ingresos
           </AppText>
-          <AppText
-            className="mt-1 text-[16px] font-black leading-[22px]"
-            numberOfLines={1}
+          <AnimatedNumber
+            animateOnMount={true}
+            className="mt-1 text-[34px] font-black leading-[42px]"
+            formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
             style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
-          >
-            {formatCurrency(min.value)}
-          </AppText>
-          <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
-            {min.month}
-          </AppText>
+            value={highlightedPoint.value}
+          />
         </View>
 
-        <View className="flex-1 items-end">
-          <AppText className="text-[11px] font-black uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
-            Maximo
-          </AppText>
-          <AppText
-            className="mt-1 text-[16px] font-black leading-[22px]"
-            numberOfLines={1}
-            style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
-          >
-            {formatCurrency(max.value)}
-          </AppText>
-          <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
-            {max.month}
+        <View className="mb-1 rounded-full px-3 py-2" style={{ backgroundColor: deltaBackgroundColor }}>
+          <AppText className="text-[15px] font-black leading-5" style={{ color: deltaTextColor, fontVariant: ["tabular-nums"] }}>
+            {deltaDirection} {formatCurrency(Math.abs(previousPeriodDelta))}
           </AppText>
         </View>
       </View>
 
-      <ScrollView
-        className="mt-5"
-        contentContainerClassName="pr-2"
-        horizontal
-        showsHorizontalScrollIndicator={false}
-      >
-        <PersonFilter
-          isActive={selectedPersonId === "all"}
-          label="Todos"
-          onPress={() => handlePersonPress("all")}
-        />
-        {mockIngresos.detalles.map((person) => (
-          <PersonFilter
-            isActive={selectedPersonId === person.id}
-            key={person.id}
-            label={person.nombre}
-            onPress={() => handlePersonPress(person.id)}
-          />
-        ))}
-      </ScrollView>
+      <AppText className="mt-1 text-[14px] leading-5" numberOfLines={2} style={{ color: theme.mutedText }}>
+        Ingresos de {selectedPersonName} en {highlightedPoint.month}
+      </AppText>
+        
+      <View className="mt-6">
 
-      <View className="mt-5 h-[240px]">
-        <NativeLineChart
-          color={graphColor}
-          enablePanGesture={true}
-          gradientFillColors={[`${graphColor}66`, `${graphColor}10`]}
-          height={240}
-          horizontalPadding={16}
-          lineThickness={4}
-          onGestureEnd={handleGestureEnd}
-          onGestureStart={handleGestureStart}
-          onPointSelected={handlePointSelected}
-          panGestureDelay={80}
-          points={priceHistory}
-          verticalPadding={24}
-        />
+        <View className="mt-5 h-[260px]">
+          <NativeLineChart
+            color={graphColor}
+            enablePanGesture={true}
+            gradientFillColors={[`${graphColor}66`, `${graphColor}10`]}
+            height={260}
+            horizontalPadding={12}
+            lineThickness={4}
+            onGestureEnd={handleGestureEnd}
+            onGestureStart={handleGestureStart}
+            onPointSelected={handlePointSelected}
+            panGestureDelay={40}
+            points={priceHistory}
+            verticalPadding={24}
+          />
+        </View>
+      </View>
+
+      <View className="mt-6 border-t pt-5" style={{ borderColor: theme.border }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row gap-3 pr-2">
+            
+            {mockIngresos.detalles.map((person) => (
+              <PersonFilter
+                isActive={selectedPersonId === person.id}
+                key={person.id}
+                label={person.nombre}
+                onPress={() => handlePersonPress(person.id)}
+              />
+            ))}
+          </View>
+        </ScrollView>
       </View>
     </View>
   );
