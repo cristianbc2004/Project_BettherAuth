@@ -12,6 +12,7 @@ type AppScreenHeaderProps = {
   fallbackHref?: Parameters<typeof backOrReplace>[0];
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
+  showDivider?: boolean;
   title?: string;
 };
 
@@ -21,6 +22,7 @@ export function AppScreenHeader({
   fallbackHref,
   leftSlot,
   rightSlot,
+  showDivider = true,
   title,
 }: AppScreenHeaderProps) {
   const { theme } = useAppTheme();
@@ -50,7 +52,7 @@ export function AppScreenHeader({
           {rightSlot ? rightSlot : <View className="h-11 w-11" />}
         </View>
       </View>
-      <View className="mt-4 h-px" style={{ backgroundColor: theme.border }} />
+      {showDivider ? <View className="mt-4 h-px" style={{ backgroundColor: theme.border }} /> : null}
     </View>
   );
 }
