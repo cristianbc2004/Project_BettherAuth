@@ -7,6 +7,7 @@ import { authClient } from "@/features/auth/services/auth-client";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
 import { PersonDetailsSkeleton } from "@/features/ingresos/components/person/person-skeletons";
 import { mockIngresos } from "@/features/ingresos/mocks";
+import { usePersonSelection } from "@/features/ingresos/lib/person-selection-context";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
@@ -35,6 +36,12 @@ function getSelectedPerson(personId?: string) {
   );
 }
 
+function getSelectedPersonId(personId?: string, fallbackPersonId?: number) {
+  const selectedPersonId = personId ? Number(personId) : fallbackPersonId;
+
+  return Number.isFinite(selectedPersonId) ? selectedPersonId : undefined;
+}
+
 const PERSON_SKELETON_MINIMUM_MS = 3000;
 
 export default function PersonDetailsScreen() {
@@ -43,9 +50,11 @@ export default function PersonDetailsScreen() {
     showOnMount: true,
   });
   const { theme } = useAppTheme();
+  const { selectedPersonId: selectedPersonIdFromTabs } = usePersonSelection();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
-  const selectedPerson = getSelectedPerson(personId);
-  const generalHref = personId ? (`/person?personId=${personId}` as const) : "/person";
+  const selectedPersonId = getSelectedPersonId(personId, selectedPersonIdFromTabs);
+  const selectedPerson = getSelectedPerson(selectedPersonId ? String(selectedPersonId) : undefined);
+  const generalHref = selectedPersonId ? (`/person?personId=${selectedPersonId}` as const) : "/person";
 
   if (showSessionLoading) {
     return <PersonDetailsSkeleton />;
@@ -110,14 +119,6 @@ export default function PersonDetailsScreen() {
               </AppText>
               <AppText className="mt-1 text-[20px] font-bold leading-[26px]" style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
                 {selectedPerson.ventasRealizadas}
-              </AppText>
-            </View>
-            <View className="flex-1">
-              <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
-                % Del total
-              </AppText>
-              <AppText className="mt-1 text-[20px] font-bold leading-[26px]" style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
-                {selectedPerson.porcentajeDelTotal}%
               </AppText>
             </View>
           </View>

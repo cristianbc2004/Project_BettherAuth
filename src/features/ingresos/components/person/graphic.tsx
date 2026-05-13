@@ -8,9 +8,6 @@ import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { AppText } from "@/shared/components/ui/app-text";
 
-type SelectedPersonId = "all" | number;
-type IncomeGraphTab = "chart" | "detail";
-
 type IncomeGraphPoint = NativeLineChartPoint & {
   month: string;
   person: string;
@@ -22,18 +19,14 @@ type PersonFilterProps = {
   onPress: () => void;
 };
 
-type GraphTabButtonProps = {
-  isActive: boolean;
-  label: string;
-  onPress: () => void;
-};
-
 type GraphicProps = {
   initialSelectedPersonId?: number;
   onGraphInteractionChange?: (isInteracting: boolean) => void;
+  onSelectedPersonChange?: (personId: number) => void;
 };
 
 const graphColor = "#4484B2";
+const defaultPersonId = mockIngresos.detalles[0].id;
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("es-ES", {
@@ -69,79 +62,43 @@ function PersonFilter({ isActive, label, onPress }: PersonFilterProps) {
   );
 }
 
-function GraphTabButton({ isActive, label, onPress }: GraphTabButtonProps) {
-  const { theme } = useAppTheme();
-
-  return (
-    <Pressable
-      accessibilityRole="tab"
-      accessibilityState={{ selected: isActive }}
-      className="flex-1 rounded-xl px-4 py-3"
-      onPress={onPress}
-      style={{
-        backgroundColor: isActive ? theme.backgroundElevated : "transparent",
-        borderColor: isActive ? theme.border : "transparent",
-        borderWidth: 1,
-      }}
-    >
-      <AppText
-        className="text-center text-[14px] font-black leading-5"
-        style={{ color: isActive ? theme.text : theme.mutedText }}
-      >
-        {label}
-      </AppText>
-    </Pressable>
-  );
-}
-
 function getPointDate(date: string) {
   return new Date(`${date}T00:00:00`);
 }
 
-function getMonthlyTotal(monthIndex: number) {
-  return mockIngresos.grafica[monthIndex].ingresosPorPersona.reduce(
-    (total, personIncome) => total + personIncome.ingresos,
-    0,
-  );
-}
-
-export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: GraphicProps) {
+export function Graphic({
+  initialSelectedPersonId,
+  onGraphInteractionChange,
+  onSelectedPersonChange,
+}: GraphicProps) {
   const { theme } = useAppTheme();
-  const [selectedPersonId, setSelectedPersonId] = useState<SelectedPersonId>(
-    initialSelectedPersonId ?? "all",
+  const [selectedPersonId, setSelectedPersonId] = useState<number>(
+    initialSelectedPersonId ?? defaultPersonId,
   );
-  const [selectedTab, setSelectedTab] = useState<IncomeGraphTab>("chart");
   const [selectedPoint, setSelectedPoint] = useState<IncomeGraphPoint | null>(null);
 
   useEffect(() => {
-    setSelectedPersonId(initialSelectedPersonId ?? "all");
+    setSelectedPersonId(initialSelectedPersonId ?? defaultPersonId);
     setSelectedPoint(null);
   }, [initialSelectedPersonId]);
 
   const selectedPersonName = useMemo(() => {
-    if (selectedPersonId === "all") {
-      return "Todos";
-    }
-
-    return mockIngresos.detalles.find((person) => person.id === selectedPersonId)?.nombre ?? "Todos";
+    return mockIngresos.detalles.find((person) => person.id === selectedPersonId)?.nombre ?? "";
   }, [selectedPersonId]);
 
   const priceHistory = useMemo<IncomeGraphPoint[]>(
     () =>
-      mockIngresos.grafica.map((point, index) => {
-        const personIncome =
-          selectedPersonId === "all"
-            ? null
-            : point.ingresosPorPersona.find((income) => income.personaId === selectedPersonId);
+      mockIngresos.grafica.map((point) => {
+        const personIncome = point.ingresosPorPersona.find((income) => income.personaId === selectedPersonId);
 
         return {
           date: getPointDate(point.fecha),
           month: point.mes,
-          person: personIncome?.persona ?? "Todos",
-          value: personIncome?.ingresos ?? getMonthlyTotal(index),
+          person: personIncome?.persona ?? selectedPersonName,
+          value: personIncome?.ingresos ?? 0,
         };
       }),
-    [selectedPersonId],
+    [selectedPersonId, selectedPersonName],
   );
 
   const highlightedPoint = selectedPoint ?? priceHistory[priceHistory.length - 1];
@@ -150,7 +107,6 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
     0,
   );
   const comparisonPoint = priceHistory[Math.max(highlightedPointIndex - 1, 0)];
-  const totalIncome = mockIngresos.detalles.reduce((total, person) => total + person.ingresos, 0);
   const rangeSummary = `${mockIngresos.general.periodo} - ${priceHistory[0].month} - ${priceHistory[priceHistory.length - 1].month}`;
   const previousPeriodDelta = highlightedPoint.value - comparisonPoint.value;
   const isPositiveDelta = previousPeriodDelta >= 0;
@@ -158,24 +114,12 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
   const deltaBackgroundColor = isPositiveDelta ? "rgba(5, 150, 105, 0.12)" : "rgba(220, 38, 38, 0.12)";
   const deltaDirection = isPositiveDelta ? "\u25B3" : "\u25BD";
 
-  const workerDetails = useMemo(() => {
-    if (selectedPersonId === "all") {
-      return [...mockIngresos.detalles].sort((first, second) => second.ingresos - first.ingresos);
-    }
-
-    return mockIngresos.detalles.filter((person) => person.id === selectedPersonId);
-  }, [selectedPersonId]);
-
-  const handlePersonPress = useCallback((personId: SelectedPersonId) => {
+  const handlePersonPress = useCallback((personId: number) => {
     selectionHaptic();
     setSelectedPoint(null);
     setSelectedPersonId(personId);
-  }, []);
-
-  const handleTabPress = useCallback((tab: IncomeGraphTab) => {
-    selectionHaptic();
-    setSelectedTab(tab);
-  }, []);
+    onSelectedPersonChange?.(personId);
+  }, [onSelectedPersonChange]);
 
   const handlePointSelected = useCallback((point: IncomeGraphPoint) => {
     setSelectedPoint(point);
