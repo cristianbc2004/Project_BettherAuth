@@ -148,12 +148,12 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
       </AppText>
       <AnimatedNumber
         animateOnMount={true}
-        className="mt-2 text-[26px] font-bold"
+        className="mt-2 text-[26px] font-bold leading-[34px]"
         formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
         style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
         value={highlightedPoint.value}
       />
-      <AppText className="mt-1 text-[14px]" style={{ color: theme.mutedText }}>
+      <AppText className="mt-1 text-[14px] leading-5" numberOfLines={2} style={{ color: theme.mutedText }}>
         {selectedPersonName} - {highlightedPoint.month}
       </AppText>
 
@@ -162,7 +162,11 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
           <AppText className="text-[11px] font-black uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
             Minimo
           </AppText>
-          <AppText className="mt-1 text-[16px] font-black" style={{ color: theme.text }}>
+          <AppText
+            className="mt-1 text-[16px] font-black leading-[22px]"
+            numberOfLines={1}
+            style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
+          >
             {formatCurrency(min.value)}
           </AppText>
           <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
@@ -174,7 +178,11 @@ export function Graphic({ initialSelectedPersonId, onGraphInteractionChange }: G
           <AppText className="text-[11px] font-black uppercase tracking-[1.6px]" style={{ color: theme.mutedText }}>
             Maximo
           </AppText>
-          <AppText className="mt-1 text-[16px] font-black" style={{ color: theme.text }}>
+          <AppText
+            className="mt-1 text-[16px] font-black leading-[22px]"
+            numberOfLines={1}
+            style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
+          >
             {formatCurrency(max.value)}
           </AppText>
           <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>

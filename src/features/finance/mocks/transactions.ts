@@ -32,6 +32,8 @@ const transactionSeeds = [
   { category: "Compras", icon: House, merchant: "Amazon" },
 ];
 
+const cardLastDigits = ["8979", "9489", "2469", "3887"];
+
 function formatTransactionAmount(value: number) {
   const absoluteValue = Math.abs(value);
   const euros = Math.trunc(absoluteValue);
@@ -61,6 +63,16 @@ function buildTransaction(index: number): Transaction {
   return {
     amount: formatTransactionAmount(value),
     category: seed.category,
+    detail: {
+      cardLastDigits: cardLastDigits[index % cardLastDigits.length],
+      concept: isIncome ? `Ingreso de ${seed.merchant}` : `Pago en ${seed.merchant}`,
+      date:
+        dayOffset === 0
+          ? `29/04/2026, ${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`
+          : `${(29 - (dayOffset % 27)).toString().padStart(2, "0")}/04/2026, ${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`,
+      reference: `NXM-${(2026040000 + index * 37).toString()}`,
+      status: index % 17 === 0 ? "Pendiente" : "Completado",
+    },
     icon: seed.icon,
     id: `transaction-${index + 1}`,
     merchant: seed.merchant,

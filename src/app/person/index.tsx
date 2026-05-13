@@ -58,10 +58,10 @@ export default function PersonGeneralScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <View className="mt-5">
-          <AppText className="text-[22px] font-bold" style={{ color: theme.text }}>
+          <AppText className="text-[22px] font-bold leading-[28px]" style={{ color: theme.text }}>
             {selectedPerson.nombre}
           </AppText>
-          <AppText className="mt-2 text-[16px]" style={{ color: theme.mutedText }}>
+          <AppText className="mt-2 text-[16px] leading-[22px]" style={{ color: theme.mutedText }}>
             {selectedPerson.cargo}
           </AppText>
         </View>
@@ -70,10 +70,13 @@ export default function PersonGeneralScreen() {
           <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
             Ingreso del periodo
           </AppText>
-          <AppText className="mt-2 text-[30px] font-bold" style={{ color: theme.text }}>
+          <AppText
+            className="mt-2 text-[30px] font-bold leading-[38px]"
+            style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
+          >
             {formatCurrency(selectedPerson.ingresos)}
           </AppText>
-          <AppText className="mt-2 text-[15px]" style={{ color: theme.mutedText }}>
+          <AppText className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
             {mockIngresos.general.periodo}
           </AppText>
         </View>

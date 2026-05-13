@@ -44,7 +44,8 @@ function FilterChip({ isActive, label, onPress }: FilterChipProps) {
       }}
     >
       <AppText
-        className="text-center text-[14px] font-semibold"
+        className="text-center text-[14px] font-semibold leading-5"
+        numberOfLines={1}
         style={{ color: isActive ? theme.textOnPrimary : theme.text }}
       >
         {label}
@@ -298,24 +299,24 @@ export default function HomeGraphicScreen() {
                 borderColor: selectedFilter === "custom" ? theme.primary : theme.border,
               }}
             >
-              <AppText className="text-[14px] font-semibold" style={{ color: theme.text }}>
+              <AppText className="text-[14px] font-semibold leading-5" numberOfLines={1} style={{ color: theme.text }}>
                 Rango personalizado
               </AppText>
             </Pressable>
           </View>
 
-          <AppText className="mt-4 text-[14px] font-semibold" style={{ color: theme.mutedText }}>
+          <AppText className="mt-4 text-[14px] font-semibold leading-5" style={{ color: theme.mutedText }}>
             Rango activo: {rangeSummary}
           </AppText>
 
           <AnimatedNumber
             animateOnMount={true}
-            className="mt-2 text-[32px] font-black"
+            className="mt-2 text-[32px] font-black leading-[40px]"
             formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
             style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
             value={highlightedPoint.value}
           />
-          <AppText className="mt-1 text-[14px]" style={{ color: theme.mutedText }}>
+          <AppText className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
             Balance en {highlightedPoint.label}
           </AppText>
 
@@ -340,16 +341,16 @@ export default function HomeGraphicScreen() {
         </View>
 
         <View className="mt-6 border-t pt-6" style={{ borderColor: theme.border }}>
-          <AppText className="text-[18px] font-black" style={{ color: theme.text }}>
+          <AppText className="text-[18px] font-black leading-6" style={{ color: theme.text }}>
             Datos
           </AppText>
-          <AppText className="mt-3 text-[16px]" style={{ color: theme.mutedText }}>
+          <AppText className="mt-3 text-[16px] leading-6" style={{ color: theme.mutedText, fontVariant: ["tabular-nums"] }}>
             Minimo: {formatCurrency(minValue)}
           </AppText>
-          <AppText className="mt-1 text-[16px]" style={{ color: theme.mutedText }}>
+          <AppText className="mt-1 text-[16px] leading-6" style={{ color: theme.mutedText, fontVariant: ["tabular-nums"] }}>
             Maximo: {formatCurrency(maxValue)}
           </AppText>
-          <AppText className="mt-1 text-[16px]" style={{ color: theme.mutedText }}>
+          <AppText className="mt-1 text-[16px] leading-6" style={{ color: theme.mutedText, fontVariant: ["tabular-nums"] }}>
             Promedio: {formatCurrency(averageValue)}
           </AppText>
         </View>
@@ -375,13 +376,13 @@ export default function HomeGraphicScreen() {
             className="w-full max-w-[360px] rounded-2xl border p-5"
             style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}
           >
-            <AppText className="text-[20px] font-black" style={{ color: theme.text }}>
+            <AppText className="text-[20px] font-black leading-[26px]" style={{ color: theme.text }}>
               Rango personalizado
             </AppText>
 
             <View className="mt-4 gap-4">
               <View>
-                <AppText className="mb-2 text-[13px] font-semibold" style={{ color: theme.mutedText }}>
+                <AppText className="mb-2 text-[13px] font-semibold leading-5" style={{ color: theme.mutedText }}>
                   Inicio
                 </AppText>
                 <TextInput
@@ -397,7 +398,7 @@ export default function HomeGraphicScreen() {
               </View>
 
               <View>
-                <AppText className="mb-2 text-[13px] font-semibold" style={{ color: theme.mutedText }}>
+                <AppText className="mb-2 text-[13px] font-semibold leading-5" style={{ color: theme.mutedText }}>
                   Fin
                 </AppText>
                 <TextInput
@@ -414,7 +415,7 @@ export default function HomeGraphicScreen() {
             </View>
 
             {rangeError ? (
-              <AppText className="mt-3 text-[13px] font-medium" style={{ color: theme.danger }}>
+              <AppText className="mt-3 text-[13px] font-medium leading-5" style={{ color: theme.danger }}>
                 {rangeError}
               </AppText>
             ) : null}
@@ -425,7 +426,7 @@ export default function HomeGraphicScreen() {
                 onPress={() => setIsCustomModalOpen(false)}
                 style={{ borderColor: theme.border }}
               >
-                <AppText className="text-[14px] font-semibold" style={{ color: theme.text }}>
+                <AppText className="text-[14px] font-semibold leading-5" style={{ color: theme.text }}>
                   Cancelar
                 </AppText>
               </Pressable>
@@ -435,7 +436,7 @@ export default function HomeGraphicScreen() {
                 onPress={applyCustomRange}
                 style={{ backgroundColor: theme.primary }}
               >
-                <AppText className="text-[14px] font-semibold" style={{ color: theme.textOnPrimary }}>
+                <AppText className="text-[14px] font-semibold leading-5" style={{ color: theme.textOnPrimary }}>
                   Aplicar
                 </AppText>
               </Pressable>

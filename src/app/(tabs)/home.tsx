@@ -262,7 +262,7 @@ export default function HomeScreen() {
                   </AppText>
                   <AnimatedNumber
                     animateOnMount={true}
-                    className="mt-3 text-[32px] font-black"
+                    className="mt-3 text-[32px] font-black leading-[40px]"
                     formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
                     style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
                     value={highlightedPoint.value}
@@ -285,7 +285,7 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              <AppText className="mt-1 text-[14px] font-semibold" style={{ color: theme.mutedText }}>
+              <AppText className="mt-1 text-[14px] font-semibold leading-5" style={{ color: theme.mutedText }}>
                 {selectedPoint ? highlightedPoint.label : "Resumen semanal"}
               </AppText>
 
