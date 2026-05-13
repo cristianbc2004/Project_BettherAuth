@@ -24,6 +24,13 @@ export type WalletCard = {
 export type Transaction = {
   amount: string;
   category: string;
+  detail: {
+    cardLastDigits: string;
+    concept: string;
+    date: string;
+    reference: string;
+    status: "Completado" | "Pendiente";
+  };
   icon: ComponentType<any>;
   id: string;
   merchant: string;

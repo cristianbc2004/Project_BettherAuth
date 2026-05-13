@@ -259,11 +259,11 @@ export default function PersonMapScreen() {
             }}
           >
             <View className="flex-row items-start justify-between gap-4">
-              <View className="flex-1">
-                <AppText className="text-[22px] font-bold" style={{ color: theme.text }}>
+              <View className="min-w-0 flex-1">
+                <AppText className="text-[22px] font-bold leading-[28px]" numberOfLines={2} style={{ color: theme.text }}>
                   {selectedPerson.nombre}
                 </AppText>
-                <AppText className="mt-1 text-[15px]" style={{ color: theme.mutedText }}>
+                <AppText className="mt-1 text-[15px] leading-6" numberOfLines={2} style={{ color: theme.mutedText }}>
                   {selectedPerson.cargo}
                 </AppText>
               </View>
@@ -273,7 +273,8 @@ export default function PersonMapScreen() {
                 style={{ backgroundColor: getStatusColors(selectedPerson.location.status, theme).soft }}
               >
                 <AppText
-                  className="text-[12px] font-semibold"
+                  className="text-[12px] font-semibold leading-4"
+                  numberOfLines={1}
                   style={{ color: getStatusColors(selectedPerson.location.status, theme).accent }}
                 >
                   {getStatusLabel(selectedPerson.location.status)}
@@ -295,7 +296,7 @@ export default function PersonMapScreen() {
                     Coordenadas
                   </AppText>
                 </View>
-                <AppText className="mt-2 text-[14px] font-semibold" style={{ color: theme.text }}>
+                <AppText className="mt-2 text-[14px] font-semibold leading-5" numberOfLines={2} style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
                   {selectedPerson.location.latitude.toFixed(4)}, {selectedPerson.location.longitude.toFixed(4)}
                 </AppText>
               </View>
@@ -313,7 +314,7 @@ export default function PersonMapScreen() {
                     Ultima señal
                   </AppText>
                 </View>
-                <AppText className="mt-2 text-[14px] font-semibold" style={{ color: theme.text }}>
+                <AppText className="mt-2 text-[14px] font-semibold leading-5" numberOfLines={2} style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
                   {formatLastUpdated(selectedPerson.location.lastUpdatedAt)}
                 </AppText>
               </View>

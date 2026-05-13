@@ -59,26 +59,26 @@ export default function PersonDetailsScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <View className="mt-6">
-          <AppText className="text-[20px] font-bold" style={{ color: theme.text }}>
+          <AppText className="text-[20px] font-bold leading-[26px]" style={{ color: theme.text }}>
             {selectedPerson.nombre}
           </AppText>
-          <AppText className="mt-2 text-[16px]" style={{ color: theme.mutedText }}>
+          <AppText className="mt-2 text-[16px] leading-[22px]" style={{ color: theme.mutedText }}>
             Detalle de ingresos - {mockIngresos.general.periodo}
           </AppText>
         </View>
 
         <View className="mt-8">
           <View className="flex-row items-start justify-between gap-4">
-            <View className="flex-1">
-              <AppText className="text-[20px] font-bold" style={{ color: theme.text }}>
+            <View className="min-w-0 flex-1">
+              <AppText className="text-[20px] font-bold leading-[26px]" numberOfLines={2} style={{ color: theme.text }}>
                 {selectedPerson.nombre}
               </AppText>
-              <AppText className="mt-1 text-[15px] font-semibold" style={{ color: theme.mutedText }}>
+              <AppText className="mt-1 text-[15px] font-semibold leading-6" numberOfLines={2} style={{ color: theme.mutedText }}>
                 {selectedPerson.cargo}
               </AppText>
             </View>
             <View className="px-3 py-2">
-              <AppText className="text-[13px] font-bold" style={{ color: theme.text }}>
+              <AppText className="text-[13px] font-bold leading-5" style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
                 {selectedPerson.porcentajeDelTotal}%
               </AppText>
             </View>
@@ -89,7 +89,11 @@ export default function PersonDetailsScreen() {
               <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
                 Ingresos
               </AppText>
-              <AppText className="mt-1 text-[22px] font-bold" style={{ color: theme.text }}>
+              <AppText
+                className="mt-1 text-[22px] font-bold leading-[30px]"
+                numberOfLines={1}
+                style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
+              >
                 {formatCurrency(selectedPerson.ingresos)}
               </AppText>
             </View>
@@ -97,7 +101,11 @@ export default function PersonDetailsScreen() {
               <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
                 {"Comisi\u00f3n"}
               </AppText>
-              <AppText className="mt-1 text-[22px] font-bold" style={{ color: theme.text }}>
+              <AppText
+                className="mt-1 text-[22px] font-bold leading-[30px]"
+                numberOfLines={1}
+                style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
+              >
                 {formatCurrency(selectedPerson.comision)}
               </AppText>
             </View>
@@ -108,7 +116,7 @@ export default function PersonDetailsScreen() {
               <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
                 Ventas
               </AppText>
-              <AppText className="mt-1 text-[20px] font-bold" style={{ color: theme.text }}>
+              <AppText className="mt-1 text-[20px] font-bold leading-[26px]" style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
                 {selectedPerson.ventasRealizadas}
               </AppText>
             </View>
@@ -116,7 +124,7 @@ export default function PersonDetailsScreen() {
               <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
                 % Del total
               </AppText>
-              <AppText className="mt-1 text-[20px] font-bold" style={{ color: theme.text }}>
+              <AppText className="mt-1 text-[20px] font-bold leading-[26px]" style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
                 {selectedPerson.porcentajeDelTotal}%
               </AppText>
             </View>

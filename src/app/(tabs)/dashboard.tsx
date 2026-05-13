@@ -82,7 +82,7 @@ function MenuRow({ detail, icon, label, onPress, theme, tone = "default" }: Menu
 function SectionLabel({ label, theme }: { label: string; theme: AppTheme }) {
   return (
     <AppText
-      className="mb-3 mt-6 px-1 text-[22px] font-bold"
+      className="mb-4 mt-7 px-1 text-[22px] font-bold leading-[28px]"
     >
       {label}
     </AppText>
@@ -105,8 +105,8 @@ type OptionSelectorFrameProps = {
 
 function OptionSelectorFrame({ children, theme, title }: OptionSelectorFrameProps) {
   return (
-    <View className="mt-6 px-1">
-      <AppText className="mb-3 text-[22px] font-bold">
+    <View className="mt-7 px-1">
+      <AppText className="mb-4 text-[22px] font-bold leading-[28px]">
         {title}
       </AppText>
       {children}
@@ -124,7 +124,7 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: Them
 
   return (
     <OptionSelectorFrame theme={theme} title={title}>
-      <View className="flex-row gap-3">
+      <View className="flex-row gap-2">
         {options.map((option) => {
           const isSelected = selectedMode === option.mode;
           const OptionIcon = icons[option.mode];
@@ -133,7 +133,7 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: Them
             <Pressable
               accessibilityLabel={`Set ${option.label} theme`}
               accessibilityRole="button"
-              className="h-14 flex-1 flex-row items-center justify-center rounded-[16px] border px-3"
+              className="h-14 flex-1 flex-row items-center justify-center rounded-[16px] border px-2"
               key={option.mode}
               onPress={() => {
                 onSelect(option.mode);
@@ -144,9 +144,9 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: Them
                 borderColor: isSelected ? theme.primary : theme.border,
               }}
             >
-              <OptionIcon color={isSelected ? theme.primary : theme.text} size={24} strokeWidth={2.2} />
+              <OptionIcon color={isSelected ? theme.primary : theme.text} size={22} strokeWidth={2.2} />
               <AppText
-                className="ml-2 text-sm font-semibold"
+                className="ml-1.5 min-w-0 shrink text-[13px] font-semibold leading-5"
                 numberOfLines={1}
                 tone={isSelected ? "primary" : "default"}
               >
@@ -204,7 +204,7 @@ function LanguageSelector({ onSelect, selectedLocale, theme, title }: LanguageSe
                 </AppText>
               </View>
               <AppText
-                className="text-sm font-semibold"
+                className="min-w-0 shrink text-sm font-semibold leading-5"
                 numberOfLines={1}
                 tone={isSelected ? "primary" : "default"}
               >

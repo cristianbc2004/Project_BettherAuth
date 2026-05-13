@@ -21,14 +21,14 @@ type AppTextProps = TextProps & {
 };
 
 const variantClassNames: Record<AppTextVariant, string> = {
-  body: "text-[15px] font-medium leading-6",
-  button: "text-[14px] font-black",
-  caption: "text-[12px] font-semibold leading-4",
-  eyebrow: "text-[12px] font-black uppercase tracking-[1.6px]",
-  info: "text-[14px] leading-6",
-  screenTitle: "text-[24px] font-semibold",
-  sectionTitle: "text-[18px] font-black",
-  subtitle: "text-[13px] font-medium leading-5",
+  body: "text-[13px] font-medium leading-5",
+  button: "text-[12px] font-black",
+  caption: "text-[10px] font-semibold leading-4",
+  eyebrow: "text-[10px] font-black uppercase tracking-[1.6px]",
+  info: "text-[12px] leading-5",
+  screenTitle: "text-[22px] font-semibold",
+  sectionTitle: "text-[16px] font-black",
+  subtitle: "text-[11px] font-medium leading-4",
 };
 
 export const AppText = forwardRef<Text, AppTextProps>(function AppText(

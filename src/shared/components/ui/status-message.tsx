@@ -67,7 +67,7 @@ export function StatusMessage({ autoHideAfterMs, message, tone }: StatusMessageP
       }`}
       style={animatedStyle}
     >
-      <AppText className="text-[15px] font-medium leading-6 text-white">{message}</AppText>
+      <AppText className="text-[15px] font-medium leading-6" style={{ color: "#ffffff" }}>{message}</AppText>
     </Animated.View>
   );
 }
