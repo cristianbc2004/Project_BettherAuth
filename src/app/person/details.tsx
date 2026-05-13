@@ -1,11 +1,13 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { CalendarDays, MapPin } from "lucide-react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
 import { PersonDetailsSkeleton } from "@/features/ingresos/components/person/person-skeletons";
 import { mockIngresos } from "@/features/ingresos/mocks";
+import { usePersonSelection } from "@/features/ingresos/lib/person-selection-context";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
@@ -18,6 +20,13 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
+function formatSaleDate(value: string) {
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "2-digit",
+    month: "short",
+  }).format(new Date(value));
+}
+
 function getSelectedPerson(personId?: string) {
   const selectedPersonId = personId ? Number(personId) : undefined;
 
@@ -25,6 +34,12 @@ function getSelectedPerson(personId?: string) {
     mockIngresos.detalles.find((person) => person.id === selectedPersonId) ??
     mockIngresos.detalles[0]
   );
+}
+
+function getSelectedPersonId(personId?: string, fallbackPersonId?: number) {
+  const selectedPersonId = personId ? Number(personId) : fallbackPersonId;
+
+  return Number.isFinite(selectedPersonId) ? selectedPersonId : undefined;
 }
 
 const PERSON_SKELETON_MINIMUM_MS = 3000;
@@ -35,9 +50,11 @@ export default function PersonDetailsScreen() {
     showOnMount: true,
   });
   const { theme } = useAppTheme();
+  const { selectedPersonId: selectedPersonIdFromTabs } = usePersonSelection();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
-  const selectedPerson = getSelectedPerson(personId);
-  const generalHref = personId ? (`/person?personId=${personId}` as const) : "/person";
+  const selectedPersonId = getSelectedPersonId(personId, selectedPersonIdFromTabs);
+  const selectedPerson = getSelectedPerson(selectedPersonId ? String(selectedPersonId) : undefined);
+  const generalHref = selectedPersonId ? (`/person?personId=${selectedPersonId}` as const) : "/person";
 
   if (showSessionLoading) {
     return <PersonDetailsSkeleton />;
@@ -68,22 +85,6 @@ export default function PersonDetailsScreen() {
         </View>
 
         <View className="mt-8">
-          <View className="flex-row items-start justify-between gap-4">
-            <View className="min-w-0 flex-1">
-              <AppText className="text-[20px] font-bold leading-[26px]" numberOfLines={2} style={{ color: theme.text }}>
-                {selectedPerson.nombre}
-              </AppText>
-              <AppText className="mt-1 text-[15px] font-semibold leading-6" numberOfLines={2} style={{ color: theme.mutedText }}>
-                {selectedPerson.cargo}
-              </AppText>
-            </View>
-            <View className="px-3 py-2">
-              <AppText className="text-[13px] font-bold leading-5" style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
-                {selectedPerson.porcentajeDelTotal}%
-              </AppText>
-            </View>
-          </View>
-
           <View className="mt-5 flex-row gap-3">
             <View className="flex-1">
               <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
@@ -120,20 +121,67 @@ export default function PersonDetailsScreen() {
                 {selectedPerson.ventasRealizadas}
               </AppText>
             </View>
-            <View className="flex-1">
-              <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
-                % Del total
-              </AppText>
-              <AppText className="mt-1 text-[20px] font-bold leading-[26px]" style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
-                {selectedPerson.porcentajeDelTotal}%
-              </AppText>
-            </View>
           </View>
 
           <View className="mt-5 h-px" style={{ backgroundColor: theme.border }} />
           <AppText className="mt-4 text-[15px] leading-6" style={{ color: theme.mutedText }}>
             {selectedPerson.observacion}
           </AppText>
+        </View>
+
+        <View className="mt-8">
+          <View className="flex-row items-end justify-between gap-4">
+            <View className="min-w-0 flex-1">
+              <AppText className="text-[18px] font-bold leading-6" style={{ color: theme.text }}>
+                Ubicacion de ventas
+              </AppText>
+            </View>
+          </View>
+
+          <View className="mt-4 gap-3">
+            {selectedPerson.ventas.map((sale) => (
+              <View
+                className="rounded-[22px] border px-4 py-4"
+                key={sale.id}
+                style={{
+                  backgroundColor: theme.card,
+                  borderColor: theme.border,
+                }}
+              >
+                <View className="flex-row items-start justify-between gap-4">
+                  <View className="min-w-0 flex-1">
+                    <AppText className="text-[15px] font-bold leading-5" numberOfLines={1} style={{ color: theme.text }}>
+                      {sale.cliente}
+                    </AppText>
+                    <View className="mt-2 flex-row items-start gap-2">
+                      <MapPin color={theme.primary} size={15} strokeWidth={2.2} />
+                      <AppText className="min-w-0 flex-1 text-[13px] leading-5" numberOfLines={2} style={{ color: theme.mutedText }}>
+                        {sale.location.address}, {sale.location.city}
+                      </AppText>
+                    </View>
+                  </View>
+
+                  <AppText
+                    className="text-[15px] font-bold leading-5"
+                    numberOfLines={1}
+                    style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
+                  >
+                    {formatCurrency(sale.importe)}
+                  </AppText>
+                </View>
+
+                <View className="mt-3 flex-row items-center justify-between gap-3">
+                  <View className="flex-row items-center gap-2">
+                    <CalendarDays color={theme.mutedText} size={14} strokeWidth={2.1} />
+                    <AppText className="text-[12px] font-semibold leading-4" style={{ color: theme.mutedText }}>
+                      {formatSaleDate(sale.fecha)}
+                    </AppText>
+                  </View>
+                  
+                </View>
+              </View>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
