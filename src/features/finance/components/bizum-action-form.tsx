@@ -1,11 +1,14 @@
-import { useMemo, useRef, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMemo, useState, type ReactNode } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from "react-native";
-import { Check, ChevronDown, SendHorizontal } from "lucide-react-native";
+import { Check, CircleCheck, Search, SendHorizontal } from "lucide-react-native";
+import { z } from "zod";
 
 import type { BizumActionMode, BizumContact } from "@/features/finance/lib/bizum-api";
+import { AppText } from "@/shared/components/ui/app-text";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
-import { AppText } from "@/shared/components/ui/app-text";
 
 export type BizumActionPayload = {
   amount: number;
@@ -13,380 +16,614 @@ export type BizumActionPayload = {
   contact: BizumContact;
 };
 
+type BizumFlowStep = "contact" | "details" | "review" | "success";
+
 type BizumActionFormProps = {
+  availableBalanceCents: number;
+  completedPayload?: BizumActionPayload | null;
   contacts: BizumContact[];
   errorMessage?: string | null;
+  flowStep: BizumFlowStep;
   isSubmitting: boolean;
   mode: BizumActionMode;
-  onCancel: () => void;
+  onClose: () => void;
   onDismissError?: () => void;
+  onStepChange: (step: BizumFlowStep) => void;
   onSubmit: (payload: BizumActionPayload) => void;
+  onViewMovements: () => void;
 };
 
-function formatAmountPreview(value: string) {
-  if (!value) {
-    return "0,00 EUR";
-  }
+type BizumFormValues = {
+  amount: string;
+  concept: string;
+  contactId: string;
+};
 
-  const normalized = Number(value.replace(",", "."));
+function formatCents(value: number) {
+  return `${(value / 100).toFixed(2).replace(".", ",")} EUR`;
+}
 
-  if (Number.isNaN(normalized)) {
-    return "0,00 EUR";
-  }
+function formatAmount(value: number) {
+  return `${value.toFixed(2).replace(".", ",")} EUR`;
+}
 
-  return `${normalized.toFixed(2).replace(".", ",")} EUR`;
+function normalizeAmount(value: string) {
+  return Number(value.replace(",", "."));
+}
+
+function buildBizumSchema(mode: BizumActionMode, availableBalanceCents: number) {
+  return z
+    .object({
+      amount: z.string().trim().min(1, "Introduce un importe."),
+      concept: z.string().trim().max(42, "El concepto no puede superar 42 caracteres."),
+      contactId: z.string().trim().min(1, "Elige un contacto."),
+    })
+    .superRefine((values, context) => {
+      const parsedAmount = normalizeAmount(values.amount);
+      const amountCents = Math.round(parsedAmount * 100);
+
+      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+        context.addIssue({
+          code: "custom",
+          message: "Introduce un importe valido.",
+          path: ["amount"],
+        });
+        return;
+      }
+
+      if (amountCents < 50) {
+        context.addIssue({
+          code: "custom",
+          message: "El importe minimo es 0,50 EUR.",
+          path: ["amount"],
+        });
+      }
+
+      if (amountCents > 100000) {
+        context.addIssue({
+          code: "custom",
+          message: "El importe maximo por Bizum es 1.000,00 EUR.",
+          path: ["amount"],
+        });
+      }
+
+      if (mode === "send" && amountCents > availableBalanceCents) {
+        context.addIssue({
+          code: "custom",
+          message: "No tienes saldo suficiente para enviar ese Bizum.",
+          path: ["amount"],
+        });
+      }
+    });
 }
 
 export function BizumActionForm({
+  availableBalanceCents,
+  completedPayload,
   contacts,
   errorMessage,
+  flowStep,
   isSubmitting,
   mode,
-  onCancel,
+  onClose,
   onDismissError,
+  onStepChange,
   onSubmit,
+  onViewMovements,
 }: BizumActionFormProps) {
   const { theme } = useAppTheme();
-  const [amount, setAmount] = useState("");
-  const [concept, setConcept] = useState("");
-  const [isComboboxOpen, setIsComboboxOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const [isAmountFocused, setIsAmountFocused] = useState(false);
   const [isConceptFocused, setIsConceptFocused] = useState(false);
-  const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
-  const conceptInputRef = useRef<TextInput>(null);
 
-  const selectedContact = useMemo(
-    () => contacts.find((contact) => contact.id === selectedContactId) ?? null,
-    [contacts, selectedContactId],
-  );
-  const parsedAmount = Number(amount.replace(",", "."));
-  const isFormValid = Boolean(selectedContact) && Number.isFinite(parsedAmount) && parsedAmount > 0;
+  const schema = useMemo(() => buildBizumSchema(mode, availableBalanceCents), [availableBalanceCents, mode]);
+  const {
+    control,
+    formState: { errors },
+    getValues,
+    handleSubmit,
+    setValue,
+    trigger,
+    watch,
+  } = useForm<BizumFormValues>({
+    defaultValues: {
+      amount: "",
+      concept: "",
+      contactId: "",
+    },
+    mode: "onChange",
+    resolver: zodResolver(schema),
+  });
+
+  const amount = watch("amount");
+  const contactId = watch("contactId");
+  const selectedContact = useMemo(() => contacts.find((contact) => contact.id === contactId) ?? null, [contactId, contacts]);
+  const filteredContacts = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return contacts;
+    }
+
+    return contacts.filter((contact) => `${contact.name} ${contact.detail}`.toLowerCase().includes(normalizedQuery));
+  }, [contacts, query]);
+
+  const parsedAmount = normalizeAmount(amount);
+  const amountCents = Number.isFinite(parsedAmount) ? Math.round(parsedAmount * 100) : 0;
+  const amountPreview = amountCents > 0 ? formatAmount(parsedAmount) : "0,00 EUR";
+  const contactError = errors.contactId?.message;
+  const amountError = errors.amount?.message;
+  const conceptError = errors.concept?.message;
+
   const copy =
     mode === "send"
       ? {
-          actionAccessibilityLabel: "Enviar Bizum",
-          buttonLabel: "Enviar Bizum",
+          actionLabel: "Confirmar envio",
           contactLabel: "Destinatario",
           loadingDescription: "Estamos preparando el movimiento para que aparezca en tus ultimos pagos.",
           loadingTitle: "Enviando Bizum...",
-          title: "Enviar Bizum",
+          reviewTitle: "Confirmar envio",
+          successDescription: "El Bizum se ha enviado correctamente. Puedes comprobarlo en ultimos movimientos.",
+          successTitle: "Pago confirmado",
         }
       : {
-          actionAccessibilityLabel: "Pedir Bizum",
-          buttonLabel: "Pedir Bizum",
+          actionLabel: "Confirmar solicitud",
           contactLabel: "Persona",
           loadingDescription: "Estamos preparando la solicitud y avisaremos cuando se reciba el Bizum.",
           loadingTitle: "Pidiendo Bizum...",
-          title: "Pedir Bizum",
+          reviewTitle: "Confirmar solicitud",
+          successDescription: "La solicitud se ha enviado correctamente. Puedes seguirla desde tus ultimos movimientos.",
+          successTitle: "Solicitud enviada",
         };
 
-  const handleSubmit = () => {
-    if (!selectedContact || !isFormValid) {
+  const selectContact = (contact: BizumContact) => {
+    selectionHaptic();
+    onDismissError?.();
+    setValue("contactId", contact.id, { shouldDirty: true, shouldValidate: true });
+    onStepChange("details");
+  };
+
+  const continueFromDetails = async () => {
+    onDismissError?.();
+    const isValid = await trigger(["amount", "concept", "contactId"]);
+
+    if (isValid) {
+      selectionHaptic();
+      onStepChange("review");
+    }
+  };
+
+  const submitReviewed = handleSubmit((values) => {
+    if (!selectedContact) {
       return;
     }
 
     selectionHaptic();
     onSubmit({
-      amount: parsedAmount,
-      concept: concept.trim(),
+      amount: normalizeAmount(values.amount),
+      concept: values.concept.trim(),
       contact: selectedContact,
     });
-  };
+  });
+
+  if (isSubmitting) {
+    return (
+      <View className="items-center justify-center px-3 py-16">
+        <View className="mb-5 h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: theme.primarySoft }}>
+          <ActivityIndicator color={theme.primary} size="large" />
+        </View>
+        <AppText className="text-[18px] font-black" style={{ color: theme.text }}>
+          {copy.loadingTitle}
+        </AppText>
+        <AppText className="mt-3 text-center text-[14px] leading-6" style={{ color: theme.mutedText }}>
+          {copy.loadingDescription}
+        </AppText>
+      </View>
+    );
+  }
 
   return (
-    <View>
-      <View
-        className="overflow-hidden rounded-[28px] border p-5"
-        style={{
-          backgroundColor: theme.card,
-          borderColor: theme.border,
-          borderCurve: "continuous",
-          boxShadow: "0 18px 40px rgba(7, 17, 31, 0.08)",
-        }}
-      >
-        <AppText className="text-[22px] font-black" style={{ color: theme.text }}>
-          {copy.title}
-        </AppText>
+    <View className="gap-5">
+      {flowStep === "success" ? null : <StepIndicator currentStep={flowStep === "contact" ? 1 : flowStep === "details" ? 2 : 3} />}
 
-        {isSubmitting ? (
-          <View className="items-center justify-center px-3 py-12">
-            <View
-              className="mb-5 h-16 w-16 items-center justify-center rounded-full"
-              style={{ backgroundColor: theme.primarySoft }}
-            >
-              <ActivityIndicator color={theme.primary} size="large" />
-            </View>
-            <AppText className="text-[18px] font-black" style={{ color: theme.text }}>
-              {copy.loadingTitle}
-            </AppText>
-            <AppText className="mt-3 text-center text-[14px] leading-6" style={{ color: theme.mutedText }}>
-              {copy.loadingDescription}
-            </AppText>
+      {flowStep === "contact" ? (
+        <View className="gap-4">
+          <SearchField query={query} onChangeQuery={setQuery} />
+
+          <View>
+            {contacts.length === 0 ? (
+              <EmptyState description="Crea otro usuario para probar envios o solicitudes de Bizum." title="No hay usuarios disponibles" />
+            ) : filteredContacts.length === 0 ? (
+              <EmptyState description="Prueba con otro nombre o borra la busqueda." title="Sin resultados" />
+            ) : (
+              filteredContacts.map((contact, index) => (
+                <ContactRow
+                  key={contact.id}
+                  contact={contact}
+                  isSelected={contact.id === contactId}
+                  onPress={() => selectContact(contact)}
+                  showTopBorder={index === 0}
+                />
+              ))
+            )}
           </View>
-        ) : (
-          <View className="gap-3.5 pt-[18px]">
-            <View className="gap-3">
-              <AppText className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
-                {copy.contactLabel}
-              </AppText>
-              <Pressable
-                accessibilityLabel="Seleccionar destinatario"
-                accessibilityRole="button"
-                className="rounded-[20px] border px-4 py-3"
-                onPress={() => {
-                  selectionHaptic();
-                  setIsComboboxOpen((current) => !current);
-                }}
-                style={{
-                  backgroundColor: theme.backgroundElevated,
-                  borderColor: isComboboxOpen ? theme.primary : theme.border,
-                }}
-              >
-                <View className="flex-row items-center">
-                  {selectedContact ? (
-                    <>
-                      <View
-                        className="mr-3 h-10 w-10 items-center justify-center rounded-full"
-                        style={{ backgroundColor: theme.primarySoft }}
-                      >
-                        <AppText className="text-[14px] font-black tracking-[1px]" style={{ color: theme.primary }}>
-                          {selectedContact.initials}
-                        </AppText>
-                      </View>
-                      <View className="flex-1">
-                        <AppText className="text-[15px] font-black" style={{ color: theme.text }}>
-                          {selectedContact.name}
-                        </AppText>
-                        <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
-                          {selectedContact.detail}
-                        </AppText>
-                      </View>
-                    </>
-                  ) : (
-                    <View className="flex-1">
-                      <AppText className="text-[15px] font-black" style={{ color: theme.text }}>
-                        Elige un contacto
-                      </AppText>
-                      <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
-                        Lista real de usuarios registrados
-                      </AppText>
-                    </View>
-                  )}
-                  <ChevronDown
-                    color={theme.mutedText}
-                    size={20}
-                    strokeWidth={2.4}
-                    style={{ transform: [{ rotate: isComboboxOpen ? "180deg" : "0deg" }] }}
-                  />
-                </View>
-              </Pressable>
 
-              {isComboboxOpen ? (
+          {contactError ? <InlineError message={contactError} /> : null}
+        </View>
+      ) : null}
+
+      {flowStep === "details" ? (
+        <View className="gap-5">
+          {selectedContact ? <ContactSummary contact={selectedContact} label={copy.contactLabel} /> : null}
+
+          <View className="gap-3">
+            <FieldLabel label="Importe" />
+            <Controller
+              control={control}
+              name="amount"
+              render={({ field: { onChange, value } }) => (
                 <View
-                  className="overflow-hidden rounded-[28px] border"
+                  className="rounded-[22px] border px-4 py-3.5"
                   style={{
                     backgroundColor: theme.backgroundElevated,
-                    borderColor: theme.border,
+                    borderColor: amountError ? theme.danger : isAmountFocused ? theme.primary : theme.border,
                   }}
                 >
-                  {contacts.map((contact, index) => {
-                    const isSelected = selectedContactId === contact.id;
-
-                    return (
-                      <Pressable
-                        key={contact.id}
-                        accessibilityLabel={`Seleccionar a ${contact.name}`}
-                        accessibilityRole="button"
-                        className="flex-row items-center px-4 py-3.5"
-                        onPress={() => {
-                          selectionHaptic();
-                          onDismissError?.();
-                          setSelectedContactId(contact.id);
-                          setIsComboboxOpen(false);
-                        }}
-                        style={{
-                          backgroundColor: isSelected ? theme.primarySoft : "transparent",
-                          borderBottomColor: theme.border,
-                          borderBottomWidth: index < contacts.length - 1 ? StyleSheet.hairlineWidth : 0,
-                        }}
-                      >
-                        <View
-                          className="mr-3 h-10 w-10 items-center justify-center rounded-full"
-                          style={{ backgroundColor: isSelected ? theme.primary : theme.backgroundMuted }}
-                        >
-                          <AppText
-                            className="text-[13px] font-black tracking-[1px]"
-                            style={{ color: isSelected ? theme.textOnPrimary : theme.text }}
-                          >
-                            {contact.initials}
-                          </AppText>
-                        </View>
-                        <View className="flex-1">
-                          <AppText className="text-[14px] font-black" style={{ color: theme.text }}>
-                            {contact.name}
-                          </AppText>
-                          <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
-                            {contact.detail}
-                          </AppText>
-                        </View>
-                        {isSelected ? <Check color={theme.primary} size={18} strokeWidth={2.8} /> : null}
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              ) : contacts.length === 0 ? (
-                <View
-                  className="rounded-[20px] border px-4 py-3"
-                  style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}
-                >
-                  <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
-                    No hay usuarios disponibles
-                  </AppText>
-                  <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
-                    Crea otro usuario para probar envios o solicitudes de Bizum.
-                  </AppText>
-                </View>
-              ) : null}
-            </View>
-
-            <View className="gap-3">
-              <AppText className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
-                Importe
-              </AppText>
-              <View
-                className="rounded-[22px] border px-4 py-3.5"
-                style={{
-                  backgroundColor: isAmountFocused ? theme.card : theme.backgroundElevated,
-                  borderColor: isAmountFocused ? theme.primary : theme.border,
-                }}
-              >
-                <TextInput
-                  keyboardType="decimal-pad"
-                  maxLength={7}
-                  onBlur={() => setIsAmountFocused(false)}
-                  onChangeText={(value) => {
-                    const sanitizedValue = value.replace(/[^0-9,.-]/g, "").replace(".", ",");
-                    onDismissError?.();
-                    setAmount(sanitizedValue);
-                  }}
-                  onFocus={() => {
-                    setIsAmountFocused(true);
-                  }}
-                  onSubmitEditing={() => {
-                    conceptInputRef.current?.focus();
-                  }}
-                  placeholder="0,00"
-                  placeholderTextColor={theme.mutedText}
-                  returnKeyType="next"
-                  selectionColor={theme.primary}
-                  style={{
-                    color: theme.text,
-                    fontSize: 19,
-                    fontWeight: "900",
-                    lineHeight: 26,
-                    minHeight: 28,
-                    paddingVertical: 0,
-                  }}
-                  value={amount}
-                />
-                <AppText className="mt-1.5 text-[12px]" style={{ color: theme.mutedText }}>
-                  Vista previa: {formatAmountPreview(amount)}
-                </AppText>
-              </View>
-            </View>
-
-            <View className="gap-3">
-              <AppText className="text-[13px] font-black uppercase tracking-[2px]" style={{ color: theme.mutedText }}>
-                Concepto
-              </AppText>
-              <View
-                className="rounded-[20px] border px-4 py-3"
-                style={{
-                  backgroundColor: isConceptFocused ? theme.card : theme.backgroundElevated,
-                  borderColor: isConceptFocused ? theme.primary : theme.border,
-                }}
-              >
-                <TextInput
-                  ref={conceptInputRef}
-                  maxLength={42}
-                  multiline
-                  onBlur={() => setIsConceptFocused(false)}
-                  onChangeText={setConcept}
-                  onFocus={() => {
-                    setIsConceptFocused(true);
-                  }}
-                  placeholder="Cena, regalo, entradas..."
-                  placeholderTextColor={theme.mutedText}
-                  selectionColor={theme.primary}
-                  style={{
-                    color: theme.text,
-                    fontSize: 14,
-                    lineHeight: 18,
-                    minHeight: 42,
-                    paddingVertical: 0,
-                    textAlignVertical: "top",
-                  }}
-                  value={concept}
-                />
-              </View>
-            </View>
-
-            {errorMessage ? (
-              <View
-                className="rounded-[18px] border px-3 py-2.5"
-                style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}
-              >
-                <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
-                  {errorMessage}
-                </AppText>
-              </View>
-            ) : null}
-
-            <View className="border-t pt-3" style={{ borderColor: theme.border }}>
-              <View className="flex-row gap-3">
-                <Pressable
-                  accessibilityLabel="Cancelar operacion de Bizum"
-                  accessibilityRole="button"
-                  className="flex-1 items-center justify-center rounded-[22px] py-3.5"
-                  onPress={() => {
-                    selectionHaptic();
-                    onCancel();
-                  }}
-                  style={{ backgroundColor: theme.backgroundMuted }}
-                >
-                  <AppText className="text-[15px] font-black" style={{ color: theme.text }}>
-                    Cancelar
-                  </AppText>
-                </Pressable>
-
-                <Pressable
-                  accessibilityLabel={copy.actionAccessibilityLabel}
-                  accessibilityRole="button"
-                  className="flex-1 flex-row items-center justify-center rounded-[22px] py-3.5"
-                  disabled={!isFormValid}
-                  onPress={handleSubmit}
-                  style={{
-                    backgroundColor: isFormValid ? theme.primary : theme.backgroundMuted,
-                    opacity: isFormValid ? 1 : 0.6,
-                  }}
-                >
-                  <SendHorizontal
-                    color={isFormValid ? theme.textOnPrimary : theme.mutedText}
-                    size={18}
-                    strokeWidth={2.4}
+                  <TextInput
+                    keyboardType="decimal-pad"
+                    maxLength={7}
+                    onBlur={() => setIsAmountFocused(false)}
+                    onChangeText={(nextValue) => {
+                      onDismissError?.();
+                      onChange(nextValue.replace(/[^0-9,.-]/g, "").replace(".", ","));
+                    }}
+                    onFocus={() => setIsAmountFocused(true)}
+                    placeholder="0,00"
+                    placeholderTextColor={theme.mutedText}
+                    selectionColor={theme.primary}
+                    style={{ color: theme.text, fontSize: 22, fontWeight: "800", lineHeight: 28, minHeight: 32, paddingVertical: 0 }}
+                    value={value}
                   />
-                  <AppText
-                    className="ml-2 text-[15px] font-black"
-                    style={{ color: isFormValid ? theme.textOnPrimary : theme.mutedText }}
-                  >
-                    {copy.buttonLabel}
-                  </AppText>
-                </Pressable>
-              </View>
-            </View>
+                  <View className="mt-2 flex-row items-center justify-between">
+                    <AppText className="text-[12px]" style={{ color: theme.mutedText }}>
+                      Vista previa: {amountPreview}
+                    </AppText>
+                    <AppText className="text-[12px]" style={{ color: theme.mutedText }}>
+                      {formatCents(availableBalanceCents)}
+                    </AppText>
+                  </View>
+                </View>
+              )}
+            />
+            {amountError ? <InlineError message={amountError} /> : null}
           </View>
-        )}
+
+          <View className="gap-3">
+            <FieldLabel label="Concepto" optional />
+            <Controller
+              control={control}
+              name="concept"
+              render={({ field: { onChange, value } }) => (
+                <View
+                  className="rounded-[18px] border px-4 py-3"
+                  style={{
+                    backgroundColor: theme.backgroundElevated,
+                    borderColor: conceptError ? theme.danger : isConceptFocused ? theme.primary : theme.border,
+                  }}
+                >
+                  <TextInput
+                    maxLength={42}
+                    multiline
+                    onBlur={() => setIsConceptFocused(false)}
+                    onChangeText={(nextValue) => {
+                      onDismissError?.();
+                      onChange(nextValue);
+                    }}
+                    onFocus={() => setIsConceptFocused(true)}
+                    placeholder="Cena, regalo, entradas..."
+                    placeholderTextColor={theme.mutedText}
+                    selectionColor={theme.primary}
+                    style={{ color: theme.text, fontSize: 14, lineHeight: 18, minHeight: 42, paddingVertical: 0, textAlignVertical: "top" }}
+                    value={value}
+                  />
+                </View>
+              )}
+            />
+            {conceptError ? <InlineError message={conceptError} /> : null}
+          </View>
+
+          {errorMessage ? <InlineError message={errorMessage} /> : null}
+
+          <PrimaryButton label="Continuar" onPress={continueFromDetails} />
+        </View>
+      ) : null}
+
+      {flowStep === "review" ? (
+        <View className="gap-5">
+          <View className="items-center pb-3">
+            <AppText className="text-[13px] font-semibold" style={{ color: theme.mutedText }}>
+              Importe
+            </AppText>
+            <AppText
+              adjustsFontSizeToFit
+              className="mt-1 w-full text-center font-black"
+              minimumFontScale={0.68}
+              numberOfLines={1}
+              style={{
+                color: theme.text,
+                fontSize: 32,
+                fontVariant: ["tabular-nums"],
+                lineHeight: 42,
+              }}
+            >
+              {amountPreview}
+            </AppText>
+          </View>
+
+          {selectedContact ? <ContactSummary contact={selectedContact} label={copy.contactLabel} /> : null}
+
+          <View>
+            <SummaryLine label="Concepto" showTopBorder value={getValues("concept").trim() || "Sin concepto"} />
+            <SummaryLine
+              label={mode === "send" ? "Saldo despues" : "Saldo actual"}
+              value={formatCents(mode === "send" ? Math.max(availableBalanceCents - amountCents, 0) : availableBalanceCents)}
+            />
+          </View>
+
+          {errorMessage ? <InlineError message={errorMessage} /> : null}
+
+          <PrimaryButton icon={<SendHorizontal color={theme.textOnPrimary} size={18} strokeWidth={2.4} />} label={copy.actionLabel} onPress={submitReviewed} />
+        </View>
+      ) : null}
+
+      {flowStep === "success" ? (
+        <View className="items-center gap-5 py-8">
+          <View className="h-20 w-20 items-center justify-center rounded-full" style={{ backgroundColor: theme.primarySoft }}>
+            <CircleCheck color={theme.primary} size={42} strokeWidth={2.4} />
+          </View>
+          <View className="items-center">
+            <AppText className="text-center text-[22px] font-black" style={{ color: theme.text }}>
+              {copy.successTitle}
+            </AppText>
+            <AppText className="mt-2 text-center text-[14px] leading-6" style={{ color: theme.mutedText }}>
+              {copy.successDescription}
+            </AppText>
+          </View>
+          {completedPayload ? (
+            <View className="w-full">
+              <SummaryLine label={copy.contactLabel} showTopBorder value={completedPayload.contact.name} />
+              <SummaryLine label="Importe" value={formatAmount(completedPayload.amount)} />
+              <SummaryLine label="Concepto" value={completedPayload.concept || "Sin concepto"} />
+            </View>
+          ) : null}
+          <View className="w-full flex-row gap-3">
+            <SecondaryButton label="Cerrar" onPress={onClose} />
+            <PrimaryButton label="Ver movimientos" onPress={onViewMovements} />
+          </View>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function StepIndicator({ currentStep }: { currentStep: number }) {
+  const { theme } = useAppTheme();
+
+  return (
+    <View className="border-b pb-3" style={{ borderColor: theme.border }}>
+      <View className="flex-row items-center justify-between">
+        {[1, 2, 3].map((step) => {
+          const isActive = step === currentStep;
+          return (
+            <AppText
+              key={step}
+              className="text-[13px] font-black"
+              style={{
+                color: isActive ? theme.primary : theme.mutedText,
+                fontVariant: ["tabular-nums"],
+              }}
+            >
+              {step}/3
+            </AppText>
+          );
+        })}
       </View>
     </View>
+  );
+}
+
+function SearchField({ onChangeQuery, query }: { onChangeQuery: (value: string) => void; query: string }) {
+  const { theme } = useAppTheme();
+
+  return (
+    <View className="rounded-[20px] border px-4 py-3" style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}>
+      <View className="flex-row items-center">
+        <Search color={theme.mutedText} size={18} strokeWidth={2.4} />
+        <TextInput
+          className="ml-3 flex-1"
+          onChangeText={onChangeQuery}
+          placeholder="Buscar contacto"
+          placeholderTextColor={theme.mutedText}
+          selectionColor={theme.primary}
+          style={{ color: theme.text, fontSize: 15, fontWeight: "600", paddingVertical: 0 }}
+          value={query}
+        />
+      </View>
+    </View>
+  );
+}
+
+function FieldLabel({ label, optional = false }: { label: string; optional?: boolean }) {
+  const { theme } = useAppTheme();
+
+  return (
+    <View className="flex-row items-center justify-between">
+      <AppText className="text-[13px] font-semibold" style={{ color: theme.text }}>
+        {label}
+      </AppText>
+      {optional ? (
+        <AppText className="text-[12px]" style={{ color: theme.mutedText }}>
+          Opcional
+        </AppText>
+      ) : null}
+    </View>
+  );
+}
+
+function EmptyState({ description, title }: { description: string; title: string }) {
+  const { theme } = useAppTheme();
+
+  return (
+    <View className="border-y py-4" style={{ borderColor: theme.border }}>
+      <AppText className="text-[14px] font-black" style={{ color: theme.text }}>
+        {title}
+      </AppText>
+      <AppText className="mt-1 text-[13px] leading-5" style={{ color: theme.mutedText }}>
+        {description}
+      </AppText>
+    </View>
+  );
+}
+
+function ContactRow({
+  contact,
+  isSelected,
+  onPress,
+  showTopBorder,
+}: {
+  contact: BizumContact;
+  isSelected: boolean;
+  onPress: () => void;
+  showTopBorder: boolean;
+}) {
+  const { theme } = useAppTheme();
+
+  return (
+    <Pressable
+      accessibilityLabel={`Seleccionar a ${contact.name}`}
+      accessibilityRole="button"
+      className="flex-row items-center py-3.5"
+      onPress={onPress}
+      style={{
+        borderBottomColor: theme.border,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderTopColor: theme.border,
+        borderTopWidth: showTopBorder ? StyleSheet.hairlineWidth : 0,
+      }}
+    >
+      <View className="mr-3 h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: isSelected ? theme.primary : theme.backgroundMuted }}>
+        <AppText className="text-[13px] font-black tracking-[1px]" style={{ color: isSelected ? theme.textOnPrimary : theme.text }}>
+          {contact.initials}
+        </AppText>
+      </View>
+      <View className="flex-1">
+        <AppText className="text-[15px] font-semibold" style={{ color: theme.text }}>
+          {contact.name}
+        </AppText>
+        <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+          {contact.detail}
+        </AppText>
+      </View>
+      {isSelected ? <Check color={theme.primary} size={18} strokeWidth={2.8} /> : null}
+    </Pressable>
+  );
+}
+
+function ContactSummary({ contact, label }: { contact: BizumContact; label: string }) {
+  const { theme } = useAppTheme();
+
+  return (
+    <View className="border-y py-3" style={{ borderColor: theme.border }}>
+      <AppText className="mb-2 text-[12px] font-semibold" style={{ color: theme.mutedText }}>
+        {label}
+      </AppText>
+      <View className="flex-row items-center">
+        <View className="mr-3 h-11 w-11 items-center justify-center rounded-full" style={{ backgroundColor: theme.primarySoft }}>
+          <AppText className="text-[14px] font-black tracking-[1px]" style={{ color: theme.primary }}>
+            {contact.initials}
+          </AppText>
+        </View>
+        <View className="flex-1">
+          <AppText className="text-[15px] font-semibold" style={{ color: theme.text }}>
+            {contact.name}
+          </AppText>
+          <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+            {contact.detail}
+          </AppText>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function InlineError({ message }: { message: string }) {
+  const { theme } = useAppTheme();
+
+  return (
+    <View className="border-l-4 px-3 py-2.5" style={{ backgroundColor: theme.primarySoft, borderLeftColor: theme.danger }}>
+      <AppText className="text-[13px] font-semibold" style={{ color: theme.text }}>
+        {message}
+      </AppText>
+    </View>
+  );
+}
+
+function SummaryLine({ label, showTopBorder = false, value }: { label: string; showTopBorder?: boolean; value: string }) {
+  const { theme } = useAppTheme();
+
+  return (
+    <View
+      className="flex-row items-center justify-between py-3"
+      style={{
+        borderBottomColor: theme.border,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderTopColor: theme.border,
+        borderTopWidth: showTopBorder ? StyleSheet.hairlineWidth : 0,
+      }}
+    >
+      <AppText className="mr-4 text-[13px] font-semibold" style={{ color: theme.mutedText }}>
+        {label}
+      </AppText>
+      <AppText className="flex-1 text-right text-[14px] font-semibold" style={{ color: theme.text }}>
+        {value}
+      </AppText>
+    </View>
+  );
+}
+
+function PrimaryButton({ icon, label, onPress }: { icon?: ReactNode; label: string; onPress: () => void }) {
+  const { theme } = useAppTheme();
+
+  return (
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      className="flex-1 flex-row items-center justify-center rounded-full py-4"
+      onPress={onPress}
+      style={{ backgroundColor: theme.primary }}
+    >
+      {icon}
+      <AppText className={icon ? "ml-2 text-[15px] font-black" : "text-[15px] font-black"} style={{ color: theme.textOnPrimary }}>
+        {label}
+      </AppText>
+    </Pressable>
+  );
+}
+
+function SecondaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+  const { theme } = useAppTheme();
+
+  return (
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      className="flex-1 items-center justify-center rounded-full py-4"
+      onPress={onPress}
+      style={{ backgroundColor: theme.backgroundMuted }}
+    >
+      <AppText className="text-[15px] font-black" style={{ color: theme.text }}>
+        {label}
+      </AppText>
+    </Pressable>
   );
 }
