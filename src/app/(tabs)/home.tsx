@@ -129,7 +129,7 @@ export default function HomeScreen() {
   const nextCardPeek = Math.round(Math.min(Math.max(cardsViewportWidth * 0.12, 32), 56));
   const cardWidth = Math.max(Math.round(cardsViewportWidth - cardGap - nextCardPeek), 190);
   const cardSnapInterval = cardWidth + cardGap;
-  const chartWidth = Math.max(width - 82, 260);
+  const chartWidth = Math.max(width - 40, 300);
   const graphColor = resolvedThemeName === "dark" ? "#78a9ff" : "#3467d6";
   const screenBackgroundColor =
     resolvedThemeName === "light" ? theme.backgroundElevated : theme.background;
@@ -196,6 +196,7 @@ export default function HomeScreen() {
       <View className="flex-1 px-5 pt-4">
         <AppScreenHeader
           backgroundColor={screenBackgroundColor}
+          showDivider={false}
           leftSlot={
             <TopActionButton
               accessibilityLabel="Open menu"
@@ -233,29 +234,12 @@ export default function HomeScreen() {
             <AppText className="text-[24px] font-black leading-8" style={{ color: theme.text }}>
               {getGreeting()}, {firstName}
             </AppText>
-            <AppText className="mt-1 text-[13px] font-medium" style={{ color: theme.mutedText }}>
-              Aqui tienes tu resumen semanal
-            </AppText>
           </View>
 
           <View>
-            <Pressable
-              accessibilityHint="Abre la vista detallada de la grafica"
-              accessibilityLabel="Abrir grafica detallada"
-              accessibilityRole="button"
-              className="overflow-hidden rounded-[28px] border p-5"
-              onPress={openBalanceGraph}
-              style={{
-                backgroundColor: theme.card,
-                borderColor: theme.border,
-                borderCurve: "continuous",
-                ...(resolvedThemeName === "dark"
-                  ? { boxShadow: "0 18px 40px rgba(7, 17, 31, 0.08)" }
-                  : {}),
-              }}
-            >
+            <View className="pb-2 pt-1">
               <AppText
-                className="text-center text-[15px] font-semibold leading-5"
+                className="text-center text-[17px] font-semibold leading-6"
                 style={{ color: theme.mutedText }}
               >
                 Resumen semanal
@@ -263,35 +247,37 @@ export default function HomeScreen() {
 
               <AnimatedNumber
                 animateOnMount={true}
-                className="mt-2 text-center text-[34px] font-black leading-[42px]"
+                className="mt-3 text-center text-[46px] font-black leading-[54px]"
                 formatValue={(nextValue) => formatCurrency(Math.round(nextValue))}
                 style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
                 value={currentBalancePoint.value}
               />
 
-              <View className="mt-6">
-                <View className="h-[128px]" style={{ width: chartWidth }}>
+              <View className="mt-7 items-center">
+                <View className="h-[182px]" style={{ width: chartWidth }}>
                   <NativeLineChart
                     color={graphColor}
                     enablePanGesture={true}
                     gradientFillColors={["transparent", "transparent"]}
-                    height={128}
+                    height={182}
                     horizontalPadding={16}
-                    lineThickness={3}
+                    lineThickness={4}
                     onGestureEnd={handleGestureEnd}
                     onGestureStart={handleGestureStart}
                     onPointSelected={handlePointSelected}
                     onPress={openBalanceGraph}
                     panGestureDelay={40}
                     points={balancePoints}
-                    verticalPadding={16}
+                    verticalPadding={18}
                   />
                 </View>
               </View>
-              <AppText className="mt-3 text-[12px] font-semibold" style={{ color: theme.mutedText }}>
+              <AppText className="mt-4 text-center text-[13px] font-semibold" style={{ color: theme.mutedText }}>
                 Toca la grafica para ver el detalle por rango
               </AppText>
-            </Pressable>
+
+              <View className="mt-6 h-px" style={{ backgroundColor: theme.border }} />
+            </View>
           </View>
 
           <View>
