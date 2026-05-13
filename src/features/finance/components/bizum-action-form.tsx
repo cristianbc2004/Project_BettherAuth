@@ -254,7 +254,7 @@ export function BizumActionForm({
 
       {flowStep === "details" ? (
         <View className="gap-5">
-          {selectedContact ? <ContactSummary contact={selectedContact} label={copy.contactLabel} /> : null}
+          {selectedContact ? <ContactSummary contact={selectedContact} isFramed={mode !== "send"} label={copy.contactLabel} /> : null}
 
           <View className="gap-3">
             <FieldLabel label="Importe" />
@@ -263,7 +263,7 @@ export function BizumActionForm({
               name="amount"
               render={({ field: { onChange, value } }) => (
                 <View
-                  className="rounded-[22px] border px-4 py-3.5"
+                  className="rounded-[18px] border px-3.5 py-2.5"
                   style={{
                     backgroundColor: theme.backgroundElevated,
                     borderColor: amountError ? theme.danger : isAmountFocused ? theme.primary : theme.border,
@@ -281,7 +281,7 @@ export function BizumActionForm({
                     placeholder="0,00"
                     placeholderTextColor={theme.mutedText}
                     selectionColor={theme.primary}
-                    style={{ color: theme.text, fontSize: 22, fontWeight: "800", lineHeight: 28, minHeight: 32, paddingVertical: 0 }}
+                    style={{ color: theme.text, fontSize: 18, fontWeight: "800", lineHeight: 24, minHeight: 26, paddingVertical: 0 }}
                     value={value}
                   />
                   <View className="mt-2 flex-row items-center justify-between">
@@ -340,27 +340,27 @@ export function BizumActionForm({
 
       {flowStep === "review" ? (
         <View className="gap-5">
-          <View className="items-center pb-3">
+          <View className="items-center rounded-[22px] px-4 py-4" style={{ backgroundColor: theme.backgroundElevated }}>
             <AppText className="text-[13px] font-semibold" style={{ color: theme.mutedText }}>
               Importe
             </AppText>
             <AppText
               adjustsFontSizeToFit
-              className="mt-1 w-full text-center font-black"
+              className="mt-1 w-full text-center font-extrabold"
               minimumFontScale={0.68}
               numberOfLines={1}
               style={{
                 color: theme.text,
-                fontSize: 32,
+                fontSize: 24,
                 fontVariant: ["tabular-nums"],
-                lineHeight: 42,
+                lineHeight: 32,
               }}
             >
               {amountPreview}
             </AppText>
           </View>
 
-          {selectedContact ? <ContactSummary contact={selectedContact} label={copy.contactLabel} /> : null}
+          {selectedContact ? <ContactSummary contact={selectedContact} isFramed={mode !== "send"} label={copy.contactLabel} /> : null}
 
           <View>
             <SummaryLine label="Concepto" showTopBorder value={getValues("concept").trim() || "Sin concepto"} />
@@ -410,21 +410,26 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
   const { theme } = useAppTheme();
 
   return (
-    <View className="border-b pb-3" style={{ borderColor: theme.border }}>
+    <View className="pb-1">
       <View className="flex-row items-center justify-between">
         {[1, 2, 3].map((step) => {
           const isActive = step === currentStep;
           return (
-            <AppText
+            <View
               key={step}
-              className="text-[13px] font-black"
-              style={{
-                color: isActive ? theme.primary : theme.mutedText,
-                fontVariant: ["tabular-nums"],
-              }}
+              className="rounded-full px-3 py-1.5"
+              style={{ backgroundColor: isActive ? theme.primarySoft : theme.backgroundElevated }}
             >
-              {step}/3
-            </AppText>
+              <AppText
+                className="text-[13px] font-black"
+                style={{
+                  color: isActive ? theme.primary : theme.mutedText,
+                  fontVariant: ["tabular-nums"],
+                }}
+              >
+                {step}/3
+              </AppText>
+            </View>
           );
         })}
       </View>
@@ -529,25 +534,25 @@ function ContactRow({
   );
 }
 
-function ContactSummary({ contact, label }: { contact: BizumContact; label: string }) {
+function ContactSummary({ contact, isFramed = true, label }: { contact: BizumContact; isFramed?: boolean; label: string }) {
   const { theme } = useAppTheme();
 
   return (
-    <View className="border-y py-3" style={{ borderColor: theme.border }}>
-      <AppText className="mb-2 text-[12px] font-semibold" style={{ color: theme.mutedText }}>
+    <View className={isFramed ? "rounded-[24px] px-4 py-4" : "px-1 py-1"} style={isFramed ? { backgroundColor: theme.backgroundElevated } : undefined}>
+      <AppText className="mb-3 text-[12px] font-semibold uppercase" style={{ color: theme.mutedText }}>
         {label}
       </AppText>
       <View className="flex-row items-center">
-        <View className="mr-3 h-11 w-11 items-center justify-center rounded-full" style={{ backgroundColor: theme.primarySoft }}>
-          <AppText className="text-[14px] font-black tracking-[1px]" style={{ color: theme.primary }}>
+        <View className="mr-4 h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: theme.primarySoft }}>
+          <AppText className="text-[20px] font-black tracking-[1px]" style={{ color: theme.primary }}>
             {contact.initials}
           </AppText>
         </View>
         <View className="flex-1">
-          <AppText className="text-[15px] font-semibold" style={{ color: theme.text }}>
+          <AppText className="text-[22px] font-black leading-7" style={{ color: theme.text }}>
             {contact.name}
           </AppText>
-          <AppText className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>
+          <AppText className="mt-1 text-[14px] font-semibold" style={{ color: theme.mutedText }}>
             {contact.detail}
           </AppText>
         </View>
@@ -573,13 +578,8 @@ function SummaryLine({ label, showTopBorder = false, value }: { label: string; s
 
   return (
     <View
-      className="flex-row items-center justify-between py-3"
-      style={{
-        borderBottomColor: theme.border,
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        borderTopColor: theme.border,
-        borderTopWidth: showTopBorder ? StyleSheet.hairlineWidth : 0,
-      }}
+      className={showTopBorder ? "mt-0 flex-row items-center justify-between rounded-[18px] px-4 py-3" : "mt-2 flex-row items-center justify-between rounded-[18px] px-4 py-3"}
+      style={{ backgroundColor: theme.backgroundElevated }}
     >
       <AppText className="mr-4 text-[13px] font-semibold" style={{ color: theme.mutedText }}>
         {label}
