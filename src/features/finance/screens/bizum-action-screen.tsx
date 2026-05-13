@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { Pressable } from "react-native";
 import { Redirect, router } from "expo-router";
 import { ChevronLeft, X } from "lucide-react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { BizumActionForm, type BizumActionPayload } from "@/features/finance/components/bizum-action-form";
+import { BizumActionSkeleton } from "@/features/finance/components/bizum-skeletons";
 import {
   buildIdempotencyKey,
   fetchBizumRequest,
@@ -16,7 +17,6 @@ import {
   type BizumPostResponse,
 } from "@/features/finance/lib/bizum-api";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
-import { AppText } from "@/shared/components/ui/app-text";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { successHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -204,12 +204,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
           title={copy.title}
         />
         {isDataLoading ? (
-          <View className="items-center justify-center py-10">
-            <ActivityIndicator color={theme.primary} size="large" />
-            <AppText className="mt-3 text-[13px]" style={{ color: theme.mutedText }}>
-              Cargando datos de Bizum...
-            </AppText>
-          </View>
+          <BizumActionSkeleton />
         ) : (
           <BizumActionForm
             availableBalanceCents={availableBalanceCents}
