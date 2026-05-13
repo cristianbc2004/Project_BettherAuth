@@ -22,7 +22,7 @@ export function CardNetworkBadge({ color, compact = false, network }: CardNetwor
           style={{ backgroundColor: "#eb001b" }}
         />
         <AppText
-          className={compact ? "ml-2 text-[10px] font-black tracking-[1px]" : "ml-3 text-[11px] font-black tracking-[1.2px]"}
+          className={compact ? "ml-2 text-[10px] font-black tracking-[1px]" : "ml-4 text-[11px] font-black tracking-[1.2px]"}
           style={{ color }}
         >
           MASTERCARD

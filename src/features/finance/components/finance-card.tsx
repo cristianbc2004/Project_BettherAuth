@@ -7,6 +7,7 @@ import { AppText } from "@/shared/components/ui/app-text";
 
 type WalletCardPreviewProps = {
   card: WalletCard;
+  height?: number;
   width: number;
 };
 
@@ -24,15 +25,16 @@ function ChipPlate({ color }: { color: string }) {
   );
 }
 
-export function WalletCardPreview({ card, width }: WalletCardPreviewProps) {
+export function WalletCardPreview({ card, height = 188, width }: WalletCardPreviewProps) {
   return (
     <LinearGradient
-      className="mr-4 h-[188px] overflow-hidden rounded-[30px] p-5"
+      className="mr-4 overflow-hidden rounded-[30px] p-5"
       colors={card.gradient}
       end={{ x: 1, y: 1 }}
       start={{ x: 0, y: 0 }}
       style={{
         borderCurve: "continuous",
+        height,
         width,
       }}
     >
