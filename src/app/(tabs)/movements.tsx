@@ -1,8 +1,8 @@
-import { Redirect } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, Modal, Pressable, TextInput, View, type ListRenderItem } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Filter, Search, X } from "lucide-react-native";
+import { Filter, Search } from "lucide-react-native";
 
 import { TransactionRow } from "@/features/finance/components/transaction-row";
 import {
@@ -26,7 +26,6 @@ export default function MovementsScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [selectedTone, setSelectedTone] = useState<"all" | Transaction["tone"]>("all");
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [draftTone, setDraftTone] = useState<"all" | Transaction["tone"]>("all");
   const [visibleCount, setVisibleCount] = useState<number>(financeConfig.transactionBatchSize);
   const trimmedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery]);
@@ -57,7 +56,12 @@ export default function MovementsScreen() {
     );
   }, []);
   const renderTransaction: ListRenderItem<Transaction> = useCallback(
-    ({ item }) => <TransactionRow onDetailPress={setSelectedTransaction} transaction={item} />,
+    ({ item }) => (
+      <TransactionRow
+        onDetailPress={(transaction) => router.navigate(`/home-graphic/expense-detail?transactionId=${transaction.id}` as never)}
+        transaction={item}
+      />
+    ),
     [],
   );
   const keyExtractor = useCallback((item: Transaction) => item.id, []);
@@ -70,7 +74,6 @@ export default function MovementsScreen() {
     setIsFilterModalVisible(true);
   }, [selectedTone]);
   const closeFilters = useCallback(() => setIsFilterModalVisible(false), []);
-  const closeTransactionDetail = useCallback(() => setSelectedTransaction(null), []);
   const acceptFilters = useCallback(() => {
     setIsFilterModalVisible(false);
   }, []);
@@ -234,74 +237,6 @@ export default function MovementsScreen() {
           </View>
         </View>
       </Modal>
-      <Modal
-        animationType="fade"
-        onRequestClose={closeTransactionDetail}
-        transparent
-        visible={Boolean(selectedTransaction)}
-      >
-        <View className="flex-1 justify-end px-5 pb-7">
-          <Pressable
-            accessibilityLabel="Cerrar detalle del movimiento"
-            className="absolute inset-0"
-            onPress={closeTransactionDetail}
-            style={{ backgroundColor: "rgba(7, 10, 18, 0.45)" }}
-          />
-          {selectedTransaction ? (
-            <View
-              className="rounded-[24px] border px-5 pb-5 pt-5"
-              style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}
-            >
-              <View className="flex-row items-start justify-between">
-                <View className="flex-1 pr-4">
-                  <AppText variant="sectionTitle">{selectedTransaction.merchant}</AppText>
-                  <AppText className="mt-1" tone="muted" variant="subtitle">
-                    {selectedTransaction.category}
-                  </AppText>
-                </View>
-                <Pressable
-                  accessibilityLabel="Cerrar detalle"
-                  accessibilityRole="button"
-                  className="h-10 w-10 items-center justify-center rounded-full"
-                  onPress={closeTransactionDetail}
-                  style={{ backgroundColor: theme.backgroundMuted }}
-                >
-                  <X color={theme.text} size={19} strokeWidth={2.4} />
-                </Pressable>
-              </View>
-
-              <View className="mt-5 rounded-[20px] px-4 py-4" style={{ backgroundColor: theme.background }}>
-                <AppText className="text-[28px] font-black" style={{ fontVariant: ["tabular-nums"] }}>
-                  {selectedTransaction.amount}
-                </AppText>
-                <AppText className="mt-2" tone="muted" variant="info">
-                  {selectedTransaction.detail.concept}
-                </AppText>
-              </View>
-
-              <View className="mt-5 gap-3">
-                <DetailLine label="Estado" value={selectedTransaction.detail.status} />
-                <DetailLine label="Fecha" value={selectedTransaction.detail.date} />
-                <DetailLine label="Tarjeta" value={`**** ${selectedTransaction.detail.cardLastDigits}`} />
-                <DetailLine label="Referencia" value={selectedTransaction.detail.reference} />
-              </View>
-            </View>
-          ) : null}
-        </View>
-      </Modal>
     </SafeAreaView>
-  );
-}
-
-function DetailLine({ label, value }: { label: string; value: string }) {
-  return (
-    <View className="flex-row items-center justify-between gap-4">
-      <AppText tone="muted" variant="caption">
-        {label}
-      </AppText>
-      <AppText className="flex-1 text-right text-[14px] font-bold" numberOfLines={1}>
-        {value}
-      </AppText>
-    </View>
   );
 }
