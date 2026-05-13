@@ -6,6 +6,7 @@ import { ArrowDownLeft, ArrowUpRight, Zap } from "lucide-react-native";
 import Animated, { Easing, FadeInDown, FadeOutUp, LinearTransition } from "react-native-reanimated";
 
 import { FinanceScreenShell } from "@/features/finance/components/finance-screen-shell";
+import { BizumOverviewSkeleton } from "@/features/finance/components/bizum-skeletons";
 import {
   fetchBizumRequest,
   type BizumGetResponse,
@@ -144,6 +145,10 @@ export default function AssetsScreen() {
 
   return (
     <FinanceScreenShell title="Bizum">
+      {isBizumDataLoading ? (
+        <BizumOverviewSkeleton />
+      ) : (
+        <>
       <View
         className="overflow-hidden rounded-[28px] border p-5"
         style={{
@@ -165,7 +170,7 @@ export default function AssetsScreen() {
               {availableBalanceLabel}
             </AppText>
             <AppText className="mt-1 text-[13px]" tone="muted">
-              {isBizumDataLoading ? "Cargando movimientos..." : movementCountLabel}
+              {movementCountLabel}
             </AppText>
           </View>
         </View>
@@ -293,6 +298,8 @@ export default function AssetsScreen() {
           })}
         </View>
       </View>
+        </>
+      )}
     </FinanceScreenShell>
   );
 }
