@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import { Redirect, router } from "expo-router";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
+import { ChevronLeft, X } from "lucide-react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -16,15 +16,18 @@ import {
   type BizumPostResponse,
 } from "@/features/finance/lib/bizum-api";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
+import { AppText } from "@/shared/components/ui/app-text";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { successHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
-import { AppText } from "@/shared/components/ui/app-text";
+import { selectionHaptic } from "@/shared/lib/haptics";
 
 type BizumActionScreenProps = {
   mode: BizumActionMode;
 };
+
+type BizumFlowStep = "contact" | "details" | "review" | "success";
 
 export function BizumActionScreen({ mode }: BizumActionScreenProps) {
   const { data: session, isPending } = authClient.useSession();
@@ -35,6 +38,8 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [availableBalanceCents, setAvailableBalanceCents] = useState(0);
   const [contacts, setContacts] = useState<BizumContact[]>([]);
+  const [flowStep, setFlowStep] = useState<BizumFlowStep>("contact");
+  const [completedPayload, setCompletedPayload] = useState<BizumActionPayload | null>(null);
 
   const copy = useMemo(
     () =>
@@ -47,6 +52,41 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
           },
     [mode],
   );
+
+  const handleClose = useCallback(() => {
+    selectionHaptic();
+    router.replace("/assets" as never);
+  }, []);
+
+  const handleBack = useCallback(() => {
+    selectionHaptic();
+
+    if (isSubmitting) {
+      return;
+    }
+
+    if (flowStep === "success") {
+      router.replace("/assets" as never);
+      return;
+    }
+
+    if (flowStep === "review") {
+      setFlowStep("details");
+      return;
+    }
+
+    if (flowStep === "details") {
+      setFlowStep("contact");
+      return;
+    }
+
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace("/assets" as never);
+  }, [flowStep, isSubmitting]);
 
   const loadBizumData = useCallback(async () => {
     if (!session?.user.id) {
@@ -108,8 +148,9 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
 
       const result = (await response.json()) as BizumPostResponse;
       setAvailableBalanceCents(result.availableBalanceCents ?? availableBalanceCents);
+      setCompletedPayload(payload);
       successHaptic();
-      router.back();
+      setFlowStep("success");
     } catch {
       setErrorMessage("No se pudo completar la operacion.");
     } finally {
@@ -137,24 +178,31 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <AppScreenHeader fallbackHref={"/assets" as never} title={copy.title} />
-        <View className="mb-4 border-b pb-3" style={{ borderColor: theme.border }}>
-          <View className="flex-row items-center">
-            <View className="h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: theme.primarySoft }}>
-              {mode === "send" ? (
-                <ArrowUpRight color={theme.primary} size={20} strokeWidth={2.7} />
-              ) : (
-                <ArrowDownLeft color={theme.primary} size={20} strokeWidth={2.7} />
-              )}
-            </View>
-            <View className="ml-3 flex-1">
-              <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
-                {(availableBalanceCents / 100).toFixed(2).replace(".", ",")} EUR disponibles
-              </AppText>
-            </View>
-          </View>
-        </View>
-
+        <AppScreenHeader
+          leftSlot={
+            <Pressable
+              accessibilityLabel="Volver al paso anterior"
+              accessibilityRole="button"
+              className="h-11 w-11 items-center justify-center"
+              hitSlop={10}
+              onPress={handleBack}
+            >
+              <ChevronLeft color={theme.text} size={24} strokeWidth={2.4} />
+            </Pressable>
+          }
+          rightSlot={
+            <Pressable
+              accessibilityLabel="Cerrar operacion de Bizum"
+              accessibilityRole="button"
+              className="h-11 w-11 items-center justify-center"
+              hitSlop={10}
+              onPress={handleClose}
+            >
+              <X color={theme.text} size={22} strokeWidth={2.4} />
+            </Pressable>
+          }
+          title={copy.title}
+        />
         {isDataLoading ? (
           <View className="items-center justify-center py-10">
             <ActivityIndicator color={theme.primary} size="large" />
@@ -164,13 +212,18 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
           </View>
         ) : (
           <BizumActionForm
+            availableBalanceCents={availableBalanceCents}
+            completedPayload={completedPayload}
             contacts={contacts}
             errorMessage={errorMessage}
+            flowStep={flowStep}
             isSubmitting={isSubmitting}
             mode={mode}
-            onCancel={() => router.back()}
+            onClose={handleClose}
             onDismissError={() => setErrorMessage(null)}
+            onStepChange={setFlowStep}
             onSubmit={handleSubmit}
+            onViewMovements={() => router.replace("/movements" as never)}
           />
         )}
       </KeyboardAwareScrollView>
