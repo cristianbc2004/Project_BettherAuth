@@ -4,11 +4,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
-import { PersonGeneralSkeleton } from "@/features/ingresos/components/person/person-skeletons";
 import { mockIngresos } from "@/features/ingresos/mocks";
 import { usePersonSelection } from "@/features/ingresos/lib/person-selection-context";
 import { useAppTheme } from "@/shared/lib/theme-context";
-import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
 
 function formatCurrency(value: number) {
@@ -34,23 +32,14 @@ function getSelectedPersonId(personId?: string, fallbackPersonId?: number) {
   return Number.isFinite(selectedPersonId) ? selectedPersonId : undefined;
 }
 
-const PERSON_SKELETON_MINIMUM_MS = 3000;
-
 export default function PersonGeneralScreen() {
-  const { data: session, isPending } = authClient.useSession();
-  const showSessionLoading = useSessionLoadingDelay(isPending, PERSON_SKELETON_MINIMUM_MS, {
-    showOnMount: true,
-  });
+  const { data: session } = authClient.useSession();
   const { theme } = useAppTheme();
   const { selectedPersonId: selectedPersonIdFromTabs } = usePersonSelection();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
   const selectedPersonId = getSelectedPersonId(personId, selectedPersonIdFromTabs);
   const selectedPerson = getSelectedPerson(selectedPersonId ? String(selectedPersonId) : undefined);
   const generalHref = selectedPersonId ? (`/person?personId=${selectedPersonId}` as const) : "/person";
-
-  if (showSessionLoading) {
-    return <PersonGeneralSkeleton />;
-  }
 
   if (!session?.user) {
     return <Redirect href="/sign-in" />;

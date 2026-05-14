@@ -5,14 +5,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Briefcase, Clock3, MapPin } from "lucide-react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
-import { PersonGeneralSkeleton } from "@/features/ingresos/components/person/person-skeletons";
 import { mockIngresos, type IncomePerson } from "@/features/ingresos/mocks";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
-import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
 
-const PERSON_SKELETON_MINIMUM_MS = 3000;
 const STADIA_MAPS_API_KEY = process.env.EXPO_PUBLIC_STADIA_MAPS_API_KEY?.trim() ?? "";
 const MAP_STYLE_URL = STADIA_MAPS_API_KEY
   ? `https://tiles.stadiamaps.com/styles/alidade_smooth.json?api_key=${STADIA_MAPS_API_KEY}`
@@ -130,10 +127,7 @@ const WorkerMarker = memo(function WorkerMarker({
 });
 
 export default function PersonMapScreen() {
-  const { data: session, isPending } = authClient.useSession();
-  const showSessionLoading = useSessionLoadingDelay(isPending, PERSON_SKELETON_MINIMUM_MS, {
-    showOnMount: true,
-  });
+  const { data: session } = authClient.useSession();
   const { theme } = useAppTheme();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
   const initialPerson = useMemo(() => getSelectedPerson(personId), [personId]);
@@ -149,10 +143,6 @@ export default function PersonMapScreen() {
       zoom: 13.6,
     });
   }, []);
-
-  if (showSessionLoading) {
-    return <PersonGeneralSkeleton />;
-  }
 
   if (!session?.user) {
     return <Redirect href="/sign-in" />;

@@ -1,17 +1,13 @@
 import { Redirect, router } from "expo-router";
-import { memo, useCallback, useEffect, useMemo } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
 import Animated, {
-  Extrapolation,
   interpolate,
-  runOnJS,
-  useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   type SharedValue,
 } from "react-native-reanimated";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { Boxes, Plus } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -30,77 +26,67 @@ import type { WalletCard } from "@/shared/types/finance";
 type AnimatedWalletCardItemProps = {
   card: WalletCard;
   cardWidth: number;
+  cardsCount: number;
   index: number;
+  isExpanded: boolean;
   onPress: (cardId: string) => void;
-  scrollY: SharedValue<number>;
-  snapInterval: number;
+  onStackPress: () => void;
+  stackProgress: SharedValue<number>;
 };
 
 const CARD_HEIGHT = 188;
-const CARD_STACK_OVERLAP = 58;
-const CARD_STACK_STEP = CARD_HEIGHT - CARD_STACK_OVERLAP;
-const CARD_SWIPE_THRESHOLD = 86;
-const CARD_SWIPE_MAX_TRANSLATION = 116;
+const CARD_STACK_COLLAPSED_OFFSET = 82;
+const CARD_STACK_EXPANDED_GAP = 18;
 
 const AnimatedWalletCardItem = memo(function AnimatedWalletCardItem({
   card,
   cardWidth,
+  cardsCount,
   index,
+  isExpanded,
   onPress,
-  scrollY,
-  snapInterval,
+  onStackPress,
+  stackProgress,
 }: AnimatedWalletCardItemProps) {
-  const swipeX = useSharedValue(0);
   const animatedCardStyle = useAnimatedStyle(() => {
-    const cardCenter = index * snapInterval;
-    const inputRange = [cardCenter - snapInterval, cardCenter, cardCenter + snapInterval];
+    const progress = stackProgress.value;
+    const collapsedTranslateY = index * CARD_STACK_COLLAPSED_OFFSET;
+    const expandedTranslateY = index * (CARD_HEIGHT + CARD_STACK_EXPANDED_GAP);
 
     return {
       transform: [
         {
-          translateX: swipeX.value,
-        },
-        {
-          translateY: interpolate(scrollY.value, inputRange, [20, 0, 20], Extrapolation.CLAMP),
-        },
-        {
-          scale: interpolate(scrollY.value, inputRange, [0.93, 1, 0.93], Extrapolation.CLAMP),
+          translateY: interpolate(progress, [0, 1], [collapsedTranslateY, expandedTranslateY]),
         },
       ],
+      zIndex: cardsCount - index,
     };
-  }, [index, snapInterval]);
-  const manageGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .activeOffsetX(24)
-        .failOffsetY([-18, 18])
-        .onUpdate((event) => {
-          swipeX.value = Math.min(Math.max(event.translationX, 0), CARD_SWIPE_MAX_TRANSLATION);
-        })
-        .onEnd((event) => {
-          if (event.translationX > CARD_SWIPE_THRESHOLD || event.velocityX > 900) {
-            runOnJS(onPress)(card.id);
-          }
+  }, [cardsCount, index]);
 
-          swipeX.value = withSpring(0, { damping: 16, stiffness: 190 });
-        })
-        .onFinalize(() => {
-          swipeX.value = withSpring(0, { damping: 16, stiffness: 190 });
-        }),
-    [card.id, onPress, swipeX],
-  );
+  const handlePress = useCallback(() => {
+    if (isExpanded || cardsCount <= 1) {
+      onPress(card.id);
+      return;
+    }
+
+    onStackPress();
+  }, [card.id, cardsCount, isExpanded, onPress, onStackPress]);
 
   return (
-    <GestureDetector gesture={manageGesture}>
-      <Animated.View style={animatedCardStyle}>
-        <View
-          accessibilityHint="Desliza hacia la derecha para gestionar esta tarjeta"
-          accessibilityLabel={`Tarjeta terminada en ${card.lastDigits}`}
-        >
-          <WalletCardPreview card={card} width={cardWidth} />
-        </View>
-      </Animated.View>
-    </GestureDetector>
+    <Animated.View className="absolute left-0 top-0" style={animatedCardStyle}>
+      <Pressable
+        accessibilityLabel={`Tarjeta terminada en ${card.lastDigits}`}
+        accessibilityHint={isExpanded ? "Abre el detalle de esta tarjeta" : "Despliega la pila de tarjetas"}
+        accessibilityRole="button"
+        onPress={handlePress}
+      >
+        {({ pressed }) => (
+          <View style={{ opacity: pressed ? 0.92 : 1 }}>
+            <WalletCardPreview card={card} width={cardWidth} />
+          </View>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 });
 
@@ -112,10 +98,24 @@ export default function CardsScreen() {
   const { height, width } = useWindowDimensions();
   const { cards, isLoading, refreshCards } = useWalletCards();
   const cardWidth = Math.min(width - 40, 360);
-  const cardSnapInterval = CARD_STACK_STEP;
-  const animatedCardsBottomSpacing = Math.max(height - CARD_HEIGHT - 120, contentBottomSpacing);
-  const cardsScrollY = useSharedValue(0);
+  const [isStackExpanded, setIsStackExpanded] = useState(false);
+  const stackProgress = useSharedValue(0);
   const displayedCards = cards;
+  const collapsedStackHeight = CARD_HEIGHT + Math.max(displayedCards.length - 1, 0) * CARD_STACK_COLLAPSED_OFFSET;
+  const expandedStackHeight =
+    displayedCards.length * CARD_HEIGHT + Math.max(displayedCards.length - 1, 0) * CARD_STACK_EXPANDED_GAP;
+  const stackHeight = isStackExpanded ? expandedStackHeight : collapsedStackHeight;
+  const animatedCardsBottomSpacing = Math.max(height - stackHeight - 120, contentBottomSpacing);
+  const animatedStackStyle = useAnimatedStyle(() => {
+    return {
+      height: interpolate(stackProgress.value, [0, 1], [collapsedStackHeight, expandedStackHeight]),
+    };
+  }, [collapsedStackHeight, expandedStackHeight]);
+  const handleStackPress = useCallback(() => {
+    selectionHaptic();
+    setIsStackExpanded(true);
+    stackProgress.value = withSpring(1, { damping: 18, stiffness: 140 });
+  }, [stackProgress]);
   const handleCardPress = useCallback((cardId: string) => {
     selectionHaptic();
     router.push({
@@ -123,28 +123,18 @@ export default function CardsScreen() {
       pathname: "/targets/details",
     } as never);
   }, []);
-  const handleCardsScroll = useAnimatedScrollHandler((event) => {
-    cardsScrollY.value = event.contentOffset.y;
-  });
-  const renderAnimatedCard = useCallback(
-    (card: WalletCard, index: number) => (
-      <AnimatedWalletCardItem
-        card={card}
-        cardWidth={cardWidth}
-        index={index}
-        onPress={handleCardPress}
-        scrollY={cardsScrollY}
-        snapInterval={cardSnapInterval}
-      />
-    ),
-    [cardSnapInterval, cardWidth, cardsScrollY, handleCardPress],
-  );
-
   useEffect(() => {
     if (session?.user.id) {
       void refreshCards();
     }
   }, [refreshCards, session?.user.id]);
+
+  useEffect(() => {
+    if (displayedCards.length <= 1) {
+      setIsStackExpanded(false);
+      stackProgress.value = 0;
+    }
+  }, [displayedCards.length, stackProgress]);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -165,8 +155,6 @@ export default function CardsScreen() {
           paddingBottom: isLoading || displayedCards.length === 0 ? contentBottomSpacing : animatedCardsBottomSpacing,
         }}
         contentInsetAdjustmentBehavior="automatic"
-        onScroll={handleCardsScroll}
-        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
         <AppScreenHeader
@@ -225,11 +213,21 @@ export default function CardsScreen() {
             </View>
           ) : (
             <View className="items-center">
-              {displayedCards.map((card, index) => (
-                <View key={card.id} style={{ marginTop: index === 0 ? 0 : -CARD_STACK_OVERLAP }}>
-                  {renderAnimatedCard(card, index)}
-                </View>
-              ))}
+              <Animated.View style={[{ width: cardWidth }, animatedStackStyle]}>
+                {displayedCards.map((card, index) => (
+                  <AnimatedWalletCardItem
+                    card={card}
+                    cardWidth={cardWidth}
+                    cardsCount={displayedCards.length}
+                    index={index}
+                    isExpanded={isStackExpanded}
+                    key={card.id}
+                    onPress={handleCardPress}
+                    onStackPress={handleStackPress}
+                    stackProgress={stackProgress}
+                  />
+                ))}
+              </Animated.View>
             </View>
           )}
         </View>
