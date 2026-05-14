@@ -5,19 +5,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { Graphic } from "@/features/ingresos/components/person/graphic";
-import { PersonGraphicSkeleton } from "@/features/ingresos/components/person/person-skeletons";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
 import { usePersonSelection } from "@/features/ingresos/lib/person-selection-context";
 import { useAppTheme } from "@/shared/lib/theme-context";
-import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
-
-const PERSON_SKELETON_MINIMUM_MS = 3000;
 
 export default function PersonGraphicScreen() {
-  const { data: session, isPending } = authClient.useSession();
-  const showSessionLoading = useSessionLoadingDelay(isPending, PERSON_SKELETON_MINIMUM_MS, {
-    showOnMount: true,
-  });
+  const { data: session } = authClient.useSession();
   const { theme } = useAppTheme();
   const { setSelectedPersonId } = usePersonSelection();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
@@ -38,10 +31,6 @@ export default function PersonGraphicScreen() {
       setSelectedPersonId(initialSelectedPersonId);
     }
   }, [initialSelectedPersonId, setSelectedPersonId]);
-
-  if (showSessionLoading) {
-    return <PersonGraphicSkeleton />;
-  }
 
   if (!session?.user) {
     return <Redirect href="/sign-in" />;
