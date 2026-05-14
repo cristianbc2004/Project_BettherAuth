@@ -12,6 +12,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
+    "check": "turbo run typecheck",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
