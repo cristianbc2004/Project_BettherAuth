@@ -13,7 +13,6 @@ import {
 } from "@/features/finance/mocks";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { authClient } from "@/features/auth/services/auth-client";
-import { AppDrawer } from "@/shared/components/ui/app-drawer";
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
@@ -76,13 +75,6 @@ function getGreeting() {
   return "Buenas noches";
 }
 
-function isAdminRole(role: string) {
-  return role
-    .split(",")
-    .map((entry) => entry.trim().toLowerCase())
-    .includes("admin");
-}
-
 function SectionHeader({ action, onActionPress, title }: SectionHeaderProps) {
   const { theme } = useAppTheme();
   const actionContent = action ? (
@@ -115,7 +107,6 @@ function SectionHeader({ action, onActionPress, title }: SectionHeaderProps) {
 export default function HomeScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isChartInteracting, setIsChartInteracting] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<HomeBalancePoint | null>(null);
   const { cards, refreshCards } = useWalletCards();
@@ -187,9 +178,6 @@ export default function HomeScreen() {
     return <Redirect href="/sign-in" />;
   }
 
-  const role = (session.user as { role?: string }).role ?? "Usuario";
-  const isAdmin = isAdminRole(role);
-
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: screenBackgroundColor }}>
       <View className="absolute inset-0" style={{ backgroundColor: screenBackgroundColor }} />
@@ -203,7 +191,7 @@ export default function HomeScreen() {
               accessibilityLabel="Open menu"
               onPress={() => {
                 selectionHaptic();
-                setIsDrawerOpen(true);
+                router.push("/menu" as never);
               }}
             >
               <Menu color={theme.text} size={28} strokeWidth={2.3} />
@@ -345,15 +333,6 @@ export default function HomeScreen() {
           </View>
         </ScrollView>
       </View>
-
-      <AppDrawer
-        email={session.user.email}
-        isAdmin={isAdmin}
-        isVisible={isDrawerOpen}
-        name={session.user.name}
-        onClose={() => setIsDrawerOpen(false)}
-        role={role}
-      />
     </SafeAreaView>
   );
 }

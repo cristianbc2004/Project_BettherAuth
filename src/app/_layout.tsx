@@ -27,6 +27,7 @@ function AppNavigation() {
         <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
         <Stack.Screen name="targets/add" />
         <Stack.Screen name="home-graphic" />
+        <Stack.Screen name="menu" />
         <Stack.Screen name="notification" />
         <Stack.Screen name="bizum" />
         <Stack.Screen name="person" />
