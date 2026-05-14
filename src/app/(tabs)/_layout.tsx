@@ -26,6 +26,7 @@ export default function NativeTabsLayout() {
       tabBar={(props) => <AppFloatingTabBar {...props} />}
       screenOptions={{
         headerShown: false,
+        animation: "none",
         tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontSize: 11,

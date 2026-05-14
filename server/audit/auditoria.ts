@@ -1,4 +1,4 @@
-import { prisma } from "@/shared/lib/prisma";
+import { prisma } from "@server/db/prisma";
 
 type HeadersLike = Headers | Record<string, string | string[] | undefined> | undefined;
 
