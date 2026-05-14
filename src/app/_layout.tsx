@@ -19,7 +19,7 @@ function AppNavigation() {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: "none",
+          animation: "slide_from_right",
           contentStyle: { backgroundColor: theme.background },
         }}
       >
