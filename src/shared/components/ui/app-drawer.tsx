@@ -1,20 +1,19 @@
 import { router } from "expo-router";
 import { ChevronRight, Cookie, ShieldCheck, UserCircle, Users, X } from "lucide-react-native";
-import { memo, useCallback } from "react";
-import { Modal, Pressable, View } from "react-native";
-import Animated, { Easing, FadeIn, FadeInDown, SlideInLeft } from "react-native-reanimated";
+import { memo, useCallback, useRef } from "react";
+import { Pressable, View } from "react-native";
+import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppText } from "@/shared/components/ui/app-text";
 import { selectionHaptic } from "@/shared/lib/haptics";
+import { backOrReplace } from "@/shared/lib/navigation";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
 type AppDrawerProps = {
   email: string;
   isAdmin: boolean;
-  isVisible: boolean;
   name: string;
-  onClose: () => void;
   role: string;
 };
 
@@ -80,12 +79,11 @@ const DrawerOptionRow = memo(function DrawerOptionRow({
 export function AppDrawer({
   email,
   isAdmin,
-  isVisible,
   name,
-  onClose,
   role,
 }: AppDrawerProps) {
   const { theme } = useAppTheme();
+  const navigationLockRef = useRef(false);
   const drawerOptions: DrawerOption[] = [
     ...(isAdmin
       ? [
@@ -116,103 +114,88 @@ export function AppDrawer({
 
   const handleNavigate = useCallback(
     (href: string) => {
+      if (navigationLockRef.current) {
+        return;
+      }
+
+      navigationLockRef.current = true;
       selectionHaptic();
-      onClose();
-      router.navigate(href as never);
+
+      router.replace(href as never);
     },
-    [onClose],
+    [],
   );
+  const handleClose = useCallback(() => {
+    selectionHaptic();
+    backOrReplace("/home" as never);
+  }, []);
 
   return (
-    <Modal
-      animationType="none"
-      navigationBarTranslucent
-      onRequestClose={onClose}
-      statusBarTranslucent
-      transparent
-      visible={isVisible}
-    >
-      <Animated.View
-        className="flex-1 flex-row"
-        entering={FadeIn.duration(180)}
-        style={{ backgroundColor: "rgba(0, 0, 0, 0.42)" }}
-      >
-        <Animated.View
-          className="flex-1"
-          entering={SlideInLeft.duration(280).easing(Easing.out(Easing.cubic))}
-          style={{ backgroundColor: theme.background }}
-        >
-          <SafeAreaView className="flex-1">
-            <View className="flex-1 px-5 pb-10 pt-5">
-              <View className="mb-5 flex-row items-center justify-between">
-                <Pressable
-                  accessibilityLabel="Open account"
-                  accessibilityRole="button"
-                  className="flex-1 flex-row items-center"
-                  onPress={() => handleNavigate("/dashboard")}
-                >
-                  <View
-                    className="mr-4 h-16 w-16 items-center justify-center rounded-[22px] border"
-                    style={{
-                      backgroundColor: theme.card,
-                      borderColor: theme.border,
-                    }}
-                  >
-                    <UserCircle color={theme.text} size={34} strokeWidth={2.1} />
-                  </View>
-                  <View className="flex-1">
-                    <AppText
-                      className="text-[20px] font-bold"
-                      numberOfLines={1}
-                    >
-                      {name}
-                    </AppText>
-                    <AppText className="mt-1 text-[14px] font-semibold" tone="muted">
-                      {role}
-                    </AppText>
-                    <AppText className="mt-1 text-xs" numberOfLines={1} tone="muted">
-                      {email}
-                    </AppText>
-                  </View>
-                </Pressable>
-
-                <Pressable
-                  accessibilityLabel="Close menu"
-                  accessibilityRole="button"
-                  className="ml-4 h-11 w-11 items-center justify-center rounded-full"
-                  onPress={() => {
-                    selectionHaptic();
-                    onClose();
-                  }}
-                >
-                  <X color={theme.text} size={22} strokeWidth={2.4} />
-                </Pressable>
-              </View>
-
-              <View className="mb-6 h-px" style={{ backgroundColor: theme.border }} />
-
-              <AppText className="mb-2 text-[18px] font-bold">
-                Menu
-              </AppText>
-
-              <View>
-                {drawerOptions.map((option, index) => (
-                  <DrawerOptionRow
-                    accessibilityLabel={option.accessibilityLabel}
-                    description={option.description}
-                    href={option.href}
-                    icon={option.icon}
-                    index={index}
-                    key={option.href}
-                    onPress={handleNavigate}
-                    title={option.title}
-                  />
-                ))}
-              </View>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
+      <View className="flex-1 px-5 pb-10 pt-5">
+        <View className="mb-5 flex-row items-center justify-between">
+          <Pressable
+            accessibilityLabel="Open account"
+            accessibilityRole="button"
+            className="flex-1 flex-row items-center"
+            onPress={() => handleNavigate("/dashboard")}
+          >
+            <View
+              className="mr-4 h-16 w-16 items-center justify-center rounded-[22px] border"
+              style={{
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+              }}
+            >
+              <UserCircle color={theme.text} size={34} strokeWidth={2.1} />
             </View>
-          </SafeAreaView>
-        </Animated.View>
-      </Animated.View>
-    </Modal>
+            <View className="flex-1">
+              <AppText
+                className="text-[20px] font-bold"
+                numberOfLines={1}
+              >
+                {name}
+              </AppText>
+              <AppText className="mt-1 text-[14px] font-semibold" tone="muted">
+                {role}
+              </AppText>
+              <AppText className="mt-1 text-xs" numberOfLines={1} tone="muted">
+                {email}
+              </AppText>
+            </View>
+          </Pressable>
+
+          <Pressable
+            accessibilityLabel="Close menu"
+            accessibilityRole="button"
+            className="ml-4 h-11 w-11 items-center justify-center rounded-full"
+            onPress={handleClose}
+          >
+            <X color={theme.text} size={22} strokeWidth={2.4} />
+          </Pressable>
+        </View>
+
+        <View className="mb-6 h-px" style={{ backgroundColor: theme.border }} />
+
+        <AppText className="mb-2 text-[18px] font-bold">
+          Menu
+        </AppText>
+
+        <View>
+          {drawerOptions.map((option, index) => (
+            <DrawerOptionRow
+              accessibilityLabel={option.accessibilityLabel}
+              description={option.description}
+              href={option.href}
+              icon={option.icon}
+              index={index}
+              key={option.href}
+              onPress={handleNavigate}
+              title={option.title}
+            />
+          ))}
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }
