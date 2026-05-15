@@ -1,0 +1,31 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "types": [
+      "nativewind/types",
+      "node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@repo/auth": ["../../packages/auth/src/index.ts"],
+      "@repo/auth/*": ["../../packages/auth/src/*"],
+      "@repo/config": ["../../packages/config/src/index.ts"],
+      "@repo/database": ["../../packages/database/src/index.ts"],
+      "@repo/database/*": ["../../packages/database/src/*"],
+      "@repo/server/*": ["../server/*"],
+      "@repo/types": ["../../packages/types/src/index.ts"],
+      "@repo/types/*": ["../../packages/types/src/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
+  ]
+}

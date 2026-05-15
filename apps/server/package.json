@@ -1,0 +1,34 @@
+{
+  "name": "@repo/server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    "./audit/*": "./audit/*.ts",
+    "./auth/*": "./auth/*.ts",
+    "./finance/*": "./finance/*.ts",
+    "./notifications/*": "./notifications/*.ts",
+    "./password/*": "./password/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "bun --watch auth/auth.ts"
+  },
+  "dependencies": {
+    "@better-auth/expo": "^1.6.4",
+    "@better-auth/i18n": "^1.6.5",
+    "@repo/auth": "workspace:*",
+    "@repo/config": "workspace:*",
+    "@repo/database": "workspace:*",
+    "better-auth": "^1.6.4",
+    "nodemailer": "^8.0.5",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/nodemailer": "^8.0.0",
+    "typescript": "~5.9.2"
+  }
+}
