@@ -1,7 +1,6 @@
 import { useCallback, type ComponentType, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { Redirect, router } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
+import { Redirect, router, useFocusEffect } from "expo-router";
 import { ArrowDownLeft, ArrowRightLeft, Bell, CircleAlert, Send, Wallet } from "lucide-react-native";
 import Animated, { Easing, FadeInDown, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";

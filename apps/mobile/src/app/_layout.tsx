@@ -26,10 +26,13 @@ function AppNavigation() {
         <Stack.Screen name="index" options={{ animation: "none" }} />
         <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
         <Stack.Screen name="targets/add" />
-        <Stack.Screen name="home-graphic" />
+        <Stack.Screen name="home-graphic/index" />
+        <Stack.Screen name="home-graphic/expense-category" />
+        <Stack.Screen name="home-graphic/expense-detail" />
         <Stack.Screen name="menu" />
         <Stack.Screen name="notification" />
-        <Stack.Screen name="bizum" />
+        <Stack.Screen name="bizum/request" />
+        <Stack.Screen name="bizum/send" />
         <Stack.Screen name="person" />
         <Stack.Screen name="legal/cookies" />
         <Stack.Screen name="legal/privacy" />

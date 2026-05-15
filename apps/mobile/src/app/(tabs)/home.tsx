@@ -1,5 +1,4 @@
-import { Redirect, router } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
+import { Redirect, router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

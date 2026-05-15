@@ -1,7 +1,6 @@
-import { Redirect, router } from "expo-router";
+import { Redirect, router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
 import { ArrowDownLeft, ArrowUpRight, Zap } from "lucide-react-native";
 import Animated, { Easing, FadeInDown, FadeOutUp, LinearTransition } from "react-native-reanimated";
 
