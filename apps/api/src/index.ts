@@ -38,9 +38,10 @@ export default app;
 
 if (import.meta.main) {
   const port = Number(process.env.PORT ?? "3001");
+  const hostname = process.env.HOST ?? "0.0.0.0";
   const bunRuntime = (globalThis as typeof globalThis & {
     Bun?: {
-      serve: (options: { fetch: typeof app.fetch; port: number }) => unknown;
+      serve: (options: { fetch: typeof app.fetch; hostname?: string; port: number }) => unknown;
     };
   }).Bun;
 
@@ -50,8 +51,9 @@ if (import.meta.main) {
 
   bunRuntime.serve({
     fetch: app.fetch,
+    hostname,
     port,
   });
 
-  console.log(`[api] escuchando en http://localhost:${port}`);
+  console.log(`[api] escuchando en http://${hostname}:${port}`);
 }
