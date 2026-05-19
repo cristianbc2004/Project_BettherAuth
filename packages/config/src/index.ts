@@ -1,16 +1,18 @@
 const stripAuthPath = (value: string) => value.replace(/\/api\/auth\/?$/, "");
 
 const appScheme = process.env.EXPO_PUBLIC_APP_SCHEME ?? "better-auth-dashboard";
+const defaultApiUrl = "http://localhost:3001";
 const authServerUrl =
   process.env.BETTER_AUTH_URL ??
   process.env.EXPO_PUBLIC_BETTER_AUTH_URL ??
   process.env.EXPO_PUBLIC_API_URL ??
-  "http://localhost:8081";
+  defaultApiUrl;
+const authApiUrl = stripAuthPath(process.env.EXPO_PUBLIC_API_URL ?? authServerUrl);
 
 export const appConfig = {
   appName: "Better Auth Dashboard",
   appScheme,
-  authApiUrl: stripAuthPath(process.env.EXPO_PUBLIC_API_URL ?? authServerUrl),
+  authApiUrl,
   authServerUrl,
   resendTestRecipient: process.env.EXPO_PUBLIC_RESEND_TEST_EMAIL?.trim().toLowerCase() ?? "",
   emailVerificationAppUrl:

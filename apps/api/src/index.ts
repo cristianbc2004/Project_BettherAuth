@@ -1,4 +1,3 @@
-import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 
 import { corsMiddleware } from "./middleware/cors";
@@ -39,8 +38,17 @@ export default app;
 
 if (import.meta.main) {
   const port = Number(process.env.PORT ?? "3001");
+  const bunRuntime = (globalThis as typeof globalThis & {
+    Bun?: {
+      serve: (options: { fetch: typeof app.fetch; port: number }) => unknown;
+    };
+  }).Bun;
 
-  serve({
+  if (!bunRuntime) {
+    throw new Error("Bun runtime is required to start the API server.");
+  }
+
+  bunRuntime.serve({
     fetch: app.fetch,
     port,
   });
