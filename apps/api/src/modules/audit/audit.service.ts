@@ -1,5 +1,7 @@
 import { prisma } from "@repo/database";
 
+type HeadersLike = Headers | Record<string, string | string[] | undefined> | undefined;
+
 type AuditAction =
   | "ADMIN_LIST"
   | "ADMIN_CREATE"
@@ -20,6 +22,7 @@ type RegisterAuditInput = {
   endpoint?: string | null;
   errorMensaje?: string | null;
   ipAddress?: string | null;
+  oldvaluePayload?: unknown;
   newvaluePayload?: unknown;
   sessionId?: string | null;
   source?: string | null;
@@ -29,6 +32,29 @@ type RegisterAuditInput = {
   userName?: string | null;
   userRol?: string | null;
 };
+
+function getHeaderValue(headers: HeadersLike, key: string) {
+  if (!headers) {
+    return null;
+  }
+
+  if (headers instanceof Headers) {
+    const value = headers.get(key);
+    return value?.trim() || null;
+  }
+
+  const raw = headers[key] ?? headers[key.toLowerCase()] ?? headers[key.toUpperCase()];
+
+  if (Array.isArray(raw)) {
+    return raw[0]?.trim() || null;
+  }
+
+  if (typeof raw === "string") {
+    return raw.trim() || null;
+  }
+
+  return null;
+}
 
 export function extractAuditRequestMeta(request: Request, source = "api") {
   const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
@@ -44,19 +70,33 @@ export function extractAuditRequestMeta(request: Request, source = "api") {
   };
 }
 
+export function extractAuditMetaFromHeaders(headers: HeadersLike, fallbackEndpoint: string, source = "auth") {
+  const forwardedFor = getHeaderValue(headers, "x-forwarded-for");
+  const realIp = getHeaderValue(headers, "x-real-ip");
+  const userAgent = getHeaderValue(headers, "user-agent");
+
+  return {
+    endpoint: fallbackEndpoint,
+    ipAddress: (forwardedFor?.split(",")[0]?.trim() || realIp) ?? null,
+    source,
+    userAgent: userAgent || null,
+  };
+}
+
 export async function registerAudit(input: RegisterAuditInput) {
   try {
     await prisma.$executeRawUnsafe(
       `INSERT INTO "Auditoria"
-      ("id", "userId", "userName", "userRol", "action", "table", "newvaluePayload", "ipAddress", "userAgent", "status", "errorMensaje", "targetUserId", "sessionId", "endpoint", "source")
+      ("id", "userId", "userName", "userRol", "action", "table", "oldvaluePayload", "newvaluePayload", "ipAddress", "userAgent", "status", "errorMensaje", "targetUserId", "sessionId", "endpoint", "source")
       VALUES
-      ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10, $11, $12, $13, $14, $15)`,
+      ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9, $10, $11, $12, $13, $14, $15, $16)`,
       crypto.randomUUID(),
       input.userId ?? null,
       input.userName ?? null,
       input.userRol ?? null,
       input.action,
       input.table,
+      input.oldvaluePayload ? JSON.stringify(input.oldvaluePayload) : null,
       input.newvaluePayload ? JSON.stringify(input.newvaluePayload) : null,
       input.ipAddress ?? null,
       input.userAgent ?? null,
