@@ -7,6 +7,7 @@
     "packages/*"
   ],
   "scripts": {
+    "api:dev": "bun --filter @repo/api dev",
     "start": "bun --filter @repo/mobile start",
     "android": "bun --filter @repo/mobile android",
     "ios": "bun --filter @repo/mobile ios",
