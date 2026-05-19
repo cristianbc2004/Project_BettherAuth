@@ -1,43 +1,495 @@
 import { z } from "zod";
 
+import { prisma } from "@repo/database";
+
 import { HttpError } from "../../lib/http-error";
-import { getAuthenticatedUser } from "../auth/session.service";
+import { extractAuditRequestMeta, registerAudit } from "../audit/audit.service";
+import { getAuthenticatedUserWithSession } from "../auth/session.service";
+import { buildReferenceCode, getInitials, getUserBalances, readIdempotencyKey, toMoneyLabel } from "./bizum.helpers";
 
 const createBizumSchema = z.object({
   action: z.enum(["request", "send"]),
-  amount: z.number().finite().positive(),
-  concept: z.string().trim().max(80).optional(),
+  amount: z.number().finite().positive("El importe debe ser mayor que 0."),
+  concept: z.string().trim().max(80, "El concepto es demasiado largo.").optional().default(""),
   contactUserId: z.string().trim().min(1),
 });
 
 export async function getBizumSummary(request: Request) {
-  const user = await getAuthenticatedUser(request);
+  const authenticatedUser = await getAuthenticatedUserWithSession(request);
 
-  if (!user) {
+  if (!authenticatedUser) {
     throw new HttpError(401, "No autorizado.");
   }
 
+  const [contacts, transfers, balances] = await Promise.all([
+    prisma.user.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        email: true,
+        id: true,
+        name: true,
+      },
+      where: {
+        id: {
+          not: authenticatedUser.id,
+        },
+      },
+    }),
+    prisma.bizumTransfer.findMany({
+      include: {
+        receiverUser: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        senderUser: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 20,
+      where: {
+        OR: [{ receiverUserId: authenticatedUser.id }, { senderUserId: authenticatedUser.id }],
+      },
+    }),
+    getUserBalances(authenticatedUser.id),
+  ]);
+
+  await prisma.user.update({
+    data: {
+      totalBalanceCents: balances.totalBalanceCents,
+    },
+    where: {
+      id: authenticatedUser.id,
+    },
+  });
+
+  const movements = transfers.map((transfer) => {
+    const isIncome = transfer.receiverUserId === authenticatedUser.id;
+    const counterpart = isIncome ? transfer.senderUser : transfer.receiverUser;
+    const signedAmount = isIncome ? `+${toMoneyLabel(transfer.amountCents)}` : `-${toMoneyLabel(transfer.amountCents)}`;
+
+    return {
+      amount: signedAmount,
+      createdAt: transfer.createdAt.toISOString(),
+      id: transfer.id,
+      initials: getInitials(counterpart?.name ?? "Usuario"),
+      name: counterpart?.name ?? "Usuario",
+      tone: isIncome ? "income" : "outcome",
+    };
+  });
+
   return {
-    message: "Ruta Bizum preparada para migrar la logica desde apps/server.",
-    user,
+    availableBalanceCents: balances.availableBalanceCents,
+    contacts: contacts.map((contact) => ({
+      detail: contact.email,
+      id: contact.id,
+      initials: getInitials(contact.name),
+      name: contact.name,
+    })),
+    movements,
   };
 }
 
 export async function createBizum(request: Request, input: unknown) {
-  const user = await getAuthenticatedUser(request);
+  const auditMeta = extractAuditRequestMeta(request);
+  const authenticatedUser = await getAuthenticatedUserWithSession(request);
 
-  if (!user) {
+  if (!authenticatedUser) {
     throw new HttpError(401, "No autorizado.");
   }
 
   const result = createBizumSchema.safeParse(input);
 
   if (!result.success) {
-    throw new HttpError(400, "Datos invalidos.", result.error.flatten());
+    await registerAudit({
+      ...auditMeta,
+      action: "BIZUM_TRANSFER_SEND",
+      errorMensaje: result.error.issues[0]?.message ?? "Datos invalidos.",
+      sessionId: authenticatedUser.sessionId,
+      status: "FAILED",
+      table: "bizumTransfer",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
+    throw new HttpError(400, result.error.issues[0]?.message ?? "Datos invalidos.", result.error.flatten());
   }
 
+  const { action, amount, concept, contactUserId } = result.data;
+  const amountCents = Math.round(amount * 100);
+  const sendConcept = concept.trim();
+  const idempotencyKey = readIdempotencyKey(request);
+  const senderBalances = await getUserBalances(authenticatedUser.id);
+
+  if (action === "send" && !idempotencyKey) {
+    await registerAudit({
+      ...auditMeta,
+      action: "BIZUM_TRANSFER_SEND",
+      errorMensaje: "Falta la cabecera Idempotency-Key.",
+      sessionId: authenticatedUser.sessionId,
+      status: "FAILED",
+      table: "bizumTransfer",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
+    throw new HttpError(400, "Falta la cabecera Idempotency-Key.");
+  }
+
+  if (contactUserId === authenticatedUser.id) {
+    await registerAudit({
+      ...auditMeta,
+      action: action === "request" ? "BIZUM_REQUEST_CREATE" : "BIZUM_TRANSFER_SEND",
+      errorMensaje: "No puedes hacer Bizum a tu propio usuario.",
+      sessionId: authenticatedUser.sessionId,
+      status: "FAILED",
+      table: action === "request" ? "bizumRequest" : "bizumTransfer",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
+    throw new HttpError(400, "No puedes hacer Bizum a tu propio usuario.");
+  }
+
+  const contactUser = await prisma.user.findUnique({
+    select: {
+      email: true,
+      id: true,
+      name: true,
+      totalBalanceCents: true,
+    },
+    where: {
+      id: contactUserId,
+    },
+  });
+
+  if (!contactUser) {
+    await registerAudit({
+      ...auditMeta,
+      action: action === "request" ? "BIZUM_REQUEST_CREATE" : "BIZUM_TRANSFER_SEND",
+      errorMensaje: "El usuario seleccionado no existe.",
+      newvaluePayload: { contactUserId },
+      sessionId: authenticatedUser.sessionId,
+      status: "FAILED",
+      table: action === "request" ? "bizumRequest" : "bizumTransfer",
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
+    throw new HttpError(404, "El usuario seleccionado no existe.");
+  }
+
+  if (action === "request") {
+    const requestConcept = concept.trim();
+    const bizumRequest = await prisma.$transaction(async (tx) => {
+      const createdRequest = await tx.bizumRequest.create({
+        data: {
+          amountCents,
+          concept: requestConcept || null,
+          payerUserId: contactUser.id,
+          referenceCode: buildReferenceCode("BQR"),
+          requesterUserId: authenticatedUser.id,
+        },
+        select: {
+          amountCents: true,
+          id: true,
+        },
+      });
+
+      const requesterName = authenticatedUser.name.trim() || "Un usuario";
+      const amountLabel = toMoneyLabel(amountCents);
+      const requestBody = requestConcept
+        ? `${requesterName} te solicita ${amountLabel}. Concepto: ${requestConcept}`
+        : `${requesterName} te solicita ${amountLabel}.`;
+
+      await tx.notification.create({
+        data: {
+          actionPayload: {
+            amountCents,
+            amountLabel,
+            bizumRequestId: createdRequest.id,
+            concept: requestConcept || null,
+            requesterUserId: authenticatedUser.id,
+          },
+          actionRoute: "/notification",
+          bizumRequestId: createdRequest.id,
+          body: requestBody,
+          title: "Nueva solicitud de Bizum",
+          type: "BIZUM_REQUEST",
+          userDestinationId: contactUser.id,
+          userEmisorId: authenticatedUser.id,
+        },
+      });
+
+      return createdRequest;
+    });
+
+    await registerAudit({
+      ...auditMeta,
+      action: "BIZUM_REQUEST_CREATE",
+      newvaluePayload: {
+        amountCents,
+        concept: requestConcept || null,
+      },
+      sessionId: authenticatedUser.sessionId,
+      status: "SUCCESS",
+      table: "bizumRequest",
+      targetUserId: contactUser.id,
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
+
+    return {
+      availableBalanceCents: senderBalances.availableBalanceCents,
+      request: {
+        amountCents: bizumRequest.amountCents,
+        id: bizumRequest.id,
+      },
+    };
+  }
+
+  const existingTransfer = await prisma.bizumTransfer.findUnique({
+    include: {
+      receiverUser: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    where: {
+      idempotencyKey,
+    },
+  });
+
+  if (existingTransfer) {
+    const existingConcept = existingTransfer.concept?.trim() ?? "";
+    const currentConcept = sendConcept || "";
+    const isSameOperation =
+      existingTransfer.senderUserId === authenticatedUser.id &&
+      existingTransfer.receiverUserId === contactUser.id &&
+      existingTransfer.amountCents === amountCents &&
+      existingConcept === currentConcept;
+
+    if (!isSameOperation) {
+      throw new HttpError(409, "La Idempotency-Key ya fue usada con otra operacion.");
+    }
+
+    const refreshedBalances = await getUserBalances(authenticatedUser.id);
+    return {
+      availableBalanceCents: refreshedBalances.availableBalanceCents,
+      transfer: {
+        amount: `-${toMoneyLabel(existingTransfer.amountCents)}`,
+        createdAt: existingTransfer.createdAt.toISOString(),
+        id: existingTransfer.id,
+        initials: getInitials(existingTransfer.receiverUser?.name ?? contactUser.name),
+        name: existingTransfer.receiverUser?.name ?? contactUser.name,
+        tone: "outcome",
+      },
+    };
+  }
+
+  const senderCards = await prisma.target.findMany({
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      balanceCents: true,
+      id: true,
+    },
+    where: {
+      block: false,
+      userId: authenticatedUser.id,
+    },
+  });
+
+  const senderCard = senderCards.find((card) => card.balanceCents >= amountCents);
+
+  if (!senderCard) {
+    await registerAudit({
+      ...auditMeta,
+      action: "BIZUM_TRANSFER_SEND",
+      errorMensaje: "Saldo insuficiente para enviar este Bizum.",
+      newvaluePayload: {
+        amountCents,
+        contactUserId: contactUser.id,
+      },
+      sessionId: authenticatedUser.sessionId,
+      status: "FAILED",
+      table: "bizumTransfer",
+      targetUserId: contactUser.id,
+      userId: authenticatedUser.id,
+      userName: authenticatedUser.name,
+      userRol: authenticatedUser.role,
+    });
+    throw new HttpError(400, "Saldo insuficiente para enviar este Bizum.");
+  }
+
+  const receiverCard = await prisma.target.findFirst({
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      id: true,
+    },
+    where: {
+      block: false,
+      userId: contactUser.id,
+    },
+  });
+
+  const transfer = await prisma.$transaction(async (tx) => {
+    const createdTransfer = await tx.bizumTransfer.create({
+      data: {
+        amountCents,
+        completedAt: new Date(),
+        concept: sendConcept || null,
+        idempotencyKey,
+        receiverCardId: receiverCard?.id ?? null,
+        receiverUserId: contactUser.id,
+        referenceCode: buildReferenceCode("BTR"),
+        senderCardId: senderCard.id,
+        senderUserId: authenticatedUser.id,
+      },
+      include: {
+        receiverUser: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    await tx.target.update({
+      data: {
+        balanceCents: {
+          decrement: amountCents,
+        },
+      },
+      where: {
+        id: senderCard.id,
+      },
+    });
+
+    if (receiverCard?.id) {
+      await tx.target.update({
+        data: {
+          balanceCents: {
+            increment: amountCents,
+          },
+        },
+        where: {
+          id: receiverCard.id,
+        },
+      });
+    }
+
+    const [senderTotalBalance, senderAvailableBalance, receiverTotalBalance] = await Promise.all([
+      tx.target.aggregate({
+        _sum: { balanceCents: true },
+        where: {
+          userId: authenticatedUser.id,
+        },
+      }),
+      tx.target.aggregate({
+        _sum: { balanceCents: true },
+        where: {
+          block: false,
+          userId: authenticatedUser.id,
+        },
+      }),
+      tx.target.aggregate({
+        _sum: { balanceCents: true },
+        where: {
+          userId: contactUser.id,
+        },
+      }),
+    ]);
+
+    await Promise.all([
+      tx.user.update({
+        data: {
+          totalBalanceCents: senderTotalBalance._sum.balanceCents ?? 0,
+        },
+        where: {
+          id: authenticatedUser.id,
+        },
+      }),
+      tx.user.update({
+        data: {
+          totalBalanceCents: receiverTotalBalance._sum.balanceCents ?? 0,
+        },
+        where: {
+          id: contactUser.id,
+        },
+      }),
+    ]);
+
+    const senderName = authenticatedUser.name.trim() || "Un usuario";
+    const amountLabel = toMoneyLabel(amountCents);
+    const sendBody = sendConcept
+      ? `${senderName} te envio ${amountLabel}. Concepto: ${sendConcept}`
+      : `${senderName} te envio ${amountLabel}.`;
+
+    await tx.notification.create({
+      data: {
+        actionPayload: {
+          amountCents,
+          amountLabel,
+          concept: sendConcept || null,
+          senderUserId: authenticatedUser.id,
+          transferId: createdTransfer.id,
+        },
+        actionRoute: "/notification",
+        body: sendBody,
+        title: "Bizum recibido",
+        transferId: createdTransfer.id,
+        type: "BIZUM_RECEIVED",
+        userDestinationId: contactUser.id,
+        userEmisorId: authenticatedUser.id,
+      },
+    });
+
+    return {
+      transfer: createdTransfer,
+      updatedSenderBalanceCents: senderAvailableBalance._sum.balanceCents ?? 0,
+    };
+  });
+
+  await registerAudit({
+    ...auditMeta,
+    action: "BIZUM_TRANSFER_SEND",
+    newvaluePayload: {
+      amountCents,
+      concept: sendConcept || null,
+      transferId: transfer.transfer.id,
+    },
+    sessionId: authenticatedUser.sessionId,
+    status: "SUCCESS",
+    table: "bizumTransfer",
+    targetUserId: contactUser.id,
+    userId: authenticatedUser.id,
+    userName: authenticatedUser.name,
+    userRol: authenticatedUser.role,
+  });
+
   return {
-    message: "POST /api/bizum listo para recibir la migracion de negocio.",
-    payload: result.data,
+    availableBalanceCents: transfer.updatedSenderBalanceCents,
+    transfer: {
+      amount: `-${toMoneyLabel(transfer.transfer.amountCents)}`,
+      createdAt: transfer.transfer.createdAt.toISOString(),
+      id: transfer.transfer.id,
+      initials: getInitials(transfer.transfer.receiverUser?.name ?? contactUser.name),
+      name: transfer.transfer.receiverUser?.name ?? contactUser.name,
+      tone: "outcome",
+    },
   };
 }
