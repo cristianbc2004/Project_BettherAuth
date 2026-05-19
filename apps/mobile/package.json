@@ -20,7 +20,6 @@
     "@react-native-picker/picker": "^2.11.4",
     "@repo/auth": "workspace:*",
     "@repo/config": "workspace:*",
-    "@repo/server": "workspace:*",
     "@repo/types": "workspace:*",
     "@shopify/react-native-skia": "2.4.18",
     "better-auth": "^1.6.4",

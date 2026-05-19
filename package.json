@@ -18,7 +18,6 @@
     "mobile:android": "bun --filter @repo/mobile android",
     "mobile:ios": "bun --filter @repo/mobile ios",
     "mobile:web": "bun --filter @repo/mobile web",
-    "server:dev": "bun --filter @repo/server dev",
     "typecheck": "turbo run typecheck",
     "check": "turbo run typecheck",
     "db:generate": "bun --filter @repo/database db:generate",
