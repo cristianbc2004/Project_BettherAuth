@@ -4,9 +4,9 @@
   "main": "expo-router/entry",
   "packageManager": "bun@1.3.12",
   "scripts": {
-    "start": "bun --env-file=../../.env expo start",
+    "start": "bun --env-file=../../.env expo start --host lan",
     "android": "bun --env-file=../../.env expo run:android",
-    "start:dev-client": "bun --env-file=../../.env expo start --dev-client",
+    "start:dev-client": "bun --env-file=../../.env expo start --dev-client --host lan",
     "ios": "bun --env-file=../../.env expo run:ios",
     "web": "bun --env-file=../../.env expo start --web",
     "typecheck": "tsc --noEmit"
