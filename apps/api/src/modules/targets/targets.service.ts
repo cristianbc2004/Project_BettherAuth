@@ -9,15 +9,15 @@ import { getAuthenticatedUserWithSession } from "../auth/session.service";
 const targetTypes = ["VISA", "MASTERCARD", "CHASBACK", "ORO"] as const;
 
 const createTargetSchema = z.object({
-  cvc: z.string().trim().regex(/^\d{3,4}$/, "El CVC debe tener 3 o 4 numeros."),
+  cvc: z.string().trim().regex(/^\d{3,4}$/, "The CVC must have 3 or 4 digits."),
   initialBalanceCents: z
     .number()
     .int()
-    .min(0, "El saldo inicial no puede ser negativo.")
+    .min(0, "The initial balance cannot be negative.")
     .max(1_000_000_000)
     .optional()
     .default(0),
-  name: z.string().trim().min(2, "Introduce el nombre del target."),
+  name: z.string().trim().min(2, "Enter the card name."),
   numberTarget: z
     .string()
     .trim()
@@ -25,8 +25,8 @@ const createTargetSchema = z.object({
     .pipe(
       z
         .string()
-        .min(12, "El numero debe tener al menos 12 digitos.")
-        .max(19, "El numero no puede superar 19 digitos."),
+        .min(12, "The card number must have at least 12 digits.")
+        .max(19, "The card number cannot exceed 19 digits."),
     ),
   type: z.enum(targetTypes),
 });
@@ -39,7 +39,7 @@ export async function getTargets(request: Request) {
   const user = await getAuthenticatedUserWithSession(request);
 
   if (!user) {
-    throw new HttpError(401, "No autorizado.");
+    throw new HttpError(401, "Unauthorized.");
   }
 
   const targets = await prisma.target.findMany({
@@ -79,7 +79,7 @@ export async function createTarget(request: Request, input: unknown) {
     await registerAudit({
       ...auditMeta,
       action: "CARD_CREATE",
-      errorMensaje: result.error.issues[0]?.message ?? "Datos invalidos.",
+      errorMensaje: result.error.issues[0]?.message ?? "Invalid data.",
       sessionId: user.sessionId,
       status: "FAILED",
       table: "targets",
@@ -87,7 +87,7 @@ export async function createTarget(request: Request, input: unknown) {
       userName: user.name,
       userRol: user.role,
     });
-    throw new HttpError(400, result.error.issues[0]?.message ?? "Datos invalidos.", result.error.flatten());
+    throw new HttpError(400, result.error.issues[0]?.message ?? "Invalid data.", result.error.flatten());
   }
 
   try {
@@ -134,7 +134,7 @@ export async function createTarget(request: Request, input: unknown) {
     await registerAudit({
       ...auditMeta,
       action: "CARD_CREATE",
-      errorMensaje: "Ya existe un target con ese numero.",
+      errorMensaje: "A card with that number already exists.",
       sessionId: user.sessionId,
       status: "FAILED",
       table: "targets",
@@ -143,7 +143,7 @@ export async function createTarget(request: Request, input: unknown) {
       userRol: user.role,
     });
 
-    throw new HttpError(409, "Ya existe un target con ese numero.");
+    throw new HttpError(409, "A card with that number already exists.");
   };
 }
 
@@ -151,17 +151,17 @@ export async function updateTarget(request: Request, id: string, input: unknown)
   const user = await getAuthenticatedUserWithSession(request);
 
   if (!user) {
-    throw new HttpError(401, "No autorizado.");
+    throw new HttpError(401, "Unauthorized.");
   }
 
   if (!id) {
-    throw new HttpError(400, "Falta el id del target.");
+    throw new HttpError(400, "Missing target id.");
   }
 
   const result = updateTargetSchema.safeParse(input);
 
   if (!result.success) {
-    throw new HttpError(400, "Datos invalidos.", result.error.flatten());
+    throw new HttpError(400, "Invalid data.", result.error.flatten());
   }
 
   const existingTarget = await prisma.target.findFirst({
@@ -175,7 +175,7 @@ export async function updateTarget(request: Request, id: string, input: unknown)
   });
 
   if (!existingTarget) {
-    throw new HttpError(404, "Target no encontrado.");
+    throw new HttpError(404, "Target not found.");
   }
 
   const target = await prisma.target.update({

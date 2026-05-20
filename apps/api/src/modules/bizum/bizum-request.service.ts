@@ -9,7 +9,7 @@ export async function getBizumRequestDetail(request: Request, id: string) {
   const authenticatedUser = await getAuthenticatedUserWithSession(request);
 
   if (!authenticatedUser) {
-    throw new HttpError(401, "No autorizado.");
+    throw new HttpError(401, "Unauthorized.");
   }
 
   const bizumRequest = await prisma.bizumRequest.findUnique({
@@ -27,7 +27,7 @@ export async function getBizumRequestDetail(request: Request, id: string) {
   });
 
   if (!bizumRequest || bizumRequest.payerUserId !== authenticatedUser.id) {
-    throw new HttpError(404, "Solicitud no encontrada.");
+    throw new HttpError(404, "Request not found.");
   }
 
   return {
@@ -53,11 +53,11 @@ export async function payBizumRequest(request: Request, id: string) {
   const idempotencyKey = readIdempotencyKey(request);
 
   if (!authenticatedUser) {
-    throw new HttpError(401, "No autorizado.");
+    throw new HttpError(401, "Unauthorized.");
   }
 
   if (!idempotencyKey) {
-    throw new HttpError(400, "Falta la cabecera Idempotency-Key.");
+    throw new HttpError(400, "Missing Idempotency-Key header.");
   }
 
   const bizumRequest = await prisma.bizumRequest.findUnique({
@@ -78,7 +78,7 @@ export async function payBizumRequest(request: Request, id: string) {
     await registerAudit({
       ...auditMeta,
       action: "BIZUM_TRANSFER_SEND",
-      errorMensaje: "Solicitud no encontrada.",
+      errorMensaje: "Request not found.",
       newvaluePayload: { bizumRequestId: id },
       sessionId: authenticatedUser.sessionId,
       status: "FAILED",
@@ -87,14 +87,14 @@ export async function payBizumRequest(request: Request, id: string) {
       userName: authenticatedUser.name,
       userRol: authenticatedUser.role,
     });
-    throw new HttpError(404, "Solicitud no encontrada.");
+    throw new HttpError(404, "Request not found.");
   }
 
   if (bizumRequest.acceptedAt || bizumRequest.rejectedAt || bizumRequest.cancelledAt || bizumRequest.transferId) {
     await registerAudit({
       ...auditMeta,
       action: "BIZUM_TRANSFER_SEND",
-      errorMensaje: "La solicitud ya no esta disponible para pago.",
+      errorMensaje: "This request is no longer available for payment.",
       newvaluePayload: { bizumRequestId: bizumRequest.id },
       sessionId: authenticatedUser.sessionId,
       status: "FAILED",
@@ -104,7 +104,7 @@ export async function payBizumRequest(request: Request, id: string) {
       userName: authenticatedUser.name,
       userRol: authenticatedUser.role,
     });
-    throw new HttpError(400, "La solicitud ya no esta disponible para pago.");
+    throw new HttpError(400, "This request is no longer available for payment.");
   }
 
   const payerCards = await prisma.target.findMany({
@@ -127,7 +127,7 @@ export async function payBizumRequest(request: Request, id: string) {
     await registerAudit({
       ...auditMeta,
       action: "BIZUM_TRANSFER_SEND",
-      errorMensaje: "Saldo insuficiente para pagar la solicitud.",
+      errorMensaje: "Insufficient balance to pay the request.",
       newvaluePayload: {
         amountCents: bizumRequest.amountCents,
         bizumRequestId: bizumRequest.id,
@@ -140,7 +140,7 @@ export async function payBizumRequest(request: Request, id: string) {
       userName: authenticatedUser.name,
       userRol: authenticatedUser.role,
     });
-    throw new HttpError(400, "Saldo insuficiente para pagar la solicitud.");
+    throw new HttpError(400, "Insufficient balance to pay the request.");
   }
 
   const existingTransfer = await prisma.bizumTransfer.findUnique({
@@ -159,7 +159,7 @@ export async function payBizumRequest(request: Request, id: string) {
       existingConcept === requestConcept;
 
     if (!isSameOperation) {
-      throw new HttpError(409, "La Idempotency-Key ya fue usada con otra operacion.");
+      throw new HttpError(409, "The Idempotency-Key was already used with another operation.");
     }
 
     const payerBalances = await getUserBalances(authenticatedUser.id);
@@ -273,11 +273,11 @@ export async function payBizumRequest(request: Request, id: string) {
       }),
     ]);
 
-    const payerName = authenticatedUser.name.trim() || "Un usuario";
+    const payerName = authenticatedUser.name.trim() || "A user";
     const amountLabel = toMoneyLabel(bizumRequest.amountCents);
     const paymentBody = bizumRequest.concept
-      ? `${payerName} ha pagado tu solicitud de ${amountLabel}. Concepto: ${bizumRequest.concept}`
-      : `${payerName} ha pagado tu solicitud de ${amountLabel}.`;
+      ? `${payerName} paid your ${amountLabel} request. Concept: ${bizumRequest.concept}`
+      : `${payerName} paid your ${amountLabel} request.`;
 
     await tx.notification.create({
       data: {
@@ -290,7 +290,7 @@ export async function payBizumRequest(request: Request, id: string) {
         actionRoute: "/notification",
         bizumRequestId: bizumRequest.id,
         body: paymentBody,
-        title: "Solicitud de Bizum pagada",
+        title: "Bizum request paid",
         transferId: createdTransfer.id,
         type: "BIZUM_RECEIVED",
         userDestinationId: bizumRequest.requesterUserId,

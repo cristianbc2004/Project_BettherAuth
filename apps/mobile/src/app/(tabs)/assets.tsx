@@ -30,10 +30,10 @@ function formatMovementDate(value: string) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "Ahora";
+    return "Now";
   }
 
-  return new Intl.DateTimeFormat("es-ES", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
@@ -50,13 +50,13 @@ function SectionHeader({ onPress, title }: { onPress: () => void; title: string 
         {title}
       </AppText>
       <Pressable
-        accessibilityLabel="Ver todos los movimientos"
+        accessibilityLabel="View all movements"
         accessibilityRole="button"
         hitSlop={10}
         onPress={onPress}
       >
         <AppText className="text-[15px] font-black" tone="primary">
-          Ver todos
+          View all
         </AppText>
       </Pressable>
     </View>
@@ -82,7 +82,7 @@ export default function AssetsScreen() {
       const response = await fetchBizumRequest();
 
       if (!response.ok) {
-        setBizumError("No se pudo cargar Bizum. Intentalo de nuevo.");
+        setBizumError("Could not load Bizum. Please try again.");
         return;
       }
 
@@ -99,7 +99,7 @@ export default function AssetsScreen() {
         })),
       );
     } catch {
-      setBizumError("No se pudo cargar Bizum. Intentalo de nuevo.");
+      setBizumError("Could not load Bizum. Please try again.");
     } finally {
       setIsBizumDataLoading(false);
     }
@@ -111,14 +111,14 @@ export default function AssetsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      // Al volver de pagar una solicitud, refrescamos saldo y ultimos movimientos.
+      // Refresh balance and latest movements after returning from a request payment.
       void loadBizumData();
     }, [loadBizumData]),
   );
 
-  const movementCountLabel = useMemo(() => `${movements.length} movimientos recientes`, [movements.length]);
+  const movementCountLabel = useMemo(() => `${movements.length} recent movements`, [movements.length]);
   const availableBalanceLabel = useMemo(
-    () => `${(availableBalanceCents / 100).toFixed(2).replace(".", ",")} EUR disponibles`,
+    () => `${(availableBalanceCents / 100).toFixed(2).replace(".", ",")} EUR available`,
     [availableBalanceCents],
   );
 
@@ -176,7 +176,7 @@ export default function AssetsScreen() {
 
         <View className="mt-5 flex-row gap-4">
           <Pressable
-            accessibilityLabel="Enviar Bizum"
+            accessibilityLabel="Send Bizum"
             accessibilityRole="button"
             className="flex-1 items-center justify-center py-2"
             onPress={openSendSheet}
@@ -190,12 +190,12 @@ export default function AssetsScreen() {
               <ArrowUpRight color={theme.text} size={26} strokeWidth={2.8} />
             </View>
             <AppText className="mt-3 text-[15px] font-black">
-              Enviar
+              Send
             </AppText>
           </Pressable>
 
           <Pressable
-            accessibilityLabel="Pedir Bizum"
+            accessibilityLabel="Request Bizum"
             accessibilityRole="button"
             className="flex-1 items-center justify-center py-2"
             onPress={openRequestSheet}
@@ -209,7 +209,7 @@ export default function AssetsScreen() {
               <ArrowDownLeft color={theme.text} size={26} strokeWidth={2.8} />
             </View>
             <AppText className="mt-3 text-[15px] font-black">
-              Pedir
+              Request
             </AppText>
           </Pressable>
         </View>
@@ -237,7 +237,7 @@ export default function AssetsScreen() {
             selectionHaptic();
             router.navigate("/movements" as never);
           }}
-          title="Ultimos movimientos"
+          title="Latest movements"
         />
 
         <View>

@@ -29,7 +29,7 @@ const graphColor = "#4484B2";
 const defaultPersonId = mockIngresos.detalles[0].id;
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat("es-ES", {
+  return new Intl.NumberFormat("en-US", {
     currency: "EUR",
     maximumFractionDigits: 0,
     style: "currency",
@@ -41,7 +41,7 @@ function PersonFilter({ isActive, label, onPress }: PersonFilterProps) {
 
   return (
     <Pressable
-      accessibilityLabel={`Mostrar ingresos de ${label}`}
+      accessibilityLabel={`Show income for ${label}`}
       accessibilityRole="button"
       accessibilityState={{ selected: isActive }}
       className="min-w-[104px] rounded-xl border px-4 py-3"
@@ -138,7 +138,7 @@ export function Graphic({
   return (
     <View className="mt-6">
       <AppText className="text-[12px] font-black uppercase tracking-[1.4px]" style={{ color: theme.mutedText }}>
-        Rango
+        Range
       </AppText>
       <AppText className="mt-1 text-[14px] font-semibold leading-5" style={{ color: theme.mutedText }}>
         {rangeSummary}
@@ -147,7 +147,7 @@ export function Graphic({
       <View className="mt-4 flex-row items-end justify-between gap-4">
         <View className="flex-1">
           <AppText className="text-[13px] font-semibold leading-5" style={{ color: theme.mutedText }}>
-            Ingresos
+            Income
           </AppText>
           <AnimatedNumber
             animateOnMount={true}
@@ -166,7 +166,7 @@ export function Graphic({
       </View>
 
       <AppText className="mt-1 text-[14px] leading-5" numberOfLines={2} style={{ color: theme.mutedText }}>
-        Ingresos de {selectedPersonName} en {highlightedPoint.month}
+        Income from {selectedPersonName} in {highlightedPoint.month}
       </AppText>
         
       <View className="mt-6">

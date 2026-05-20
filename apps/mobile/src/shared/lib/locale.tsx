@@ -10,11 +10,11 @@ import {
 
 import { i18n } from "@/shared/lib/i18n";
 
-export const supportedLocales = ["es", "en"] as const;
+export const supportedLocales = ["en", "es"] as const;
 export type AppLocale = (typeof supportedLocales)[number];
 
 const LOCALE_STORAGE_KEY = "better-auth-dashboard-locale";
-const defaultLocale: AppLocale = "es";
+const defaultLocale: AppLocale = "en";
 
 type LanguageContextValue = {
   locale: AppLocale;

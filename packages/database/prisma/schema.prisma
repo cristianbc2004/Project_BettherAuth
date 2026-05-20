@@ -197,7 +197,7 @@ model Notification {
   title             String
   body              String?
   actionRoute       String?   // ejemplo: "/bizum/pay?requestId=..."
-  actionPayload     Json?     // datos extra para navegación
+  actionPayload     Json?     // extra data for navigation
 
   transferId        String?
   bizumRequestId    String?

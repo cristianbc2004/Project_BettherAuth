@@ -44,14 +44,14 @@ function TransactionRowComponent({ onDetailPress, transaction }: TransactionRowP
         </AppText>
         {onDetailPress ? (
           <Pressable
-            accessibilityLabel={`Ver detalle de ${transaction.merchant}`}
+            accessibilityLabel={`View details for ${transaction.merchant}`}
             accessibilityRole="button"
             className="mt-2 rounded-full px-3 py-1.5"
             onPress={handleDetailPress}
             style={{ backgroundColor: theme.backgroundMuted }}
           >
             <AppText className="text-[12px] font-black" tone="primary">
-              Detalle
+              Details
             </AppText>
           </Pressable>
         ) : null}

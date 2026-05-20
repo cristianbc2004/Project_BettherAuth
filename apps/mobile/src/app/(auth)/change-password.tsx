@@ -94,7 +94,7 @@ export default function ChangePasswordScreen() {
       keyboardFocusScrollY={isPasswordRequirementsFocused ? 360 : undefined}
       scrollRequestKey={isPasswordRequirementsFocused ? passwordRequirementsScrollRequest : undefined}
       subtitle=""
-      title="Cambia tu contraseña."
+      title="Change your password."
     >
       <View className="px-4 pb-6 pt-6">
         <View>

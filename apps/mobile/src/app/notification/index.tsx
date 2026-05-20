@@ -54,7 +54,7 @@ function getAuthCookie() {
 }
 
 async function fetchNotifications() {
-  // Consulta al endpoint real de notificaciones (no usa mock local).
+  // Queries the real notifications endpoint instead of a local mock.
   return fetch(`${appConfig.authApiUrl}/api/notifications`, {
     headers: {
       "Content-Type": "application/json",
@@ -64,7 +64,7 @@ async function fetchNotifications() {
 }
 
 function mapNotificationToItem(notification: NotificationsGetResponse["notifications"][number]): NotificationItem {
-  // Mapea el tipo de notificacion a icono y paleta visual consistente.
+  // Maps each notification type to a consistent icon and visual palette.
   const accentByType: Record<NotificationType, { accent: string; icon: ComponentType<any>; iconAccent: string }> = {
     ALERT: { accent: "#3f2b1b", icon: CircleAlert, iconAccent: "#f0b245" },
     BIZUM_RECEIVED: { accent: "#203946", icon: Wallet, iconAccent: "#4dc4ff" },
@@ -167,15 +167,15 @@ export default function NotificationsScreen() {
 
       const response = await fetchNotifications();
       if (!response.ok) {
-        setErrorMessage("No se pudieron cargar las notificaciones.");
+        setErrorMessage("Could not load notifications.");
         return;
       }
 
       const payload = (await response.json()) as NotificationsGetResponse;
-      // Adapta la respuesta del backend al shape usado por la UI.
+      // Adapts the backend response to the shape used by the UI.
       setNotifications((payload.notifications ?? []).map(mapNotificationToItem));
     } catch {
-      setErrorMessage("No se pudieron cargar las notificaciones.");
+      setErrorMessage("Could not load notifications.");
     } finally {
       setIsLoading(false);
     }
@@ -187,7 +187,7 @@ export default function NotificationsScreen() {
         return;
       }
 
-      // Carga inicial y recarga al volver de la modal de pago.
+      // Initial load and refresh when returning from the payment modal.
       void loadNotifications();
     }, [loadNotifications, session?.user.id]),
   );
@@ -207,7 +207,7 @@ export default function NotificationsScreen() {
       </View>
 
       <View className="px-5 pt-6">
-        <AppScreenHeader fallbackHref={"/home" as never} title="Notificaciones" />
+        <AppScreenHeader fallbackHref={"/home" as never} title="Notifications" />
       </View>
 
       <ScrollView
@@ -216,20 +216,20 @@ export default function NotificationsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <AppText className="mb-4 px-1 text-xs font-medium uppercase tracking-[1.5px]" style={{ color: theme.mutedText }}>
-          Ultima actividad
+          Latest activity
         </AppText>
 
         {isLoading ? (
-          // Estado de carga mientras se resuelve la peticion.
+          // Loading state while the request resolves.
           <Animated.View entering={FadeInDown.duration(260)} exiting={FadeOut.duration(180)}>
             <AppText className="px-2 text-sm" style={{ color: theme.mutedText }}>
-              Cargando notificaciones...
+              Loading notifications...
             </AppText>
           </Animated.View>
         ) : null}
 
         {errorMessage ? (
-          // Estado de error para fallos de red o respuesta no exitosa.
+          // Error state for network failures or unsuccessful responses.
           <Animated.View
             entering={FadeInDown.duration(260).easing(Easing.out(Easing.quad))}
             className="mb-3 rounded-[18px] border px-3 py-2.5"
@@ -242,14 +242,14 @@ export default function NotificationsScreen() {
         ) : null}
 
         {!isLoading && notifications.length === 0 && !errorMessage ? (
-          // Estado vacio cuando no existe actividad en Notification.
+          // Empty state when there is no Notification activity.
           <View className="rounded-[20px] border px-4 py-4" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
             <Bell color={theme.mutedText} size={20} strokeWidth={2.4} />
             <AppText className="mt-3 text-[15px] font-black" style={{ color: theme.text }}>
-              No tienes notificaciones
+              You have no notifications
             </AppText>
             <AppText className="mt-1 text-[13px] leading-5" style={{ color: theme.mutedText }}>
-              Cuando alguien te mande una solicitud de Bizum, aparecera aqui.
+              When someone sends you a Bizum request, it will appear here.
             </AppText>
           </View>
         ) : null}

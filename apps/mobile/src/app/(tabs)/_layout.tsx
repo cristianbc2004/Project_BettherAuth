@@ -46,7 +46,7 @@ export default function NativeTabsLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: "Inicio",
+          title: "Home",
           tabBarIcon: ({ color, size, focused }) => (
             <View
               style={{
@@ -86,7 +86,7 @@ export default function NativeTabsLayout() {
       <Tabs.Screen
         name="cards"
         options={{
-          title: "Tarjetas",
+          title: "Cards",
           tabBarIcon: ({ color, size, focused }) => (
             <View
               style={{
@@ -126,7 +126,7 @@ export default function NativeTabsLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: "Perfil",
+          title: "Profile",
           tabBarIcon: ({ color, size, focused }) => (
             <View
               style={{

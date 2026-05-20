@@ -11,16 +11,16 @@ import { AppText } from "@/shared/components/ui/app-text";
 
 const privacySections = [
   {
-    body: "Los datos de cuenta se usan para identificar al usuario, mantener la sesion y aplicar permisos como usuario o administrador.",
-    title: "Datos de cuenta",
+    body: "Account data is used to identify the user, keep the session active, and apply permissions such as user or administrator access.",
+    title: "Account data",
   },
   {
-    body: "La informacion financiera y de trabajadores mostrada aqui funciona como contenido de demostracion para navegar la experiencia.",
-    title: "Datos de demo",
+    body: "The financial and worker information shown here is demo content used to navigate the experience.",
+    title: "Demo data",
   },
   {
-    body: "Las acciones sensibles deben pasar por autenticacion, validacion de sesion y controles de rol antes de llegar a servicios reales.",
-    title: "Seguridad",
+    body: "Sensitive actions should pass through authentication, session validation, and role checks before reaching real services.",
+    title: "Security",
   },
 ];
 
@@ -40,7 +40,7 @@ export default function PrivacyPolicyScreen() {
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
       <View className="px-5 pt-5">
-        <AppScreenHeader fallbackHref="/home" title="Privacidad" />
+        <AppScreenHeader fallbackHref="/home" title="Privacy" />
       </View>
 
       <ScrollView
@@ -50,10 +50,10 @@ export default function PrivacyPolicyScreen() {
       >
         <View className="pb-5">
           <AppText className="text-[18px] font-bold leading-6" style={{ color: theme.text }}>
-            Una base clara para proteger la cuenta
+            A clear foundation for protecting the account
           </AppText>
           <AppText className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-            Este contenido es estatico y sirve como placeholder realista para una futura revision legal.
+            This static content is a realistic placeholder for a future legal review.
           </AppText>
         </View>
 

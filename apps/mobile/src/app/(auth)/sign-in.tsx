@@ -5,8 +5,8 @@ export default function SignInScreen() {
   return (
     <AuthShell
       eyebrow=""
-      subtitle="Accede a tu cuenta para gestionar los ajustes y continuar con tu flujo seguro."
-      title="Inicia sesion en tu cuenta."
+      subtitle="Access your account to manage settings and continue your secure flow."
+      title="Sign in to your account."
     >
       <AuthForm mode="signIn" />
     </AuthShell>

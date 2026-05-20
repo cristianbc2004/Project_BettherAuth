@@ -38,17 +38,17 @@ const addTargetSchema = z.object({
   cvc: z
     .string()
     .trim()
-    .regex(/^\d{3,4}$/, "El CVC debe tener 3 o 4 numeros."),
+    .regex(/^\d{3,4}$/, "The CVC must have 3 or 4 digits."),
   initialBalance: z
     .string()
     .trim()
-    .min(1, "Introduce el saldo inicial.")
-    .refine((value) => parseAmountInputToCents(value) !== null, "Introduce un importe valido."),
-  name: z.string().trim().min(2, "Introduce el nombre de la tarjeta."),
+    .min(1, "Enter the initial balance.")
+    .refine((value) => parseAmountInputToCents(value) !== null, "Enter a valid amount."),
+  name: z.string().trim().min(2, "Enter the card name."),
   numberTarget: z
     .string()
     .trim()
-    .regex(/^\d{12,19}$/, "El numero debe tener entre 12 y 19 digitos."),
+    .regex(/^\d{12,19}$/, "The card number must have between 12 and 19 digits."),
   type: z.enum(walletCardTypes),
 });
 
@@ -151,7 +151,7 @@ export default function AddTargetScreen() {
       const initialBalanceCents = parseAmountInputToCents(values.initialBalance);
 
       if (initialBalanceCents === null) {
-        form.setError("initialBalance", { message: "Introduce un importe valido." });
+        form.setError("initialBalance", { message: "Enter a valid amount." });
         return;
       }
 
@@ -165,13 +165,13 @@ export default function AddTargetScreen() {
       const createdCard = await addCard(payload);
 
       successHaptic();
-      Alert.alert("Tarjeta creada", "Tu nueva tarjeta ya esta disponible en la cartera.");
+      Alert.alert("Card created", "Your new card is now available in the wallet.");
       router.replace({
         params: { cardId: createdCard.id },
         pathname: "/targets/details",
       } as never);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "No se pudo crear la tarjeta.";
+      const message = error instanceof Error ? error.message : "Could not create the card.";
       warningHaptic();
       Alert.alert("Error", message);
     } finally {
@@ -199,7 +199,7 @@ export default function AddTargetScreen() {
         <View className="px-5 pt-4">
           <AppScreenHeader
             fallbackHref={"/cards" as never}
-            title="Anadir tarjeta"
+            title="Add card"
           />
         </View>
 
@@ -230,10 +230,10 @@ export default function AddTargetScreen() {
               </View>
               <View className="ml-3 flex-1">
                 <AppText className="text-[17px] font-black" style={{ color: theme.text }}>
-                  Datos de la tarjeta
+                  Card details
                 </AppText>
                 <AppText className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
-                  El alta se guarda directamente en la tabla de tarjetas.
+                  The new card is saved directly in the cards table.
                 </AppText>
               </View>
             </View>
@@ -246,11 +246,11 @@ export default function AddTargetScreen() {
                   autoCapitalize="words"
                   autoCorrect={false}
                   error={error?.message}
-                  label="Nombre"
+                  label="Name"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   onFocus={() => scrollToFormPosition(260)}
-                  placeholder="Nombre de la tarjeta"
+                  placeholder="Card name"
                   value={value}
                 />
               )}
@@ -265,7 +265,7 @@ export default function AddTargetScreen() {
                   autoCorrect={false}
                   error={error?.message}
                   keyboardType="number-pad"
-                  label="Numero de tarjeta"
+                  label="Card number"
                   maxLength={19}
                   onBlur={onBlur}
                   onChangeText={(text) => onChange(text.replace(/\D/g, "").slice(0, 19))}
@@ -285,7 +285,7 @@ export default function AddTargetScreen() {
                   autoCorrect={false}
                   error={error?.message}
                   keyboardType="decimal-pad"
-                  label="Saldo inicial (EUR)"
+                  label="Initial balance (EUR)"
                   onBlur={onBlur}
                   onChangeText={(text) => onChange(normalizeAmountInput(text))}
                   onFocus={() => scrollToFormPosition(470)}
@@ -296,7 +296,7 @@ export default function AddTargetScreen() {
             />
 
             <AppText className="mb-5 text-[13px] leading-5" style={{ color: theme.mutedText }}>
-              Saldo inicial actual: {formatEurosFromCents(parseAmountInputToCents(previewValues.initialBalance ?? "") ?? 0)}
+              Current initial balance: {formatEurosFromCents(parseAmountInputToCents(previewValues.initialBalance ?? "") ?? 0)}
             </AppText>
 
             <Controller
@@ -324,7 +324,7 @@ export default function AddTargetScreen() {
               name="type"
               render={({ field: { onChange, value } }) => (
                 <SelectorField
-                  label="Tipo de tarjeta"
+                  label="Card type"
                   onChange={onChange}
                   options={walletCardTypes}
                   selectedValue={value}
@@ -334,7 +334,7 @@ export default function AddTargetScreen() {
 
             <AuthSubmitButton
               isPending={isSaving}
-              label="Guardar tarjeta"
+              label="Save card"
               onPress={() => {
                 void handleSubmit();
               }}

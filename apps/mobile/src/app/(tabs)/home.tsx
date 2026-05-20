@@ -53,7 +53,7 @@ function TopActionButton({ accessibilityLabel, children, onPress }: TopActionBut
 }
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat("es-ES", {
+  return new Intl.NumberFormat("en-US", {
     currency: "EUR",
     maximumFractionDigits: 0,
     style: "currency",
@@ -64,14 +64,14 @@ function getGreeting() {
   const hour = new Date().getHours();
 
   if (hour < 12) {
-    return "Buenos dias";
+    return "Good morning";
   }
 
   if (hour < 20) {
-    return "Buenas tardes";
+    return "Good afternoon";
   }
 
-  return "Buenas noches";
+  return "Good evening";
 }
 
 function SectionHeader({ action, onActionPress, title }: SectionHeaderProps) {
@@ -230,7 +230,7 @@ export default function HomeScreen() {
                 className="text-center text-[17px] font-semibold leading-6"
                 style={{ color: theme.mutedText }}
               >
-                Resumen semanal
+                Weekly summary
               </AppText>
 
               <AnimatedNumber
@@ -261,7 +261,7 @@ export default function HomeScreen() {
                 </View>
               </View>
               <AppText className="mt-4 text-center text-[13px] font-semibold" style={{ color: theme.mutedText }}>
-                Toca la grafica para ver el detalle por rango
+                Tap the chart to view details by range
               </AppText>
 
               <View className="mt-6 h-px" style={{ backgroundColor: theme.border }} />
@@ -270,12 +270,12 @@ export default function HomeScreen() {
 
           <View>
             <SectionHeader
-              action="Gestionar"
+              action="Manage"
               onActionPress={() => {
                 selectionHaptic();
                 router.navigate("/cards" as never);
               }}
-              title="Tus tarjetas"
+              title="Your cards"
             />
             <ScrollView
               className="mt-4"
@@ -288,7 +288,7 @@ export default function HomeScreen() {
             >
               {cards.map((card) => (
                 <Pressable
-                  accessibilityLabel={`Abrir tarjeta ${card.status}`}
+                  accessibilityLabel={`Open ${card.status} card`}
                   accessibilityRole="button"
                   key={card.id}
                   onPress={() => {
@@ -312,12 +312,12 @@ export default function HomeScreen() {
 
           <View className="gap-3">
             <SectionHeader
-              action="Ver todos"
+              action="View all"
               onActionPress={() => {
                 selectionHaptic();
                 router.navigate("/movements" as never);
               }}
-              title="Ultimos movimientos"
+              title="Latest movements"
             />
             <View className="gap-3">
               {recentTransactions.map((transaction, index) => (

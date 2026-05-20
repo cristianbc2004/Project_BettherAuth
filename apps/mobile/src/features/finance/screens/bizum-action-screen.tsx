@@ -45,10 +45,10 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
     () =>
       mode === "send"
         ? {
-            title: "Enviar Bizum",
+            title: "Send Bizum",
           }
         : {
-            title: "Pedir Bizum",
+            title: "Request Bizum",
           },
     [mode],
   );
@@ -99,7 +99,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
 
       const response = await fetchBizumRequest();
       if (!response.ok) {
-        setErrorMessage("No se pudo cargar Bizum. Intentalo de nuevo.");
+        setErrorMessage("Could not load Bizum. Please try again.");
         return;
       }
 
@@ -107,7 +107,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
       setAvailableBalanceCents(payload.availableBalanceCents ?? 0);
       setContacts(payload.contacts ?? []);
     } catch {
-      setErrorMessage("No se pudo cargar Bizum. Intentalo de nuevo.");
+      setErrorMessage("Could not load Bizum. Please try again.");
     } finally {
       setIsDataLoading(false);
     }
@@ -120,7 +120,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
   const handleSubmit = async (payload: BizumActionPayload) => {
     const amountCents = Math.round(payload.amount * 100);
     if (mode === "send" && amountCents > availableBalanceCents) {
-      setErrorMessage("No tienes saldo suficiente para enviar ese Bizum.");
+      setErrorMessage("You do not have enough balance to send that Bizum.");
       return;
     }
 
@@ -142,7 +142,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
 
       if (!response.ok) {
         const errorPayload = (await response.json().catch(() => null)) as { error?: string } | null;
-        setErrorMessage(errorPayload?.error ?? "No se pudo completar la operacion.");
+        setErrorMessage(errorPayload?.error ?? "Could not complete the operation.");
         return;
       }
 
@@ -152,7 +152,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
       successHaptic();
       setFlowStep("success");
     } catch {
-      setErrorMessage("No se pudo completar la operacion.");
+      setErrorMessage("Could not complete the operation.");
     } finally {
       setIsSubmitting(false);
     }
@@ -181,7 +181,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
         <AppScreenHeader
           leftSlot={
             <Pressable
-              accessibilityLabel="Volver al paso anterior"
+              accessibilityLabel="Go back to the previous step"
               accessibilityRole="button"
               className="h-11 w-11 items-center justify-center"
               hitSlop={10}
@@ -192,7 +192,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
           }
           rightSlot={
             <Pressable
-              accessibilityLabel="Cerrar operacion de Bizum"
+              accessibilityLabel="Close Bizum operation"
               accessibilityRole="button"
               className="h-11 w-11 items-center justify-center"
               hitSlop={10}

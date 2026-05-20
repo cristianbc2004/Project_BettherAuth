@@ -32,9 +32,9 @@ type GraphTabButtonProps = {
 };
 
 const filterLabels: Record<HomeGraphFilter, string> = {
-  "3d": "ultimos 3 dias",
-  "1m": "ultimo mes",
-  "3m": "ultimos 3 meses",
+  "3d": "last 3 days",
+  "1m": "last month",
+  "3m": "last 3 months",
 };
 
 function FilterChip({ isActive, label, onPress }: FilterChipProps) {
@@ -129,7 +129,7 @@ function buildHistory() {
 
 function getSelectedRangeLabel(points: HomeGraphPoint[], selectedFilter: HomeGraphFilter) {
   if (points.length === 0) {
-    return "Sin datos";
+    return "No data";
   }
 
   const start = points[0].date;
@@ -249,7 +249,7 @@ export default function HomeGraphicScreen() {
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
       <View className="px-5 pt-5">
-        <PersonScreenHeader backHref="/home" title="Grafica de balance" />
+        <PersonScreenHeader backHref="/home" title="Balance chart" />
       </View>
 
       <ScrollView
@@ -261,7 +261,7 @@ export default function HomeGraphicScreen() {
       >
         <View className="mt-7">
           <AppText className="text-[12px] font-black uppercase tracking-[1.4px]" style={{ color: theme.mutedText }}>
-            Rango
+            Range
           </AppText>
           <AppText className="mt-1 text-[14px] font-semibold leading-5" style={{ color: theme.mutedText }}>
             {rangeSummary}
@@ -270,7 +270,7 @@ export default function HomeGraphicScreen() {
           <View className="mt-4 flex-row items-end justify-between gap-4">
             <View className="flex-1">
               <AppText className="text-[13px] font-semibold leading-5" style={{ color: theme.mutedText }}>
-                Saldo
+                Balance
               </AppText>
               <AnimatedNumber
                 animateOnMount={true}
@@ -289,7 +289,7 @@ export default function HomeGraphicScreen() {
           </View>
 
           <AppText className="mt-1 text-[14px] leading-5" style={{ color: theme.mutedText }}>
-            Balance en {highlightedPoint.label}
+            Balance on {highlightedPoint.label}
           </AppText>
 
           <View
@@ -298,12 +298,12 @@ export default function HomeGraphicScreen() {
           >
             <GraphTabButton
               isActive={selectedTab === "chart"}
-              label="Grafica"
+              label="Chart"
               onPress={() => handleTabPress("chart")}
             />
             <GraphTabButton
               isActive={selectedTab === "detail"}
-              label="Detalle"
+              label="Details"
               onPress={() => handleTabPress("detail")}
             />
           </View>
@@ -311,7 +311,7 @@ export default function HomeGraphicScreen() {
           {selectedTab === "chart" ? (
             <View className="mt-6">
               <AppText className="text-[18px] font-black leading-6" style={{ color: theme.text }}>
-                Grafica
+                Chart
               </AppText>
 
               <View className="mt-5 h-[260px]">
@@ -334,12 +334,12 @@ export default function HomeGraphicScreen() {
           ) : (
             <View className="mt-6">
               <AppText className="text-[18px] font-black leading-6" style={{ color: theme.text }}>
-                Detalle
+                Details
               </AppText>
 
               <View className="mt-4">
                 <AppText className="text-[15px] font-black leading-5" style={{ color: theme.text }}>
-                  Donde se ha gastado el dinero
+                  Where the money was spent
                 </AppText>
 
                 <View className="mt-4 gap-3">
@@ -348,7 +348,7 @@ export default function HomeGraphicScreen() {
 
                     return (
                       <Pressable
-                        accessibilityLabel={`Ver gastos de ${category.label}`}
+                        accessibilityLabel={`View expenses for ${category.label}`}
                         accessibilityRole="button"
                         key={category.label}
                         onPress={() => openExpenseCategory(category)}
@@ -383,17 +383,17 @@ export default function HomeGraphicScreen() {
               <View className="flex-row gap-3 pr-2">
                 <FilterChip
                   isActive={selectedFilter === "3d"}
-                  label="3 dias"
+                  label="3 days"
                   onPress={() => handleFilterPress("3d")}
                 />
                 <FilterChip
                   isActive={selectedFilter === "1m"}
-                  label="1 mes"
+                  label="1 month"
                   onPress={() => handleFilterPress("1m")}
                 />
                 <FilterChip
                   isActive={selectedFilter === "3m"}
-                  label="3 meses"
+                  label="3 months"
                   onPress={() => handleFilterPress("3m")}
                 />
               </View>
