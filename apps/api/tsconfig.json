@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noEmit": true,
+    "paths": {
+      "@repo/api/*": ["./src/*"],
+      "@repo/auth": ["../../packages/auth/src/index.ts"],
+      "@repo/auth/*": ["../../packages/auth/src/*"],
+      "@repo/config": ["../../packages/config/src/index.ts"],
+      "@repo/database": ["../../packages/database/src/index.ts"],
+      "@repo/database/*": ["../../packages/database/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

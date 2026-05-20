@@ -16,7 +16,6 @@
       "@repo/config": ["../../packages/config/src/index.ts"],
       "@repo/database": ["../../packages/database/src/index.ts"],
       "@repo/database/*": ["../../packages/database/src/*"],
-      "@repo/server/*": ["../server/*"],
       "@repo/types": ["../../packages/types/src/index.ts"],
       "@repo/types/*": ["../../packages/types/src/*"]
     }
