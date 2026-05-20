@@ -24,6 +24,7 @@ model User {
   sessions         Session[]
   targets          Target[]
   twoFactor        TwoFactor?
+  lastSeenAt       DateTime   @default(now())
   bizumSentTransfers      BizumTransfer[] @relation("BizumTransferSender")
   bizumReceivedTransfers  BizumTransfer[] @relation("BizumTransferReceiver")
   bizumRequestedPayments  BizumRequest[]  @relation("BizumRequestRequester")
