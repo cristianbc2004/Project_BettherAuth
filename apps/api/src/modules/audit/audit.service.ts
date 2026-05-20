@@ -1,37 +1,41 @@
 import { prisma } from "@repo/database";
+import { z } from "zod";
 
 type HeadersLike = Headers | Record<string, string | string[] | undefined> | undefined;
 
-type AuditAction =
-  | "ADMIN_LIST"
-  | "ADMIN_CREATE"
-  | "ADMIN_DELETE"
-  | "AUTH_LOGIN"
-  | "AUTH_REGISTER"
-  | "BIZUM_REQUEST_CREATE"
-  | "BIZUM_TRANSFER_SEND"
-  | "CARD_CREATE"
-  | "PASSWORD_CHANGE"
-  | "PASSWORD_RESET"
-  | "TWO_FACTOR_ENABLE";
+const auditActionSchema = z.enum([
+  "ADMIN_LIST",
+  "ADMIN_CREATE",
+  "ADMIN_DELETE",
+  "AUTH_LOGIN",
+  "AUTH_REGISTER",
+  "BIZUM_REQUEST_CREATE",
+  "BIZUM_TRANSFER_SEND",
+  "CARD_CREATE",
+  "PASSWORD_CHANGE",
+  "PASSWORD_RESET",
+  "TWO_FACTOR_ENABLE",
+]);
 
-type RegisterAuditInput = {
-  action: AuditAction;
-  status: "SUCCESS" | "FAILED";
-  table: string;
-  endpoint?: string | null;
-  errorMensaje?: string | null;
-  ipAddress?: string | null;
-  oldvaluePayload?: unknown;
-  newvaluePayload?: unknown;
-  sessionId?: string | null;
-  source?: string | null;
-  targetUserId?: string | null;
-  userAgent?: string | null;
-  userId?: string | null;
-  userName?: string | null;
-  userRol?: string | null;
-};
+const registerAuditInputSchema = z.object({
+  action: auditActionSchema,
+  endpoint: z.string().nullable().optional(),
+  errorMensaje: z.string().nullable().optional(),
+  ipAddress: z.string().nullable().optional(),
+  newvaluePayload: z.unknown().optional(),
+  oldvaluePayload: z.unknown().optional(),
+  sessionId: z.string().nullable().optional(),
+  source: z.string().nullable().optional(),
+  status: z.enum(["SUCCESS", "FAILED"]),
+  table: z.string(),
+  targetUserId: z.string().nullable().optional(),
+  userAgent: z.string().nullable().optional(),
+  userId: z.string().nullable().optional(),
+  userName: z.string().nullable().optional(),
+  userRol: z.string().nullable().optional(),
+});
+
+type RegisterAuditInput = z.infer<typeof registerAuditInputSchema>;
 
 function getHeaderValue(headers: HeadersLike, key: string) {
   if (!headers) {
@@ -85,27 +89,29 @@ export function extractAuditMetaFromHeaders(headers: HeadersLike, fallbackEndpoi
 
 export async function registerAudit(input: RegisterAuditInput) {
   try {
+    const auditInput = registerAuditInputSchema.parse(input);
+
     await prisma.$executeRawUnsafe(
       `INSERT INTO "Auditoria"
       ("id", "userId", "userName", "userRol", "action", "table", "oldvaluePayload", "newvaluePayload", "ipAddress", "userAgent", "status", "errorMensaje", "targetUserId", "sessionId", "endpoint", "source")
       VALUES
       ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9, $10, $11, $12, $13, $14, $15, $16)`,
       crypto.randomUUID(),
-      input.userId ?? null,
-      input.userName ?? null,
-      input.userRol ?? null,
-      input.action,
-      input.table,
-      input.oldvaluePayload ? JSON.stringify(input.oldvaluePayload) : null,
-      input.newvaluePayload ? JSON.stringify(input.newvaluePayload) : null,
-      input.ipAddress ?? null,
-      input.userAgent ?? null,
-      input.status,
-      input.errorMensaje ?? null,
-      input.targetUserId ?? null,
-      input.sessionId ?? null,
-      input.endpoint ?? null,
-      input.source ?? null,
+      auditInput.userId ?? null,
+      auditInput.userName ?? null,
+      auditInput.userRol ?? null,
+      auditInput.action,
+      auditInput.table,
+      auditInput.oldvaluePayload ? JSON.stringify(auditInput.oldvaluePayload) : null,
+      auditInput.newvaluePayload ? JSON.stringify(auditInput.newvaluePayload) : null,
+      auditInput.ipAddress ?? null,
+      auditInput.userAgent ?? null,
+      auditInput.status,
+      auditInput.errorMensaje ?? null,
+      auditInput.targetUserId ?? null,
+      auditInput.sessionId ?? null,
+      auditInput.endpoint ?? null,
+      auditInput.source ?? null,
     );
   } catch (error) {
     console.error("[audit] no se pudo registrar el evento", error);

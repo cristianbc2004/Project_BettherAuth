@@ -29,7 +29,7 @@ function AppNavigation() {
         <Stack.Screen name="home-graphic/index" />
         <Stack.Screen name="home-graphic/expense-category" />
         <Stack.Screen name="home-graphic/expense-detail" />
-        <Stack.Screen name="menu" />
+        <Stack.Screen name="menu" options={{ animation: "slide_from_left" }} />
         <Stack.Screen name="notification" />
         <Stack.Screen name="bizum/request" />
         <Stack.Screen name="bizum/send" />

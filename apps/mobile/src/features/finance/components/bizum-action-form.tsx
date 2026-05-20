@@ -33,12 +33,6 @@ type BizumActionFormProps = {
   onViewMovements: () => void;
 };
 
-type BizumFormValues = {
-  amount: string;
-  concept: string;
-  contactId: string;
-};
-
 function formatCents(value: number) {
   return `${(value / 100).toFixed(2).replace(".", ",")} EUR`;
 }
@@ -96,6 +90,8 @@ function buildBizumSchema(mode: BizumActionMode, availableBalanceCents: number) 
       }
     });
 }
+
+type BizumFormValues = z.infer<ReturnType<typeof buildBizumSchema>>;
 
 export function BizumActionForm({
   availableBalanceCents,

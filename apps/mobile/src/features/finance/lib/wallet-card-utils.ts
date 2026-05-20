@@ -1,14 +1,17 @@
 import type { WalletCard, WalletCardNetwork } from "@repo/types/finance";
+import { z } from "zod";
 
 export const walletCardTypes = ["VISA", "MASTERCARD", "CHASBACK", "ORO"] as const satisfies readonly WalletCardNetwork[];
 
-export type WalletCardFormValues = {
-  cvc: string;
-  initialBalanceCents: number;
-  name: string;
-  numberTarget: string;
-  type: WalletCardNetwork;
-};
+export const walletCardFormSchema = z.object({
+  cvc: z.string(),
+  initialBalanceCents: z.number(),
+  name: z.string(),
+  numberTarget: z.string(),
+  type: z.enum(walletCardTypes),
+});
+
+export type WalletCardFormValues = z.infer<typeof walletCardFormSchema>;
 
 const networkStyles: Record<WalletCardNetwork, Pick<WalletCard, "gradient" | "textColor">> = {
   CHASBACK: {
