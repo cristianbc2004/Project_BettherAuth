@@ -29,9 +29,8 @@
   "devDependencies": {
     "@socketsecurity/bun-security-scanner": "^1.1.2",
     "concurrently": "^9.2.1",
+    "portless": "^0.13.0",
     "turbo": "^2.9.12",
     "typescript": "~5.9.2"
   }
-
-  
 }
