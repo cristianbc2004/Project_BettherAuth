@@ -11,16 +11,16 @@ import { AppText } from "@/shared/components/ui/app-text";
 
 const cookieSections = [
   {
-    body: "Usamos cookies tecnicas y almacenamiento seguro para mantener tu sesion activa, recordar preferencias basicas y proteger el acceso a la cuenta.",
-    title: "Uso esencial",
+    body: "We use technical cookies and secure storage to keep your session active, remember basic preferences, and protect account access.",
+    title: "Essential use",
   },
   {
-    body: "Las preferencias de idioma, tema y navegacion pueden guardarse en el dispositivo para que la experiencia sea consistente al volver a abrir la app.",
-    title: "Preferencias",
+    body: "Language, theme, and navigation preferences may be saved on the device so the experience stays consistent when you reopen the app.",
+    title: "Preferences",
   },
   {
-    body: "No vendemos informacion personal ni usamos cookies publicitarias en esta version demo. Los datos mostrados son estaticos o de prueba.",
-    title: "Publicidad",
+    body: "We do not sell personal information or use advertising cookies in this demo version. The data shown is static or for testing.",
+    title: "Advertising",
   },
 ];
 
@@ -50,10 +50,10 @@ export default function CookiePolicyScreen() {
       >
         <View className="pb-5">
           <AppText className="text-[18px] font-bold leading-6" style={{ color: theme.text }}>
-            Transparencia sobre datos locales
+            Transparency about local data
           </AppText>
           <AppText className="mt-2 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-            Esta pantalla es informativa y ayuda a que la app se sienta mas completa antes de conectar textos legales reales.
+            This informational screen helps the app feel complete before real legal copy is connected.
           </AppText>
         </View>
 

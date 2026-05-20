@@ -10,7 +10,7 @@ import { useAppTheme } from "@/shared/lib/theme-context";
 import { AppText } from "@/shared/components/ui/app-text";
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat("es-ES", {
+  return new Intl.NumberFormat("en-US", {
     currency: "EUR",
     maximumFractionDigits: 0,
     style: "currency",
@@ -61,7 +61,7 @@ export default function PersonGeneralScreen() {
             {selectedPerson.nombre}
           </AppText>
           <AppText className="mt-2 text-[16px] leading-[22px]" style={{ color: theme.mutedText }}>
-            Detalle de ingresos - {mockIngresos.general.periodo}
+            Income details - {mockIngresos.general.periodo}
           </AppText>
         </View>
 
@@ -69,7 +69,7 @@ export default function PersonGeneralScreen() {
           <View className="mt-5 flex-row gap-3">
             <View className="flex-1">
               <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
-                Ingresos
+                Income
               </AppText>
               <AppText
                 className="mt-1 text-[22px] font-bold leading-[30px]"
@@ -81,7 +81,7 @@ export default function PersonGeneralScreen() {
             </View>
             <View className="flex-1">
               <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
-                {"Comisi\u00f3n"}
+                Commission
               </AppText>
               <AppText
                 className="mt-1 text-[22px] font-bold leading-[30px]"
@@ -96,7 +96,7 @@ export default function PersonGeneralScreen() {
           <View className="mt-5 flex-row gap-8">
             <View className="flex-1">
               <AppText className="text-[13px] font-semibold uppercase tracking-[1.2px]" style={{ color: theme.mutedText }}>
-                Ventas
+                Sales
               </AppText>
               <AppText className="mt-1 text-[20px] font-bold leading-[26px]" style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
                 {selectedPerson.ventasRealizadas}

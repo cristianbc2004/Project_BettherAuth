@@ -113,7 +113,7 @@ export default function DetailsTargetScreen() {
       <View className="px-5 pt-4">
         <AppScreenHeader
           fallbackHref={"/cards" as never}
-          title="Detalle de la tarjeta"
+          title="Card details"
         />
       </View>
 
@@ -129,7 +129,7 @@ export default function DetailsTargetScreen() {
               style={{ backgroundColor: isBlocked ? `${theme.danger}18` : theme.primarySoft }}
             >
               <AppText className="tracking-[1.5px]" tone={isBlocked ? "danger" : "primary"} variant="eyebrow">
-                {isBlocked ? "Bloqueada" : "Activa"}
+                {isBlocked ? "Blocked" : "Active"}
               </AppText>
             </View>
         </Animated.View>
@@ -141,7 +141,7 @@ export default function DetailsTargetScreen() {
         <Animated.View entering={sectionEnter(210)} className="flex-row gap-3">
           <ActionButton
             icon={isPinVisible ? EyeOff : Eye}
-            label={isPinVisible ? "Ocultar PIN" : "Ver PIN"}
+            label={isPinVisible ? "Hide PIN" : "View PIN"}
             onPress={() => {
               selectionHaptic();
               setIsPinVisible((currentValue) => !currentValue);
@@ -150,14 +150,14 @@ export default function DetailsTargetScreen() {
           <ActionButton
             icon={isBlocked ? ShieldCheck : LockKeyhole}
             disabled={isBlockPending}
-            label={isBlockPending ? "Guardando" : isBlocked ? "Desbloquear" : "Bloquear"}
+            label={isBlockPending ? "Saving" : isBlocked ? "Unblock" : "Block"}
             onPress={async () => {
               try {
                 selectionHaptic();
                 setIsBlockPending(true);
                 await updateCardBlock(selectedCard.id, !isBlocked);
               } catch (error) {
-                const message = error instanceof Error ? error.message : "No se pudo actualizar la tarjeta.";
+                const message = error instanceof Error ? error.message : "Could not update the card.";
                 warningHaptic();
                 Alert.alert("Error", message);
               } finally {
@@ -180,19 +180,19 @@ export default function DetailsTargetScreen() {
           </AppText>
           <AppText className="mt-3" tone="muted" variant="info">
             {isPinVisible
-              ? "No compartas este codigo con nadie."
-              : "Pulsa en Ver PIN para mostrar el CVC de seguridad."}
+              ? "Do not share this code with anyone."
+              : "Tap View PIN to show the security CVC."}
           </AppText>
         </Animated.View>
 
         <Animated.View entering={sectionEnter(330)} className="flex-row gap-3">
-          <InfoTile label="Titular" value={selectedCard.name} />
-          <InfoTile label="Numero" value={`**** ${selectedCard.lastDigits}`} />
+          <InfoTile label="Holder" value={selectedCard.name} />
+          <InfoTile label="Number" value={`**** ${selectedCard.lastDigits}`} />
         </Animated.View>
 
         <Animated.View entering={sectionEnter(390)} className="flex-row gap-3">
-          <InfoTile label="Red" value={selectedCard.network} />
-          <InfoTile label="Tipo" value={selectedCard.status} />
+          <InfoTile label="Network" value={selectedCard.network} />
+          <InfoTile label="Type" value={selectedCard.status} />
         </Animated.View>
       </ScrollView>
     </SafeAreaView>

@@ -68,9 +68,9 @@ export default function ExpenseCategoryScreen() {
       <FlatList
         ListHeaderComponent={
           <View className="pb-4 pt-5">
-            <PersonScreenHeader backHref="/home-graphic" title={category?.label ?? "Gastos"} />
+            <PersonScreenHeader backHref="/home-graphic" title={category?.label ?? "Expenses"} />
             <AppText className="mt-2 text-[15px] font-semibold leading-5" style={{ color: theme.mutedText }}>
-              Gastos filtrados
+              Filtered expenses
             </AppText>
           </View>
         }

@@ -54,9 +54,9 @@ function normalizeAmount(value: string) {
 function buildBizumSchema(mode: BizumActionMode, availableBalanceCents: number) {
   return z
     .object({
-      amount: z.string().trim().min(1, "Introduce un importe."),
-      concept: z.string().trim().max(42, "El concepto no puede superar 42 caracteres."),
-      contactId: z.string().trim().min(1, "Elige un contacto."),
+      amount: z.string().trim().min(1, "Enter an amount."),
+      concept: z.string().trim().max(42, "The concept cannot exceed 42 characters."),
+      contactId: z.string().trim().min(1, "Choose a contact."),
     })
     .superRefine((values, context) => {
       const parsedAmount = normalizeAmount(values.amount);
@@ -65,7 +65,7 @@ function buildBizumSchema(mode: BizumActionMode, availableBalanceCents: number) 
       if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
         context.addIssue({
           code: "custom",
-          message: "Introduce un importe valido.",
+          message: "Enter a valid amount.",
           path: ["amount"],
         });
         return;
@@ -74,7 +74,7 @@ function buildBizumSchema(mode: BizumActionMode, availableBalanceCents: number) 
       if (amountCents < 50) {
         context.addIssue({
           code: "custom",
-          message: "El importe minimo es 0,50 EUR.",
+          message: "The minimum amount is 0.50 EUR.",
           path: ["amount"],
         });
       }
@@ -82,7 +82,7 @@ function buildBizumSchema(mode: BizumActionMode, availableBalanceCents: number) 
       if (amountCents > 100000) {
         context.addIssue({
           code: "custom",
-          message: "El importe maximo por Bizum es 1.000,00 EUR.",
+          message: "The maximum amount per Bizum is 1,000.00 EUR.",
           path: ["amount"],
         });
       }
@@ -90,7 +90,7 @@ function buildBizumSchema(mode: BizumActionMode, availableBalanceCents: number) 
       if (mode === "send" && amountCents > availableBalanceCents) {
         context.addIssue({
           code: "custom",
-          message: "No tienes saldo suficiente para enviar ese Bizum.",
+          message: "You do not have enough balance to send that Bizum.",
           path: ["amount"],
         });
       }
@@ -158,22 +158,22 @@ export function BizumActionForm({
   const copy =
     mode === "send"
       ? {
-          actionLabel: "Confirmar envio",
-          contactLabel: "Destinatario",
-          loadingDescription: "Estamos preparando el movimiento para que aparezca en tus ultimos pagos.",
-          loadingTitle: "Enviando Bizum...",
-          reviewTitle: "Confirmar envio",
-          successDescription: "El Bizum se ha enviado correctamente. Puedes comprobarlo en ultimos movimientos.",
-          successTitle: "Pago confirmado",
+          actionLabel: "Confirm send",
+          contactLabel: "Recipient",
+          loadingDescription: "We are preparing the movement so it appears in your latest payments.",
+          loadingTitle: "Sending Bizum...",
+          reviewTitle: "Confirm send",
+          successDescription: "The Bizum was sent successfully. You can check it in latest movements.",
+          successTitle: "Payment confirmed",
         }
       : {
-          actionLabel: "Confirmar solicitud",
-          contactLabel: "Persona",
-          loadingDescription: "Estamos preparando la solicitud y avisaremos cuando se reciba el Bizum.",
-          loadingTitle: "Pidiendo Bizum...",
-          reviewTitle: "Confirmar solicitud",
-          successDescription: "La solicitud se ha enviado correctamente. Puedes seguirla desde tus ultimos movimientos.",
-          successTitle: "Solicitud enviada",
+          actionLabel: "Confirm request",
+          contactLabel: "Person",
+          loadingDescription: "We are preparing the request and will notify you when the Bizum is received.",
+          loadingTitle: "Requesting Bizum...",
+          reviewTitle: "Confirm request",
+          successDescription: "The request was sent successfully. You can track it from your latest movements.",
+          successTitle: "Request sent",
         };
 
   const selectContact = (contact: BizumContact) => {
@@ -232,9 +232,9 @@ export function BizumActionForm({
 
           <View>
             {contacts.length === 0 ? (
-              <EmptyState description="Crea otro usuario para probar envios o solicitudes de Bizum." title="No hay usuarios disponibles" />
+              <EmptyState description="Create another user to test Bizum sends or requests." title="No users available" />
             ) : filteredContacts.length === 0 ? (
-              <EmptyState description="Prueba con otro nombre o borra la busqueda." title="Sin resultados" />
+              <EmptyState description="Try another name or clear the search." title="No results" />
             ) : (
               filteredContacts.map((contact, index) => (
                 <ContactRow
@@ -257,7 +257,7 @@ export function BizumActionForm({
           {selectedContact ? <ContactSummary contact={selectedContact} isFramed={mode !== "send"} label={copy.contactLabel} /> : null}
 
           <View className="gap-3">
-            <FieldLabel label="Importe" />
+            <FieldLabel label="Amount" />
             <Controller
               control={control}
               name="amount"
@@ -286,7 +286,7 @@ export function BizumActionForm({
                   />
                   <View className="mt-2 flex-row items-center justify-between">
                     <AppText className="text-[12px]" style={{ color: theme.mutedText }}>
-                      Vista previa: {amountPreview}
+                      Preview: {amountPreview}
                     </AppText>
                     <AppText className="text-[12px]" style={{ color: theme.mutedText }}>
                       {formatCents(availableBalanceCents)}
@@ -299,7 +299,7 @@ export function BizumActionForm({
           </View>
 
           <View className="gap-3">
-            <FieldLabel label="Concepto" optional />
+            <FieldLabel label="Concept" optional />
             <Controller
               control={control}
               name="concept"
@@ -320,7 +320,7 @@ export function BizumActionForm({
                       onChange(nextValue);
                     }}
                     onFocus={() => setIsConceptFocused(true)}
-                    placeholder="Cena, regalo, entradas..."
+                    placeholder="Dinner, gift, tickets..."
                     placeholderTextColor={theme.mutedText}
                     selectionColor={theme.primary}
                     style={{ color: theme.text, fontSize: 14, lineHeight: 18, minHeight: 42, paddingVertical: 0, textAlignVertical: "top" }}
@@ -334,7 +334,7 @@ export function BizumActionForm({
 
           {errorMessage ? <InlineError message={errorMessage} /> : null}
 
-          <PrimaryButton label="Continuar" onPress={continueFromDetails} />
+          <PrimaryButton label="Continue" onPress={continueFromDetails} />
         </View>
       ) : null}
 
@@ -342,7 +342,7 @@ export function BizumActionForm({
         <View className="gap-5">
           <View className="items-center rounded-[22px] px-4 py-4" style={{ backgroundColor: theme.backgroundElevated }}>
             <AppText className="text-[13px] font-semibold" style={{ color: theme.mutedText }}>
-              Importe
+              Amount
             </AppText>
             <AppText
               adjustsFontSizeToFit
@@ -363,9 +363,9 @@ export function BizumActionForm({
           {selectedContact ? <ContactSummary contact={selectedContact} isFramed={mode !== "send"} label={copy.contactLabel} /> : null}
 
           <View>
-            <SummaryLine label="Concepto" showTopBorder value={getValues("concept").trim() || "Sin concepto"} />
+            <SummaryLine label="Concept" showTopBorder value={getValues("concept").trim() || "No concept"} />
             <SummaryLine
-              label={mode === "send" ? "Saldo despues" : "Saldo actual"}
+              label={mode === "send" ? "Balance after" : "Current balance"}
               value={formatCents(mode === "send" ? Math.max(availableBalanceCents - amountCents, 0) : availableBalanceCents)}
             />
           </View>
@@ -392,13 +392,13 @@ export function BizumActionForm({
           {completedPayload ? (
             <View className="w-full">
               <SummaryLine label={copy.contactLabel} showTopBorder value={completedPayload.contact.name} />
-              <SummaryLine label="Importe" value={formatAmount(completedPayload.amount)} />
-              <SummaryLine label="Concepto" value={completedPayload.concept || "Sin concepto"} />
+              <SummaryLine label="Amount" value={formatAmount(completedPayload.amount)} />
+              <SummaryLine label="Concept" value={completedPayload.concept || "No concept"} />
             </View>
           ) : null}
           <View className="w-full flex-row gap-3">
-            <SecondaryButton label="Cerrar" onPress={onClose} />
-            <PrimaryButton label="Ver movimientos" onPress={onViewMovements} />
+            <SecondaryButton label="Close" onPress={onClose} />
+            <PrimaryButton label="View movements" onPress={onViewMovements} />
           </View>
         </View>
       ) : null}
@@ -447,7 +447,7 @@ function SearchField({ onChangeQuery, query }: { onChangeQuery: (value: string) 
         <TextInput
           className="ml-3 flex-1"
           onChangeText={onChangeQuery}
-          placeholder="Buscar contacto"
+          placeholder="Search contact"
           placeholderTextColor={theme.mutedText}
           selectionColor={theme.primary}
           style={{ color: theme.text, fontSize: 15, fontWeight: "600", paddingVertical: 0 }}
@@ -468,7 +468,7 @@ function FieldLabel({ label, optional = false }: { label: string; optional?: boo
       </AppText>
       {optional ? (
         <AppText className="text-[12px]" style={{ color: theme.mutedText }}>
-          Opcional
+          Optional
         </AppText>
       ) : null}
     </View>
@@ -505,7 +505,7 @@ function ContactRow({
 
   return (
     <Pressable
-      accessibilityLabel={`Seleccionar a ${contact.name}`}
+      accessibilityLabel={`Select ${contact.name}`}
       accessibilityRole="button"
       className="flex-row items-center py-3.5"
       onPress={onPress}

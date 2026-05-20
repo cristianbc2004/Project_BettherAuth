@@ -163,7 +163,7 @@ function SignInForm() {
 
       <AuthSubmitButton
         isPending={isPending}
-        label="Iniciar sesion"
+        label={t("authForm.signIn")}
         onPress={() => {
           void handleSubmit();
         }}

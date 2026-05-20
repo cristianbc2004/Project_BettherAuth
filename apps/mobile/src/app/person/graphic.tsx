@@ -39,7 +39,7 @@ export default function PersonGraphicScreen() {
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
       <View className="px-5 pt-5">
-        <PersonScreenHeader backHref={generalHref} title="Grafica de ingresos" />
+        <PersonScreenHeader backHref={generalHref} title="Income chart" />
       </View>
 
       <ScrollView

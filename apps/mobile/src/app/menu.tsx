@@ -24,7 +24,7 @@ export default function MenuScreen() {
     return <Redirect href="/sign-in" />;
   }
 
-  const role = (session.user as { role?: string }).role ?? "Usuario";
+  const role = (session.user as { role?: string }).role ?? "User";
 
   return (
     <AppDrawer

@@ -83,7 +83,7 @@ export function WalletCardsProvider({ children }: PropsWithChildren) {
 
         if (!response.ok) {
           const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "No se pudo crear la tarjeta.");
+          throw new Error(payload?.error ?? "Could not create the card.");
         }
 
         const payload = (await response.json()) as { target: TargetResponse };
@@ -104,7 +104,7 @@ export function WalletCardsProvider({ children }: PropsWithChildren) {
 
         if (!response.ok) {
           const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "No se pudo actualizar la tarjeta.");
+          throw new Error(payload?.error ?? "Could not update the card.");
         }
 
         const payload = (await response.json()) as { target: TargetResponse };

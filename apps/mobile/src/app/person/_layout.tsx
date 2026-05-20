@@ -45,17 +45,17 @@ export default function PersonTabsLayout() {
 
         <NativeTabs.Trigger name="details">
           <NativeTabs.Trigger.Icon md="description" />
-          <NativeTabs.Trigger.Label>Detalles</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Label>Details</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
 
         <NativeTabs.Trigger name="graphic">
           <NativeTabs.Trigger.Icon md="bar_chart" />
-          <NativeTabs.Trigger.Label>Grafica</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Label>Chart</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
 
         <NativeTabs.Trigger name="map">
           <NativeTabs.Trigger.Icon md="map" />
-          <NativeTabs.Trigger.Label>Mapa</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Label>Map</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
       </NativeTabs>
     </PersonSelectionProvider>

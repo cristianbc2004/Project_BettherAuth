@@ -64,20 +64,20 @@ export const auth = betterAuth({
   plugins: [
     expo(),
     i18n({
-      defaultLocale: "es",
+      defaultLocale: "en",
       detection: ["header"],
       translations: {
-        es: {
-          EMAIL_NOT_VERIFIED: "El correo electronico no esta verificado.",
-          FAILED_TO_CREATE_SESSION: "No se pudo crear la sesion.",
-          FAILED_TO_CREATE_USER: "No se pudo crear el usuario.",
-          INVALID_EMAIL: "El correo electronico no es valido.",
-          INVALID_EMAIL_OR_PASSWORD: "El correo o la contrasena no son validos.",
-          INVALID_PASSWORD: "La contrasena no es valida.",
-          PASSWORD_TOO_SHORT: "La contrasena es demasiado corta.",
-          SESSION_EXPIRED: "La sesion ha expirado.",
-          TOO_MANY_REQUESTS: "Demasiados intentos. Intentalo de nuevo mas tarde.",
-          USER_NOT_FOUND: "Usuario no encontrado.",
+        en: {
+          EMAIL_NOT_VERIFIED: "The email address is not verified.",
+          FAILED_TO_CREATE_SESSION: "Could not create the session.",
+          FAILED_TO_CREATE_USER: "Could not create the user.",
+          INVALID_EMAIL: "The email address is not valid.",
+          INVALID_EMAIL_OR_PASSWORD: "The email or password is not valid.",
+          INVALID_PASSWORD: "The password is not valid.",
+          PASSWORD_TOO_SHORT: "The password is too short.",
+          SESSION_EXPIRED: "The session has expired.",
+          TOO_MANY_REQUESTS: "Too many attempts. Please try again later.",
+          USER_NOT_FOUND: "User not found.",
         },
       },
     }),

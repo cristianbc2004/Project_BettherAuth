@@ -88,27 +88,27 @@ export function AppDrawer({
     ...(isAdmin
       ? [
           {
-            accessibilityLabel: "Abrir trabajadores",
-            description: "Personas, detalle, grafica y mapa.",
+            accessibilityLabel: "Open workers",
+            description: "People, details, chart, and map.",
             href: "/person",
             icon: Users,
-            title: "Trabajadores",
+            title: "Workers",
           },
         ]
       : []),
     {
-      accessibilityLabel: "Abrir politica de cookies",
-      description: "Cookies tecnicas y preferencias.",
+      accessibilityLabel: "Open cookie policy",
+      description: "Technical cookies and preferences.",
       href: "/legal/cookies",
       icon: Cookie,
-      title: "Politica de cookies",
+      title: "Cookie policy",
     },
     {
-      accessibilityLabel: "Abrir politica de privacidad",
-      description: "Datos, sesiones y seguridad.",
+      accessibilityLabel: "Open privacy policy",
+      description: "Data, sessions, and security.",
       href: "/legal/privacy",
       icon: ShieldCheck,
-      title: "Politica de privacidad",
+      title: "Privacy policy",
     },
   ];
 

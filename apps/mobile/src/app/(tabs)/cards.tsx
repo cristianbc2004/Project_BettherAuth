@@ -75,8 +75,8 @@ const AnimatedWalletCardItem = memo(function AnimatedWalletCardItem({
   return (
     <Animated.View className="absolute left-0 top-0" style={animatedCardStyle}>
       <Pressable
-        accessibilityLabel={`Tarjeta terminada en ${card.lastDigits}`}
-        accessibilityHint={isExpanded ? "Abre el detalle de esta tarjeta" : "Despliega la pila de tarjetas"}
+        accessibilityLabel={`Card ending in ${card.lastDigits}`}
+        accessibilityHint={isExpanded ? "Open this card's details" : "Expand the card stack"}
         accessibilityRole="button"
         onPress={handlePress}
       >
@@ -158,11 +158,11 @@ export default function CardsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <AppScreenHeader
-          title="Tarjetas"
+          title="Cards"
           rightSlot={
             <View className="flex-row items-center gap-3">
               <Pressable
-                accessibilityLabel="Actualizar tarjetas"
+                accessibilityLabel="Refresh cards"
                 accessibilityRole="button"
                 className="h-11 w-11 items-center justify-center rounded-full"
                 onPress={() => {
@@ -174,7 +174,7 @@ export default function CardsScreen() {
                 <Boxes color={theme.text} size={19} strokeWidth={2.4} />
               </Pressable>
               <Pressable
-                accessibilityLabel="Anadir nueva tarjeta"
+                accessibilityLabel="Add new card"
                 accessibilityRole="button"
                 className="h-11 w-11 items-center justify-center rounded-full"
                 onPress={() => {
@@ -196,7 +196,7 @@ export default function CardsScreen() {
               style={{ backgroundColor: theme.card, width: cardWidth }}
             >
               <AppText className="text-[15px] font-black" tone="muted">
-                Cargando tarjetas...
+                Loading cards...
               </AppText>
             </View>
           ) : displayedCards.length === 0 ? (
@@ -205,10 +205,10 @@ export default function CardsScreen() {
               style={{ backgroundColor: theme.card, borderColor: theme.border, width: cardWidth }}
             >
               <AppText className="text-center text-[17px] font-black">
-                No hay tarjetas guardadas
+                No saved cards
               </AppText>
               <AppText className="mt-2 text-center" tone="muted" variant="subtitle">
-                Anade tu primera tarjeta para verla aqui.
+                Add your first card to see it here.
               </AppText>
             </View>
           ) : (

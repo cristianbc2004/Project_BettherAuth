@@ -98,17 +98,17 @@ export default function MovementsScreen() {
           <View className="items-center pb-10 pt-4">
             <AppText tone="muted" variant="caption">
               {trimmedQuery
-                ? `Resultados: ${visibleTransactions.length}`
+                ? `Results: ${visibleTransactions.length}`
                 : hasMoreTransactions
-                  ? `Mostrando ${visibleTransactions.length} de ${financeConfig.totalTransactionCount}`
-                  : "Todos los movimientos cargados"}
+                  ? `Showing ${visibleTransactions.length} of ${financeConfig.totalTransactionCount}`
+                  : "All movements loaded"}
             </AppText>
           </View>
         }
         ListHeaderComponent={
           <View className="gap-4 pb-4 pt-5">
             <View>
-              <AppScreenHeader title="Movimientos" />
+              <AppScreenHeader title="Movements" />
             </View>
 
             <View className="flex-row gap-3">
@@ -117,7 +117,7 @@ export default function MovementsScreen() {
                 <TextInput
                   className="ml-3 flex-1 text-[14px] font-semibold"
                   onChangeText={setSearchQuery}
-                  placeholder="Buscar movimiento"
+                  placeholder="Search movement"
                   placeholderTextColor={theme.mutedText}
                   selectionColor={theme.primary}
                   style={{ color: theme.text }}
@@ -159,7 +159,7 @@ export default function MovementsScreen() {
       >
         <View className="flex-1 justify-end px-5 pb-7">
           <Pressable
-            accessibilityLabel="Cerrar filtros"
+            accessibilityLabel="Close filters"
             className="absolute inset-0"
             onPress={cancelFilters}
             style={{ backgroundColor: "rgba(7, 10, 18, 0.45)" }}
@@ -170,18 +170,18 @@ export default function MovementsScreen() {
           >
             <View className="flex-row items-center justify-between">
               <AppText variant="sectionTitle">
-                Filtros
+                Filters
               </AppText>
               <Pressable onPress={cancelFilters}>
                 <AppText className="text-[13px] font-semibold" tone="muted">
-                  Cerrar
+                  Close
                 </AppText>
               </Pressable>
             </View>
 
             <View className="mt-5">
               <AppText className="tracking-[1px]" tone="primary" variant="eyebrow">
-                Tipo
+                Type
               </AppText>
               <View className="mt-4 gap-2">
                 <Pressable
@@ -190,7 +190,7 @@ export default function MovementsScreen() {
                   style={{ backgroundColor: selectedTone === "all" ? theme.primary : theme.background }}
                 >
                   <AppText className="text-[14px] font-bold">
-                    Todos
+                    All
                   </AppText>
                 </Pressable>
                 <Pressable
@@ -199,7 +199,7 @@ export default function MovementsScreen() {
                   style={{ backgroundColor: selectedTone === "income" ? theme.primary : theme.background }}
                 >
                   <AppText className="text-[14px] font-bold">
-                    Ingresos
+                    Income
                   </AppText>
                 </Pressable>
                 <Pressable
@@ -208,7 +208,7 @@ export default function MovementsScreen() {
                   style={{ backgroundColor: selectedTone === "expense" ? theme.primary : theme.background }}
                 >
                   <AppText className="text-[14px] font-bold">
-                    Gastos
+                    Expenses
                   </AppText>
                 </Pressable>
               </View>
@@ -221,7 +221,7 @@ export default function MovementsScreen() {
                 style={{ backgroundColor: theme.background }}
               >
                 <AppText className="text-[14px] font-bold">
-                  Cancelar
+                  Cancel
                 </AppText>
               </Pressable>
               <Pressable
@@ -230,7 +230,7 @@ export default function MovementsScreen() {
                 style={{ backgroundColor: theme.primary }}
               >
                 <AppText className="text-[14px] font-bold">
-                  Aceptar
+                  Apply
                 </AppText>
               </Pressable>
             </View>

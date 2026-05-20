@@ -41,10 +41,10 @@ export default function ExpenseDetailScreen() {
     return (
       <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
         <View className="px-5 pt-5">
-          <PersonScreenHeader backHref="/home-graphic" title="Detalle del gasto" />
+          <PersonScreenHeader backHref="/home-graphic" title="Expense details" />
           <View className="mt-8 rounded-[28px] border px-5 py-6" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
             <AppText className="text-[18px] font-bold" style={{ color: theme.text }}>
-              No se ha encontrado este gasto
+              This expense was not found
             </AppText>
           </View>
         </View>
@@ -62,7 +62,7 @@ export default function ExpenseDetailScreen() {
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
-        <PersonScreenHeader backHref="/home-graphic" title="Detalle del gasto" />
+        <PersonScreenHeader backHref="/home-graphic" title="Expense details" />
 
         <View className="overflow-hidden rounded-[30px] border" style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}>
           <View className="h-[310px]" style={{ backgroundColor: theme.backgroundMuted }}>
@@ -113,10 +113,10 @@ export default function ExpenseDetailScreen() {
               <View className="flex-1 items-center justify-center px-5">
                 <MapPin color={theme.primary} size={34} strokeWidth={2.3} />
                 <AppText className="mt-3 text-center text-[16px] font-bold" style={{ color: theme.text }}>
-                  Mapa no disponible
+                  Map unavailable
                 </AppText>
                 <AppText className="mt-2 text-center text-[14px] leading-5" style={{ color: theme.mutedText }}>
-                  Configura Stadia Maps o abre esta vista en iOS/Android para ver la ubicacion.
+                  Configure Stadia Maps or open this view on iOS/Android to see the location.
                 </AppText>
               </View>
             )}
@@ -152,9 +152,9 @@ export default function ExpenseDetailScreen() {
             </View>
 
             <View className="mt-5 gap-3">
-              <DetailLine label="Fecha" value={transaction.detail.date} />
-              <DetailLine label="Tarjeta" value={`**** ${transaction.detail.cardLastDigits}`} />
-              <DetailLine label="Referencia" value={transaction.detail.reference} />
+              <DetailLine label="Date" value={transaction.detail.date} />
+              <DetailLine label="Card" value={`**** ${transaction.detail.cardLastDigits}`} />
+              <DetailLine label="Reference" value={transaction.detail.reference} />
             </View>
           </View>
         </View>
@@ -167,7 +167,7 @@ function DetailLine({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-row items-center justify-between gap-4">
       <View className="flex-row items-center gap-2">
-        {label === "Coordenadas" ? <Navigation color="#7c35e8" size={14} strokeWidth={2.2} /> : null}
+        {label === "Coordinates" ? <Navigation color="#7c35e8" size={14} strokeWidth={2.2} /> : null}
         <AppText tone="muted" variant="caption">
           {label}
         </AppText>

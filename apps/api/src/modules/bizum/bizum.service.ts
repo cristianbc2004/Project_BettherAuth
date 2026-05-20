@@ -9,8 +9,8 @@ import { buildReferenceCode, getInitials, getUserBalances, readIdempotencyKey, t
 
 const createBizumSchema = z.object({
   action: z.enum(["request", "send"]),
-  amount: z.number().finite().positive("El importe debe ser mayor que 0."),
-  concept: z.string().trim().max(80, "El concepto es demasiado largo.").optional().default(""),
+  amount: z.number().finite().positive("The amount must be greater than 0."),
+  concept: z.string().trim().max(80, "The concept is too long.").optional().default(""),
   contactUserId: z.string().trim().min(1),
 });
 
@@ -18,7 +18,7 @@ export async function getBizumSummary(request: Request) {
   const authenticatedUser = await getAuthenticatedUserWithSession(request);
 
   if (!authenticatedUser) {
-    throw new HttpError(401, "No autorizado.");
+    throw new HttpError(401, "Unauthorized.");
   }
 
   const [contacts, transfers, balances] = await Promise.all([
@@ -79,8 +79,8 @@ export async function getBizumSummary(request: Request) {
       amount: signedAmount,
       createdAt: transfer.createdAt.toISOString(),
       id: transfer.id,
-      initials: getInitials(counterpart?.name ?? "Usuario"),
-      name: counterpart?.name ?? "Usuario",
+      initials: getInitials(counterpart?.name ?? "User"),
+      name: counterpart?.name ?? "User",
       tone: isIncome ? "income" : "outcome",
     };
   });
@@ -102,7 +102,7 @@ export async function createBizum(request: Request, input: unknown) {
   const authenticatedUser = await getAuthenticatedUserWithSession(request);
 
   if (!authenticatedUser) {
-    throw new HttpError(401, "No autorizado.");
+    throw new HttpError(401, "Unauthorized.");
   }
 
   const result = createBizumSchema.safeParse(input);
@@ -111,7 +111,7 @@ export async function createBizum(request: Request, input: unknown) {
     await registerAudit({
       ...auditMeta,
       action: "BIZUM_TRANSFER_SEND",
-      errorMensaje: result.error.issues[0]?.message ?? "Datos invalidos.",
+      errorMensaje: result.error.issues[0]?.message ?? "Invalid data.",
       sessionId: authenticatedUser.sessionId,
       status: "FAILED",
       table: "bizumTransfer",
@@ -119,7 +119,7 @@ export async function createBizum(request: Request, input: unknown) {
       userName: authenticatedUser.name,
       userRol: authenticatedUser.role,
     });
-    throw new HttpError(400, result.error.issues[0]?.message ?? "Datos invalidos.", result.error.flatten());
+    throw new HttpError(400, result.error.issues[0]?.message ?? "Invalid data.", result.error.flatten());
   }
 
   const { action, amount, concept, contactUserId } = result.data;
@@ -132,7 +132,7 @@ export async function createBizum(request: Request, input: unknown) {
     await registerAudit({
       ...auditMeta,
       action: "BIZUM_TRANSFER_SEND",
-      errorMensaje: "Falta la cabecera Idempotency-Key.",
+      errorMensaje: "Missing Idempotency-Key header.",
       sessionId: authenticatedUser.sessionId,
       status: "FAILED",
       table: "bizumTransfer",
@@ -140,14 +140,14 @@ export async function createBizum(request: Request, input: unknown) {
       userName: authenticatedUser.name,
       userRol: authenticatedUser.role,
     });
-    throw new HttpError(400, "Falta la cabecera Idempotency-Key.");
+    throw new HttpError(400, "Missing Idempotency-Key header.");
   }
 
   if (contactUserId === authenticatedUser.id) {
     await registerAudit({
       ...auditMeta,
       action: action === "request" ? "BIZUM_REQUEST_CREATE" : "BIZUM_TRANSFER_SEND",
-      errorMensaje: "No puedes hacer Bizum a tu propio usuario.",
+      errorMensaje: "You cannot send Bizum to your own user.",
       sessionId: authenticatedUser.sessionId,
       status: "FAILED",
       table: action === "request" ? "bizumRequest" : "bizumTransfer",
@@ -155,7 +155,7 @@ export async function createBizum(request: Request, input: unknown) {
       userName: authenticatedUser.name,
       userRol: authenticatedUser.role,
     });
-    throw new HttpError(400, "No puedes hacer Bizum a tu propio usuario.");
+    throw new HttpError(400, "You cannot send Bizum to your own user.");
   }
 
   const contactUser = await prisma.user.findUnique({
@@ -174,7 +174,7 @@ export async function createBizum(request: Request, input: unknown) {
     await registerAudit({
       ...auditMeta,
       action: action === "request" ? "BIZUM_REQUEST_CREATE" : "BIZUM_TRANSFER_SEND",
-      errorMensaje: "El usuario seleccionado no existe.",
+      errorMensaje: "The selected user does not exist.",
       newvaluePayload: { contactUserId },
       sessionId: authenticatedUser.sessionId,
       status: "FAILED",
@@ -183,7 +183,7 @@ export async function createBizum(request: Request, input: unknown) {
       userName: authenticatedUser.name,
       userRol: authenticatedUser.role,
     });
-    throw new HttpError(404, "El usuario seleccionado no existe.");
+    throw new HttpError(404, "The selected user does not exist.");
   }
 
   if (action === "request") {
@@ -203,11 +203,11 @@ export async function createBizum(request: Request, input: unknown) {
         },
       });
 
-      const requesterName = authenticatedUser.name.trim() || "Un usuario";
+      const requesterName = authenticatedUser.name.trim() || "A user";
       const amountLabel = toMoneyLabel(amountCents);
       const requestBody = requestConcept
-        ? `${requesterName} te solicita ${amountLabel}. Concepto: ${requestConcept}`
-        : `${requesterName} te solicita ${amountLabel}.`;
+        ? `${requesterName} requests ${amountLabel} from you. Concept: ${requestConcept}`
+        : `${requesterName} requests ${amountLabel} from you.`;
 
       await tx.notification.create({
         data: {
@@ -221,7 +221,7 @@ export async function createBizum(request: Request, input: unknown) {
           actionRoute: "/notification",
           bizumRequestId: createdRequest.id,
           body: requestBody,
-          title: "Nueva solicitud de Bizum",
+          title: "New Bizum request",
           type: "BIZUM_REQUEST",
           userDestinationId: contactUser.id,
           userEmisorId: authenticatedUser.id,
@@ -279,7 +279,7 @@ export async function createBizum(request: Request, input: unknown) {
       existingConcept === currentConcept;
 
     if (!isSameOperation) {
-      throw new HttpError(409, "La Idempotency-Key ya fue usada con otra operacion.");
+      throw new HttpError(409, "The Idempotency-Key was already used with another operation.");
     }
 
     const refreshedBalances = await getUserBalances(authenticatedUser.id);
@@ -316,7 +316,7 @@ export async function createBizum(request: Request, input: unknown) {
     await registerAudit({
       ...auditMeta,
       action: "BIZUM_TRANSFER_SEND",
-      errorMensaje: "Saldo insuficiente para enviar este Bizum.",
+      errorMensaje: "Insufficient balance to send this Bizum.",
       newvaluePayload: {
         amountCents,
         contactUserId: contactUser.id,
@@ -329,7 +329,7 @@ export async function createBizum(request: Request, input: unknown) {
       userName: authenticatedUser.name,
       userRol: authenticatedUser.role,
     });
-    throw new HttpError(400, "Saldo insuficiente para enviar este Bizum.");
+    throw new HttpError(400, "Insufficient balance to send this Bizum.");
   }
 
   const receiverCard = await prisma.target.findFirst({
@@ -433,11 +433,11 @@ export async function createBizum(request: Request, input: unknown) {
       }),
     ]);
 
-    const senderName = authenticatedUser.name.trim() || "Un usuario";
+    const senderName = authenticatedUser.name.trim() || "A user";
     const amountLabel = toMoneyLabel(amountCents);
     const sendBody = sendConcept
-      ? `${senderName} te envio ${amountLabel}. Concepto: ${sendConcept}`
-      : `${senderName} te envio ${amountLabel}.`;
+      ? `${senderName} sent you ${amountLabel}. Concept: ${sendConcept}`
+      : `${senderName} sent you ${amountLabel}.`;
 
     await tx.notification.create({
       data: {
@@ -450,7 +450,7 @@ export async function createBizum(request: Request, input: unknown) {
         },
         actionRoute: "/notification",
         body: sendBody,
-        title: "Bizum recibido",
+        title: "Bizum received",
         transferId: createdTransfer.id,
         type: "BIZUM_RECEIVED",
         userDestinationId: contactUser.id,

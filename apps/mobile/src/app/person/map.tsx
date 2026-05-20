@@ -34,7 +34,7 @@ function getSelectedPerson(personId?: string) {
 }
 
 function formatLastUpdated(value: string) {
-  return new Intl.DateTimeFormat("es-ES", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
@@ -45,12 +45,12 @@ function formatLastUpdated(value: string) {
 function getStatusLabel(status: IncomePerson["location"]["status"]) {
   switch (status) {
     case "moving":
-      return "En ruta";
+      return "On route";
     case "offline":
-      return "Sin conexion";
+      return "Offline";
     case "online":
     default:
-      return "Disponible";
+      return "Available";
   }
 }
 
@@ -91,7 +91,7 @@ const WorkerMarker = memo(function WorkerMarker({
 
   return (
     <Pressable
-      accessibilityLabel={`Seleccionar a ${person.nombre} en el mapa`}
+      accessibilityLabel={`Select ${person.nombre} on the map`}
       accessibilityRole="button"
       className="items-center"
       onPress={onPress}
@@ -160,10 +160,10 @@ export default function PersonMapScreen() {
             }}
           >
             <AppText className="text-[18px] font-bold" style={{ color: theme.text }}>
-              El mapa estara disponible en iOS y Android
+              The map will be available on iOS and Android
             </AppText>
             <AppText className="mt-3 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-              Esta ruta usa MapLibre nativo. En web dejamos esta vista de apoyo para no romper el proyecto mientras seguimos desarrollando la experiencia movil.
+              This route uses native MapLibre. On web, we show this fallback view to keep the project stable while the mobile experience continues to evolve.
             </AppText>
           </View>
         </View>
@@ -183,10 +183,10 @@ export default function PersonMapScreen() {
             }}
           >
             <AppText className="text-[18px] font-bold" style={{ color: theme.text }}>
-              Falta configurar Stadia Maps
+              Stadia Maps configuration is missing
             </AppText>
             <AppText className="mt-3 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-              Añade `EXPO_PUBLIC_STADIA_MAPS_API_KEY` en el `.env` y reinicia Expo para que el mapa pueda cargar el estilo de calles.
+              Add `EXPO_PUBLIC_STADIA_MAPS_API_KEY` to `.env` and restart Expo so the map can load the street style.
             </AppText>
           </View>
         </View>
@@ -283,7 +283,7 @@ export default function PersonMapScreen() {
                 <View className="flex-row items-center gap-2">
                   <MapPin color={theme.primary} size={16} strokeWidth={2.2} />
                   <AppText className="text-[12px] font-semibold uppercase" style={{ color: theme.mutedText }}>
-                    Coordenadas
+                    Coordinates
                   </AppText>
                 </View>
                 <AppText className="mt-2 text-[14px] font-semibold leading-5" numberOfLines={2} style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
@@ -301,7 +301,7 @@ export default function PersonMapScreen() {
                 <View className="flex-row items-center gap-2">
                   <Clock3 color={theme.primary} size={16} strokeWidth={2.2} />
                   <AppText className="text-[12px] font-semibold uppercase" style={{ color: theme.mutedText }}>
-                    Ultima señal
+                    Last signal
                   </AppText>
                 </View>
                 <AppText className="mt-2 text-[14px] font-semibold leading-5" numberOfLines={2} style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
@@ -311,7 +311,7 @@ export default function PersonMapScreen() {
             </View>
 
             <Pressable
-              accessibilityLabel={`Ver detalles de ${selectedPerson.nombre}`}
+              accessibilityLabel={`View details for ${selectedPerson.nombre}`}
               accessibilityRole="button"
               className="mt-5 items-center justify-center rounded-full px-4 py-4"
               onPress={() => {
@@ -321,7 +321,7 @@ export default function PersonMapScreen() {
               style={{ backgroundColor: theme.primary }}
             >
               <AppText className="text-[15px] font-semibold" style={{ color: theme.textOnPrimary }}>
-                Ver detalle del trabajador
+                View worker details
               </AppText>
             </Pressable>
           </View>

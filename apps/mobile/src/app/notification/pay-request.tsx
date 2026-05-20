@@ -72,14 +72,14 @@ export default function NotificationPayRequestScreen() {
 
         if (!response.ok) {
           const errorPayload = (await response.json().catch(() => null)) as { error?: string } | null;
-          setErrorMessage(errorPayload?.error ?? "No se pudo cargar la solicitud.");
+          setErrorMessage(errorPayload?.error ?? "Could not load the request.");
           return;
         }
 
         const payload = (await response.json()) as RequestDetailResponse;
         setRequestData(payload);
       } catch {
-        setErrorMessage("No se pudo cargar la solicitud.");
+        setErrorMessage("Could not load the request.");
       } finally {
         setIsLoading(false);
       }
@@ -113,14 +113,14 @@ export default function NotificationPayRequestScreen() {
 
       if (!response.ok) {
         const errorPayload = (await response.json().catch(() => null)) as { error?: string } | null;
-        setErrorMessage(errorPayload?.error ?? "No se pudo pagar la solicitud.");
+        setErrorMessage(errorPayload?.error ?? "Could not pay the request.");
         return;
       }
 
       successHaptic();
       router.back();
     } catch {
-      setErrorMessage("No se pudo pagar la solicitud.");
+      setErrorMessage("Could not pay the request.");
     } finally {
       setIsPaying(false);
     }
@@ -166,31 +166,31 @@ export default function NotificationPayRequestScreen() {
               <X color={theme.text} size={20} strokeWidth={2.4} />
             </Pressable>
           }
-          title="Pagar solicitud"
+          title="Pay request"
         />
 
         {isLoading ? (
           <Animated.View entering={FadeIn.duration(180)} className="items-center py-12">
             <ActivityIndicator color={theme.primary} size="large" />
             <AppText className="mt-4 text-[14px]" style={{ color: theme.mutedText }}>
-              Cargando solicitud...
+              Loading request...
             </AppText>
           </Animated.View>
         ) : requestData ? (
           <View className="gap-4">
             <View className="rounded-[24px] border p-4" style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}>
               <AppText className="text-[12px] font-black uppercase tracking-[1.8px]" style={{ color: theme.mutedText }}>
-                Solicitado por
+                Requested by
               </AppText>
               <AppText className="mt-2 text-[19px] font-black" style={{ color: theme.text }}>
                 {requestData.requester.name}
               </AppText>
               <AppText className="mt-1 text-[13px]" style={{ color: theme.mutedText }}>
-                Importe: {amountLabel}
+                Amount: {amountLabel}
               </AppText>
               {requestData.concept ? (
                 <AppText className="mt-1 text-[13px]" style={{ color: theme.mutedText }}>
-                  Concepto: {requestData.concept}
+                  Concept: {requestData.concept}
                 </AppText>
               ) : null}
             </View>
@@ -198,7 +198,7 @@ export default function NotificationPayRequestScreen() {
             {!requestData.isPayable ? (
               <View className="rounded-[18px] border px-3 py-2.5" style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}>
                 <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
-                  Esta solicitud ya no esta disponible para pago.
+                  This request is no longer available for payment.
                 </AppText>
               </View>
             ) : null}
@@ -221,7 +221,7 @@ export default function NotificationPayRequestScreen() {
                 style={{ backgroundColor: theme.backgroundMuted }}
               >
                 <AppText className="text-[15px] font-black" style={{ color: theme.text }}>
-                  Cancelar
+                  Cancel
                 </AppText>
               </Pressable>
 
@@ -240,7 +240,7 @@ export default function NotificationPayRequestScreen() {
                   <>
                     <CheckCircle2 color={theme.textOnPrimary} size={18} strokeWidth={2.5} />
                     <AppText className="ml-2 text-[15px] font-black" style={{ color: theme.textOnPrimary }}>
-                      Pagar
+                      Pay
                     </AppText>
                   </>
                 )}
@@ -250,7 +250,7 @@ export default function NotificationPayRequestScreen() {
         ) : (
           <View className="rounded-[18px] border px-3 py-2.5" style={{ backgroundColor: theme.primarySoft, borderColor: theme.border }}>
             <AppText className="text-[13px] font-black" style={{ color: theme.text }}>
-              No se encontro la solicitud.
+              Request not found.
             </AppText>
           </View>
         )}

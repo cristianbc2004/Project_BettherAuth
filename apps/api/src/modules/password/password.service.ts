@@ -19,7 +19,7 @@ export async function checkEmail(input: unknown) {
   const result = checkEmailSchema.safeParse(input);
 
   if (!result.success) {
-    throw new HttpError(400, "Datos invalidos.", result.error.flatten());
+    throw new HttpError(400, "Invalid data.", result.error.flatten());
   }
 
   const normalizedEmail = result.data.email.trim().toLowerCase();
@@ -50,7 +50,7 @@ export async function resetPasswordDirect(input: unknown, request?: Request) {
       status: "FAILED",
       table: "accounts",
     });
-    throw new HttpError(400, "Datos invalidos.", result.error.flatten());
+    throw new HttpError(400, "Invalid data.", result.error.flatten());
   }
 
   const email = result.data.email.trim().toLowerCase();
