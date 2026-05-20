@@ -1,2 +1,6 @@
 [install]
 linker = "hoisted"
+
+[install.security]
+scanner = "@socketsecurity/bun-security-scanner"
+
