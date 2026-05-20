@@ -1,35 +1,42 @@
 import { authClient } from "@/features/auth/services/auth-client";
 import { appConfig } from "@repo/config";
+import { z } from "zod";
 
-export type BizumContact = {
-  detail: string;
-  id: string;
-  initials: string;
-  name: string;
-};
+export const bizumContactSchema = z.object({
+  detail: z.string(),
+  id: z.string(),
+  initials: z.string(),
+  name: z.string(),
+});
 
-export type BizumActionMode = "request" | "send";
+export const bizumActionModeSchema = z.enum(["request", "send"]);
 
-export type BizumMovementResponse = {
-  amount: string;
-  createdAt: string;
-  id: string;
-  initials: string;
-  name: string;
-  tone: "income" | "outcome";
-};
+export const bizumMovementResponseSchema = z.object({
+  amount: z.string(),
+  createdAt: z.string(),
+  id: z.string(),
+  initials: z.string(),
+  name: z.string(),
+  tone: z.enum(["income", "outcome"]),
+});
 
-export type BizumGetResponse = {
-  availableBalanceCents: number;
-  contacts: BizumContact[];
-  movements: BizumMovementResponse[];
-};
+export const bizumGetResponseSchema = z.object({
+  availableBalanceCents: z.number(),
+  contacts: z.array(bizumContactSchema),
+  movements: z.array(bizumMovementResponseSchema),
+});
 
-export type BizumPostResponse = {
-  availableBalanceCents: number;
-  request?: { amountCents: number; id: string };
-  transfer?: BizumMovementResponse;
-};
+export const bizumPostResponseSchema = z.object({
+  availableBalanceCents: z.number(),
+  request: z.object({ amountCents: z.number(), id: z.string() }).optional(),
+  transfer: bizumMovementResponseSchema.optional(),
+});
+
+export type BizumActionMode = z.infer<typeof bizumActionModeSchema>;
+export type BizumContact = z.infer<typeof bizumContactSchema>;
+export type BizumGetResponse = z.infer<typeof bizumGetResponseSchema>;
+export type BizumMovementResponse = z.infer<typeof bizumMovementResponseSchema>;
+export type BizumPostResponse = z.infer<typeof bizumPostResponseSchema>;
 
 function getAuthCookie() {
   return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";

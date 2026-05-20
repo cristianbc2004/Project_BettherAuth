@@ -4,6 +4,7 @@ import { Redirect, router, useFocusEffect } from "expo-router";
 import { ArrowDownLeft, ArrowRightLeft, Bell, CircleAlert, Send, Wallet } from "lucide-react-native";
 import Animated, { Easing, FadeInDown, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { z } from "zod";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
@@ -13,10 +14,34 @@ import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
+import { parseApiError } from "@/shared/lib/api-schemas";
 
-type NotificationActionPayload = {
-  bizumRequestId?: string;
-};
+const notificationTypeSchema = z.enum(["TRANSFER", "BIZUM_REQUEST", "BIZUM_SENT", "BIZUM_RECEIVED", "ALERT"]);
+
+const notificationActionPayloadSchema = z.object({
+  bizumRequestId: z.string().optional(),
+});
+
+const notificationsGetResponseSchema = z.object({
+  notifications: z.array(
+    z.object({
+      actionPayload: notificationActionPayloadSchema.nullable().optional(),
+      bizumRequestId: z.string().nullable().optional(),
+      body: z.string().nullable().optional(),
+      createdAt: z.string(),
+      emisorName: z.string().nullable().optional(),
+      id: z.string(),
+      isUnread: z.boolean(),
+      timestamp: z.string(),
+      title: z.string(),
+      type: notificationTypeSchema,
+    }),
+  ),
+});
+
+type NotificationActionPayload = z.infer<typeof notificationActionPayloadSchema>;
+type NotificationType = z.infer<typeof notificationTypeSchema>;
+type NotificationResponseItem = z.infer<typeof notificationsGetResponseSchema>["notifications"][number];
 
 type NotificationItem = {
   accent: string;
@@ -30,23 +55,6 @@ type NotificationItem = {
   timestamp: string;
   type: NotificationType;
   unread: boolean;
-};
-
-type NotificationType = "TRANSFER" | "BIZUM_REQUEST" | "BIZUM_SENT" | "BIZUM_RECEIVED" | "ALERT";
-
-type NotificationsGetResponse = {
-  notifications: Array<{
-    actionPayload?: NotificationActionPayload | null;
-    bizumRequestId?: string | null;
-    body?: string | null;
-    createdAt: string;
-    emisorName?: string | null;
-    id: string;
-    isUnread: boolean;
-    timestamp: string;
-    title: string;
-    type: NotificationType;
-  }>;
 };
 
 function getAuthCookie() {
@@ -63,7 +71,7 @@ async function fetchNotifications() {
   });
 }
 
-function mapNotificationToItem(notification: NotificationsGetResponse["notifications"][number]): NotificationItem {
+function mapNotificationToItem(notification: NotificationResponseItem): NotificationItem {
   // Maps each notification type to a consistent icon and visual palette.
   const accentByType: Record<NotificationType, { accent: string; icon: ComponentType<any>; iconAccent: string }> = {
     ALERT: { accent: "#3f2b1b", icon: CircleAlert, iconAccent: "#f0b245" },
@@ -167,11 +175,12 @@ export default function NotificationsScreen() {
 
       const response = await fetchNotifications();
       if (!response.ok) {
-        setErrorMessage("Could not load notifications.");
+        const payload = await parseApiError(response);
+        setErrorMessage(payload?.error ?? "Could not load notifications.");
         return;
       }
 
-      const payload = (await response.json()) as NotificationsGetResponse;
+      const payload = notificationsGetResponseSchema.parse(await response.json());
       // Adapts the backend response to the shape used by the UI.
       setNotifications((payload.notifications ?? []).map(mapNotificationToItem));
     } catch {

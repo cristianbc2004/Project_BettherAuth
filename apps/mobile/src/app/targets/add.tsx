@@ -16,8 +16,8 @@ import {
   formatEurosFromCents,
   normalizeAmountInput,
   parseAmountInputToCents,
+  walletCardFormSchema,
   walletCardTypes,
-  type WalletCardFormValues,
 } from "@/features/finance/lib/wallet-card-utils";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
@@ -155,13 +155,13 @@ export default function AddTargetScreen() {
         return;
       }
 
-      const payload: WalletCardFormValues = {
+      const payload = walletCardFormSchema.parse({
         cvc: values.cvc,
         initialBalanceCents,
         name: values.name,
         numberTarget: values.numberTarget,
         type: values.type,
-      };
+      });
       const createdCard = await addCard(payload);
 
       successHaptic();

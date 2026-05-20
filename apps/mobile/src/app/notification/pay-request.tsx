@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, View } from "react-native";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { CheckCircle2, X } from "lucide-react-native";
 import Animated, { FadeIn, FadeInDown, FadeOut } from "react-native-reanimated";
+import { z } from "zod";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
@@ -11,18 +12,21 @@ import { selectionHaptic, successHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
+import { parseApiError } from "@/shared/lib/api-schemas";
 
-type RequestDetailResponse = {
-  amountCents: number;
-  concept?: string | null;
-  id: string;
-  isPayable: boolean;
-  requester: {
-    id: string;
-    initials: string;
-    name: string;
-  };
-};
+const requestDetailResponseSchema = z.object({
+  amountCents: z.number(),
+  concept: z.string().nullable().optional(),
+  id: z.string(),
+  isPayable: z.boolean(),
+  requester: z.object({
+    id: z.string(),
+    initials: z.string(),
+    name: z.string(),
+  }),
+});
+
+type RequestDetailResponse = z.infer<typeof requestDetailResponseSchema>;
 
 function getAuthCookie() {
   return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
@@ -71,12 +75,12 @@ export default function NotificationPayRequestScreen() {
         });
 
         if (!response.ok) {
-          const errorPayload = (await response.json().catch(() => null)) as { error?: string } | null;
+          const errorPayload = await parseApiError(response);
           setErrorMessage(errorPayload?.error ?? "Could not load the request.");
           return;
         }
 
-        const payload = (await response.json()) as RequestDetailResponse;
+        const payload = requestDetailResponseSchema.parse(await response.json());
         setRequestData(payload);
       } catch {
         setErrorMessage("Could not load the request.");
@@ -112,7 +116,7 @@ export default function NotificationPayRequestScreen() {
       });
 
       if (!response.ok) {
-        const errorPayload = (await response.json().catch(() => null)) as { error?: string } | null;
+        const errorPayload = await parseApiError(response);
         setErrorMessage(errorPayload?.error ?? "Could not pay the request.");
         return;
       }

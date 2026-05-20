@@ -7,8 +7,8 @@ import Animated, { Easing, FadeInDown, FadeOutUp, LinearTransition } from "react
 import { FinanceScreenShell } from "@/features/finance/components/finance-screen-shell";
 import { BizumOverviewSkeleton } from "@/features/finance/components/bizum-skeletons";
 import {
+  bizumGetResponseSchema,
   fetchBizumRequest,
-  type BizumGetResponse,
 } from "@/features/finance/lib/bizum-api";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppText } from "@/shared/components/ui/app-text";
@@ -86,7 +86,7 @@ export default function AssetsScreen() {
         return;
       }
 
-      const payload = (await response.json()) as BizumGetResponse;
+      const payload = bizumGetResponseSchema.parse(await response.json());
       setAvailableBalanceCents(payload.availableBalanceCents ?? 0);
       setMovements(
         (payload.movements ?? []).map((movement) => ({

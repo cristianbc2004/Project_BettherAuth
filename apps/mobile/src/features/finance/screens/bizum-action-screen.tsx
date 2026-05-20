@@ -10,11 +10,11 @@ import { BizumActionForm, type BizumActionPayload } from "@/features/finance/com
 import { BizumActionSkeleton } from "@/features/finance/components/bizum-skeletons";
 import {
   buildIdempotencyKey,
+  bizumGetResponseSchema,
+  bizumPostResponseSchema,
   fetchBizumRequest,
   type BizumActionMode,
   type BizumContact,
-  type BizumGetResponse,
-  type BizumPostResponse,
 } from "@/features/finance/lib/bizum-api";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
@@ -22,6 +22,7 @@ import { successHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { selectionHaptic } from "@/shared/lib/haptics";
+import { parseApiError } from "@/shared/lib/api-schemas";
 
 type BizumActionScreenProps = {
   mode: BizumActionMode;
@@ -103,7 +104,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
         return;
       }
 
-      const payload = (await response.json()) as BizumGetResponse;
+      const payload = bizumGetResponseSchema.parse(await response.json());
       setAvailableBalanceCents(payload.availableBalanceCents ?? 0);
       setContacts(payload.contacts ?? []);
     } catch {
@@ -141,12 +142,12 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
       });
 
       if (!response.ok) {
-        const errorPayload = (await response.json().catch(() => null)) as { error?: string } | null;
+        const errorPayload = await parseApiError(response);
         setErrorMessage(errorPayload?.error ?? "Could not complete the operation.");
         return;
       }
 
-      const result = (await response.json()) as BizumPostResponse;
+      const result = bizumPostResponseSchema.parse(await response.json());
       setAvailableBalanceCents(result.availableBalanceCents ?? availableBalanceCents);
       setCompletedPayload(payload);
       successHaptic();

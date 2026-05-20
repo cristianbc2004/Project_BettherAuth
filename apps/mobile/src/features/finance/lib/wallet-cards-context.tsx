@@ -7,21 +7,31 @@ import {
   useMemo,
   useState,
 } from "react";
+import { z } from "zod";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { type WalletCard } from "@/features/finance/mocks";
-import { mapTargetToWalletCard, type WalletCardFormValues } from "@/features/finance/lib/wallet-card-utils";
+import { mapTargetToWalletCard, walletCardTypes, type WalletCardFormValues } from "@/features/finance/lib/wallet-card-utils";
 import { appConfig } from "@repo/config";
+import { parseApiError } from "@/shared/lib/api-schemas";
 
-type TargetResponse = {
-  balanceCents: number;
-  block: boolean;
-  cvc: string;
-  id: string;
-  name: string;
-  numberTarget: string;
-  type: WalletCard["network"];
-};
+const targetResponseSchema = z.object({
+  balanceCents: z.number(),
+  block: z.boolean(),
+  cvc: z.string(),
+  id: z.string(),
+  name: z.string(),
+  numberTarget: z.string(),
+  type: z.enum(walletCardTypes),
+});
+
+const targetsGetResponseSchema = z.object({
+  targets: z.array(targetResponseSchema).optional(),
+});
+
+const targetMutationResponseSchema = z.object({
+  target: targetResponseSchema,
+});
 
 type WalletCardsContextValue = {
   addCard: (values: WalletCardFormValues) => Promise<WalletCard>;
@@ -62,7 +72,7 @@ export function WalletCardsProvider({ children }: PropsWithChildren) {
         return;
       }
 
-      const payload = (await response.json()) as { targets?: TargetResponse[] };
+      const payload = targetsGetResponseSchema.parse(await response.json());
       setCards((payload.targets ?? []).map(mapTargetToWalletCard));
     } finally {
       setIsLoading(false);
@@ -82,11 +92,11 @@ export function WalletCardsProvider({ children }: PropsWithChildren) {
         });
 
         if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+          const payload = await parseApiError(response);
           throw new Error(payload?.error ?? "Could not create the card.");
         }
 
-        const payload = (await response.json()) as { target: TargetResponse };
+        const payload = targetMutationResponseSchema.parse(await response.json());
         const createdCard = mapTargetToWalletCard(payload.target);
 
         setCards((currentCards) => [createdCard, ...currentCards]);
@@ -103,11 +113,11 @@ export function WalletCardsProvider({ children }: PropsWithChildren) {
         });
 
         if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+          const payload = await parseApiError(response);
           throw new Error(payload?.error ?? "Could not update the card.");
         }
 
-        const payload = (await response.json()) as { target: TargetResponse };
+        const payload = targetMutationResponseSchema.parse(await response.json());
         const updatedCard = mapTargetToWalletCard(payload.target);
 
         setCards((currentCards) =>
