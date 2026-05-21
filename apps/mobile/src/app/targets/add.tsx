@@ -1,30 +1,23 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Redirect, router } from "expo-router";
-import { Controller, useForm } from "react-hook-form";
+import { Redirect } from "expo-router";
+import { Controller } from "react-hook-form";
 import { CreditCard } from "lucide-react-native";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, useWindowDimensions, View } from "react-native";
+import { useCallback, useRef } from "react";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { authClient } from "@/features/auth/services/auth-client";
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { getCardPreviewWidth } from "@/features/finance/lib/card-layout";
-import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
+import { useAddTargetForm } from "@/features/finance/lib/use-add-target-form";
 import {
-  addTargetSchema,
-  buildWalletCardPayload,
-  buildWalletCardPreview,
-  formatEurosFromCents,
   normalizeAmountInput,
-  parseAmountInputToCents,
   walletCardTypes,
-  type AddTargetFormValues,
 } from "@/features/finance/lib/wallet-card-utils";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
-import { selectionHaptic, successHaptic, warningHaptic } from "@/shared/lib/haptics";
+import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
@@ -90,70 +83,16 @@ function SelectorField<TValue extends string>({
 export default function AddTargetScreen() {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
-  const { addCard } = useWalletCards();
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
-  const [isSaving, setIsSaving] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-  const form = useForm<AddTargetFormValues>({
-    resolver: zodResolver(addTargetSchema),
-    defaultValues: {
-      cvc: "",
-      initialBalance: "0",
-      name: session?.user.name ?? "",
-      numberTarget: "",
-      type: "VISA",
-    },
-    mode: "onChange",
-    reValidateMode: "onChange",
-  });
-  const previewValues = form.watch();
-  const previewCard = useMemo(
-    () => {
-      const parsedBalance = parseAmountInputToCents(previewValues.initialBalance ?? "");
-
-      return buildWalletCardPreview({
-        cvc: previewValues.cvc,
-        initialBalanceCents: parsedBalance ?? 0,
-        name: previewValues.name,
-        numberTarget: previewValues.numberTarget,
-        type: previewValues.type,
-      });
-    },
-    [previewValues],
-  );
+  const { form, initialBalanceLabel, isSaving, previewCard, submitAddTarget } = useAddTargetForm(session?.user.name ?? "");
   const cardWidth = getCardPreviewWidth(width);
   const scrollToFormPosition = useCallback((y: number) => {
     requestAnimationFrame(() => {
       scrollViewRef.current?.scrollTo({ animated: true, y });
     });
   }, []);
-
-  const handleSubmit = form.handleSubmit(async (values) => {
-    try {
-      setIsSaving(true);
-      const payload = buildWalletCardPayload(values);
-
-      if (!payload) {
-        form.setError("initialBalance", { message: "Enter a valid amount." });
-        return;
-      }
-      const createdCard = await addCard(payload);
-
-      successHaptic();
-      Alert.alert("Card created", "Your new card is now available in the wallet.");
-      router.replace({
-        params: { cardId: createdCard.id },
-        pathname: "/targets/details",
-      } as never);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not create the card.";
-      warningHaptic();
-      Alert.alert("Error", message);
-    } finally {
-      setIsSaving(false);
-    }
-  });
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -272,7 +211,7 @@ export default function AddTargetScreen() {
             />
 
             <AppText className="mb-5 text-[13px] leading-5" style={{ color: theme.mutedText }}>
-              Current initial balance: {formatEurosFromCents(parseAmountInputToCents(previewValues.initialBalance ?? "") ?? 0)}
+              Current initial balance: {initialBalanceLabel}
             </AppText>
 
             <Controller
@@ -312,7 +251,7 @@ export default function AddTargetScreen() {
               isPending={isSaving}
               label="Save card"
               onPress={() => {
-                void handleSubmit();
+                void submitAddTarget();
               }}
             />
           </View>
