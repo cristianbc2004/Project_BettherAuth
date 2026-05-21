@@ -1,75 +1,21 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, router } from "expo-router";
-import { Controller, useForm } from "react-hook-form";
-import { useState } from "react";
+import { Link } from "expo-router";
+import { Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthShell } from "@/features/auth/components/auth-shell";
-import { buildForgotPasswordSchema, type ForgotPasswordFormValues } from "@/features/auth/services/auth-validation";
+import { useForgotPasswordForm } from "@/features/auth/lib/use-forgot-password-form";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
-import { appConfig } from "@repo/config";
-import { buildLanguageHeaders, useLanguage } from "@/shared/lib/locale";
+import { useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { AppText } from "@/shared/components/ui/app-text";
 
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
   const { theme } = useAppTheme();
-  const [isPending, setIsPending] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
   const { locale } = useLanguage();
-  const forgotPasswordSchema = buildForgotPasswordSchema(t);
-  const form = useForm<ForgotPasswordFormValues>({
-    resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
-
-  const handleSubmit = form.handleSubmit(async (values) => {
-    try {
-      setServerError(null);
-      setIsPending(true);
-
-      const checkEmailUrl = new URL("/api/password/check-email", appConfig.authApiUrl);
-      checkEmailUrl.searchParams.set("email", values.email);
-
-      const response = await fetch(checkEmailUrl.toString(), {
-        headers: buildLanguageHeaders(locale),
-      });
-
-      const data = (await response.json()) as { exists?: boolean; error?: string };
-
-      if (!response.ok) {
-        const message = data.error ?? t("forgotPassword.checkEmailError");
-        setServerError(message);
-        Alert.alert(t("forgotPassword.resetFailed"), message);
-        return;
-      }
-
-      if (!data.exists) {
-        const message = t("forgotPassword.emailDoesNotExist");
-        setServerError(message);
-        Alert.alert(t("forgotPassword.emailNotFound"), message);
-        return;
-      }
-
-      router.navigate({
-        pathname: "/reset-password" as never,
-        params: {
-          email: values.email,
-        },
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t("authForm.networkError");
-      setServerError(message);
-      Alert.alert(t("forgotPassword.resetFailed"), message);
-    } finally {
-      setIsPending(false);
-    }
-  });
+  const { form, isPending, serverError, submitForgotPassword } = useForgotPasswordForm(t, locale);
 
   return (
     <AuthShell
@@ -109,7 +55,7 @@ export default function ForgotPasswordScreen() {
           isPending={isPending}
           label={t("forgotPassword.continue")}
           onPress={() => {
-            void handleSubmit();
+            void submitForgotPassword();
           }}
         />
 
