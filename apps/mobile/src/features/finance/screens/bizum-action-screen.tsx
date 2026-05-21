@@ -1,45 +1,43 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Pressable } from "react-native";
-import { Redirect, router } from "expo-router";
+import { Redirect } from "expo-router";
 import { ChevronLeft, X } from "lucide-react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
-import { BizumActionForm, type BizumActionPayload } from "@/features/finance/components/bizum-action-form";
+import { BizumActionForm } from "@/features/finance/components/bizum-action-form";
 import { BizumActionSkeleton } from "@/features/finance/components/bizum-skeletons";
-import {
-  buildIdempotencyKey,
-  bizumPostResponseSchema,
-  fetchBizumRequest,
-  type BizumActionMode,
-} from "@/features/finance/lib/bizum-api";
-import { loadBizumActionData } from "@/features/finance/lib/bizum-data";
+import type { BizumActionMode } from "@/features/finance/lib/bizum-api";
+import { useBizumActionFlow } from "@/features/finance/lib/use-bizum-action-flow";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
-import { successHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
-import { selectionHaptic } from "@/shared/lib/haptics";
-import { parseApiError } from "@/shared/lib/api-schemas";
 
 type BizumActionScreenProps = {
   mode: BizumActionMode;
 };
 
-type BizumFlowStep = "contact" | "details" | "review" | "success";
-
 export function BizumActionScreen({ mode }: BizumActionScreenProps) {
   const { data: session, isPending } = authClient.useSession();
   const showSessionLoading = useSessionLoadingDelay(isPending);
   const { theme } = useAppTheme();
-  const [isDataLoading, setIsDataLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [availableBalanceCents, setAvailableBalanceCents] = useState(0);
-  const [contacts, setContacts] = useState<Awaited<ReturnType<typeof loadBizumActionData>>["contacts"]>([]);
-  const [flowStep, setFlowStep] = useState<BizumFlowStep>("contact");
-  const [completedPayload, setCompletedPayload] = useState<BizumActionPayload | null>(null);
+  const {
+    availableBalanceCents,
+    completedPayload,
+    contacts,
+    errorMessage,
+    flowStep,
+    handleBack,
+    handleClose,
+    isDataLoading,
+    isSubmitting,
+    setErrorMessage,
+    setFlowStep,
+    submitBizumAction,
+    viewMovements,
+  } = useBizumActionFlow(mode, session?.user.id);
 
   const copy = useMemo(
     () =>
@@ -52,104 +50,6 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
           },
     [mode],
   );
-
-  const handleClose = useCallback(() => {
-    selectionHaptic();
-    router.replace("/assets" as never);
-  }, []);
-
-  const handleBack = useCallback(() => {
-    selectionHaptic();
-
-    if (isSubmitting) {
-      return;
-    }
-
-    if (flowStep === "success") {
-      router.replace("/assets" as never);
-      return;
-    }
-
-    if (flowStep === "review") {
-      setFlowStep("details");
-      return;
-    }
-
-    if (flowStep === "details") {
-      setFlowStep("contact");
-      return;
-    }
-
-    if (router.canGoBack()) {
-      router.back();
-      return;
-    }
-
-    router.replace("/assets" as never);
-  }, [flowStep, isSubmitting]);
-
-  const loadBizumData = useCallback(async () => {
-    if (!session?.user.id) {
-      return;
-    }
-
-    try {
-      setIsDataLoading(true);
-      setErrorMessage(null);
-      const data = await loadBizumActionData();
-      setAvailableBalanceCents(data.availableBalanceCents);
-      setContacts(data.contacts);
-    } catch {
-      setErrorMessage("Could not load Bizum. Please try again.");
-    } finally {
-      setIsDataLoading(false);
-    }
-  }, [session?.user.id]);
-
-  useEffect(() => {
-    void loadBizumData();
-  }, [loadBizumData]);
-
-  const handleSubmit = async (payload: BizumActionPayload) => {
-    const amountCents = Math.round(payload.amount * 100);
-    if (mode === "send" && amountCents > availableBalanceCents) {
-      setErrorMessage("You do not have enough balance to send that Bizum.");
-      return;
-    }
-
-    setErrorMessage(null);
-    setIsSubmitting(true);
-
-    try {
-      const idempotencyKey = mode === "send" ? buildIdempotencyKey("bizum-send") : null;
-      const response = await fetchBizumRequest("/api/bizum", {
-        body: JSON.stringify({
-          action: mode,
-          amount: payload.amount,
-          concept: payload.concept,
-          contactUserId: payload.contact.id,
-        }),
-        headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        const errorPayload = await parseApiError(response);
-        setErrorMessage(errorPayload?.error ?? "Could not complete the operation.");
-        return;
-      }
-
-      const result = bizumPostResponseSchema.parse(await response.json());
-      setAvailableBalanceCents(result.availableBalanceCents ?? availableBalanceCents);
-      setCompletedPayload(payload);
-      successHaptic();
-      setFlowStep("success");
-    } catch {
-      setErrorMessage("Could not complete the operation.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -210,8 +110,8 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
             onClose={handleClose}
             onDismissError={() => setErrorMessage(null)}
             onStepChange={setFlowStep}
-            onSubmit={handleSubmit}
-            onViewMovements={() => router.replace("/movements" as never)}
+            onSubmit={submitBizumAction}
+            onViewMovements={viewMovements}
           />
         )}
       </KeyboardAwareScrollView>
