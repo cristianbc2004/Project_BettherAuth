@@ -5,32 +5,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { authClient } from "@/features/auth/services/auth-client";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
 import { mockIngresos } from "@/features/ingresos/mocks";
+import {
+  formatPersonCurrency,
+  getPersonGeneralHref,
+  getSelectedPerson,
+  getSelectedPersonId,
+} from "@/features/ingresos/lib/person-screen";
 import { usePersonSelection } from "@/features/ingresos/lib/person-selection-context";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { AppText } from "@/shared/components/ui/app-text";
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    currency: "EUR",
-    maximumFractionDigits: 0,
-    style: "currency",
-  }).format(value);
-}
-
-function getSelectedPerson(personId?: string) {
-  const selectedPersonId = personId ? Number(personId) : undefined;
-
-  return (
-    mockIngresos.detalles.find((person) => person.id === selectedPersonId) ??
-    mockIngresos.detalles[0]
-  );
-}
-
-function getSelectedPersonId(personId?: string, fallbackPersonId?: number) {
-  const selectedPersonId = personId ? Number(personId) : fallbackPersonId;
-
-  return Number.isFinite(selectedPersonId) ? selectedPersonId : undefined;
-}
 
 export default function PersonGeneralScreen() {
   const { data: session } = authClient.useSession();
@@ -38,8 +21,8 @@ export default function PersonGeneralScreen() {
   const { selectedPersonId: selectedPersonIdFromTabs } = usePersonSelection();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
   const selectedPersonId = getSelectedPersonId(personId, selectedPersonIdFromTabs);
-  const selectedPerson = getSelectedPerson(selectedPersonId ? String(selectedPersonId) : undefined);
-  const generalHref = selectedPersonId ? (`/person?personId=${selectedPersonId}` as const) : "/person";
+  const selectedPerson = getSelectedPerson(selectedPersonId);
+  const generalHref = getPersonGeneralHref(selectedPersonId);
 
   if (!session?.user) {
     return <Redirect href="/sign-in" />;
@@ -76,7 +59,7 @@ export default function PersonGeneralScreen() {
                 numberOfLines={1}
                 style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
               >
-                {formatCurrency(selectedPerson.ingresos)}
+                {formatPersonCurrency(selectedPerson.ingresos)}
               </AppText>
             </View>
             <View className="flex-1">
@@ -88,7 +71,7 @@ export default function PersonGeneralScreen() {
                 numberOfLines={1}
                 style={{ color: theme.text, fontVariant: ["tabular-nums"] }}
               >
-                {formatCurrency(selectedPerson.comision)}
+                {formatPersonCurrency(selectedPerson.comision)}
               </AppText>
             </View>
           </View>
