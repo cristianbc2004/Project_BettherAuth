@@ -1,72 +1,30 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { router } from "expo-router";
-import { Controller, useForm } from "react-hook-form";
-import { useState } from "react";
+import { Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
 
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
 import { PasswordRequirements } from "@/features/auth/components/password-requirements";
-import { changePassword } from "@/features/auth/services/auth-actions";
-import { buildChangePasswordSchema, type ChangePasswordFormValues } from "@/features/auth/services/auth-validation";
+import { useChangePasswordForm } from "@/features/auth/lib/use-change-password-form";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
-import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
 import { useLanguage } from "@/shared/lib/locale";
 import { AppText } from "@/shared/components/ui/app-text";
 
 export default function ChangePasswordScreen() {
   const { t } = useTranslation();
-  const [isPending, setIsPending] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [isPasswordRequirementsFocused, setIsPasswordRequirementsFocused] = useState(false);
-  const [passwordRequirementsScrollRequest, setPasswordRequirementsScrollRequest] = useState(0);
   const { locale } = useLanguage();
-  const changePasswordSchema = buildChangePasswordSchema(t);
-  const form = useForm<ChangePasswordFormValues>({
-    resolver: zodResolver(changePasswordSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-    mode: "onChange",
-    reValidateMode: "onChange",
-  });
-  const newPasswordValue = form.watch("newPassword"); // esto debe de ir a un lib
-  const confirmPasswordValue = form.watch("confirmPassword"); // esto debe de ir a un lib
-  const requestPasswordRequirementsScroll = () => {
-    setIsPasswordRequirementsFocused(true);
-    setPasswordRequirementsScrollRequest((currentValue) => currentValue + 1);
-  };
-
-  const handleSubmit = form.handleSubmit(async (values) => {
-    try {
-      setServerError(null);
-      setIsPending(true);
-
-      const response = await changePassword(values, locale);
-
-      if (response.error) {
-        const message = response.error.message ?? t("changePassword.updateError");
-        setServerError(message);
-        warningHaptic();
-        Alert.alert(t("changePassword.updateFailed"), message);
-        return;
-      }
-
-      successHaptic();
-      Alert.alert(t("changePassword.updateSuccessTitle"), t("changePassword.updateSuccessMessage"));
-      router.replace("/dashboard");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t("authForm.networkError");
-      setServerError(message);
-      warningHaptic();
-      Alert.alert(t("changePassword.updateFailed"), message);
-    } finally {
-      setIsPending(false);
-    }
-  });
+  const {
+    confirmPasswordValue,
+    form,
+    handleCurrentPasswordFocus,
+    isPasswordRequirementsFocused,
+    isPending,
+    newPasswordValue,
+    passwordRequirementsScrollRequest,
+    requestPasswordRequirementsScroll,
+    serverError,
+    submitChangePassword,
+  } = useChangePasswordForm(t, locale);
 
   return (
     <AuthShell
@@ -88,9 +46,7 @@ export default function ChangePasswordScreen() {
               label={t("authForm.currentPassword")}
               onBlur={onBlur}
               onChangeText={onChange}
-              onFocus={() => {
-                setIsPasswordRequirementsFocused(false);
-              }}
+              onFocus={handleCurrentPasswordFocus}
               placeholder={t("changePassword.currentPasswordPlaceholder")}
               value={value}
             />
@@ -145,7 +101,7 @@ export default function ChangePasswordScreen() {
           isPending={isPending}
           label={t("changePassword.updatePassword")}
           onPress={() => {
-            void handleSubmit();
+            void submitChangePassword();
           }}
         />
       </View>
