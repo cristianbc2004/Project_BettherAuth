@@ -13,6 +13,7 @@ Aplicacion mobile en monorepo construida con Expo, React Native, Expo Router, Na
 - NativeWind y componentes compartidos para UI.
 - i18n con `react-i18next`.
 - Turbo para ejecutar tareas del monorepo.
+- Pacalcase y Camelcase
 
 ## Estructura del monorepo
 
