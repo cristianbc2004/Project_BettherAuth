@@ -5,10 +5,10 @@ import { Alert, Pressable, View } from "react-native";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthShell } from "@/features/auth/components/auth-shell";
-import { authClient } from "@/features/auth/services/auth-client";
+import { verifyTotpCode, verifyTwoFactorBackupCode } from "@/features/auth/services/auth-actions";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
-import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { AppText } from "@/shared/components/ui/app-text";
 
@@ -20,16 +20,12 @@ export default function TwoFactorVerifyScreen() {
   const [serverError, setServerError] = useState<string | null>(null);
   const { locale } = useLanguage();
 
-  const handleVerifyTotp = async () => {
+  const handleVerifyTotp = async () => { 
     try {
       setIsPending(true);
       setServerError(null);
 
-      const response = await authClient.twoFactor.verifyTotp({
-        code,
-        trustDevice: true,
-        ...buildAuthFetchOptions(locale),
-      });
+      const response = await verifyTotpCode(code, locale);
 
       if (response.error) {
         const message = response.error.message ?? t("twoFactorVerify.invalidAuthenticatorCode");
@@ -56,11 +52,7 @@ export default function TwoFactorVerifyScreen() {
       setIsPending(true);
       setServerError(null);
 
-      const response = await authClient.twoFactor.verifyBackupCode({
-        code,
-        trustDevice: true,
-        ...buildAuthFetchOptions(locale),
-      });
+      const response = await verifyTwoFactorBackupCode(code, locale);
 
       if (response.error) {
         const message = response.error.message ?? t("twoFactorVerify.invalidBackupCode");

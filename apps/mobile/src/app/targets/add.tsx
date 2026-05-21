@@ -5,19 +5,21 @@ import { CreditCard } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { z } from "zod";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { authClient } from "@/features/auth/services/auth-client";
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
+import { getCardPreviewWidth } from "@/features/finance/lib/card-layout";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import {
+  addTargetSchema,
+  buildWalletCardPayload,
   buildWalletCardPreview,
   formatEurosFromCents,
   normalizeAmountInput,
   parseAmountInputToCents,
-  walletCardFormSchema,
   walletCardTypes,
+  type AddTargetFormValues,
 } from "@/features/finance/lib/wallet-card-utils";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
@@ -33,24 +35,6 @@ type SelectorFieldProps<TValue extends string> = {
   options: readonly TValue[];
   selectedValue: TValue;
 };
-
-const addTargetSchema = z.object({
-  cvc: z
-    .string()
-    .trim()
-    .regex(/^\d{3,4}$/, "The CVC must have 3 or 4 digits."),
-  initialBalance: z
-    .string()
-    .trim()
-    .min(1, "Enter the initial balance.")
-    .refine((value) => parseAmountInputToCents(value) !== null, "Enter a valid amount."),
-  name: z.string().trim().min(2, "Enter the card name."),
-  numberTarget: z
-    .string()
-    .trim()
-    .regex(/^\d{12,19}$/, "The card number must have between 12 and 19 digits."),
-  type: z.enum(walletCardTypes),
-});
 
 function SelectorField<TValue extends string>({
   label,
@@ -111,7 +95,7 @@ export default function AddTargetScreen() {
   const { width } = useWindowDimensions();
   const [isSaving, setIsSaving] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-  const form = useForm<z.infer<typeof addTargetSchema>>({
+  const form = useForm<AddTargetFormValues>({
     resolver: zodResolver(addTargetSchema),
     defaultValues: {
       cvc: "",
@@ -138,7 +122,7 @@ export default function AddTargetScreen() {
     },
     [previewValues],
   );
-  const cardWidth = Math.min(width - 40, 360);
+  const cardWidth = getCardPreviewWidth(width);
   const scrollToFormPosition = useCallback((y: number) => {
     requestAnimationFrame(() => {
       scrollViewRef.current?.scrollTo({ animated: true, y });
@@ -148,20 +132,12 @@ export default function AddTargetScreen() {
   const handleSubmit = form.handleSubmit(async (values) => {
     try {
       setIsSaving(true);
-      const initialBalanceCents = parseAmountInputToCents(values.initialBalance);
+      const payload = buildWalletCardPayload(values);
 
-      if (initialBalanceCents === null) {
+      if (!payload) {
         form.setError("initialBalance", { message: "Enter a valid amount." });
         return;
       }
-
-      const payload = walletCardFormSchema.parse({
-        cvc: values.cvc,
-        initialBalanceCents,
-        name: values.name,
-        numberTarget: values.numberTarget,
-        type: values.type,
-      });
       const createdCard = await addCard(payload);
 
       successHaptic();

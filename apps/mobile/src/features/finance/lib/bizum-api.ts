@@ -42,9 +42,10 @@ function getAuthCookie() {
   return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
 }
 
-export function buildIdempotencyKey(scope: "bizum-send") {
+export function buildIdempotencyKey(scope: "bizum-send" | "bizum-request-payment", id?: string) {
   const random = Math.random().toString(36).slice(2, 12);
-  return `${scope}-${Date.now()}-${random}`;
+  const keyParts = id ? [scope, id, Date.now(), random] : [scope, Date.now(), random];
+  return keyParts.join("-");
 }
 
 export async function fetchBizumRequest(path = "/api/bizum", init?: RequestInit) {

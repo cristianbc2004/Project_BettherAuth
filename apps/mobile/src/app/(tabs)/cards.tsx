@@ -12,6 +12,13 @@ import { Boxes, Plus } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
+import {
+  CARD_STACK_COLLAPSED_OFFSET,
+  CARD_STACK_EXPANDED_GAP,
+  CARD_STACK_HEIGHT,
+  getCardPreviewWidth,
+  getCardStackLayout,
+} from "@/features/finance/lib/card-layout";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
@@ -34,10 +41,6 @@ type AnimatedWalletCardItemProps = {
   stackProgress: SharedValue<number>;
 };
 
-const CARD_HEIGHT = 188;
-const CARD_STACK_COLLAPSED_OFFSET = 82;
-const CARD_STACK_EXPANDED_GAP = 18;
-
 const AnimatedWalletCardItem = memo(function AnimatedWalletCardItem({
   card,
   cardWidth,
@@ -51,7 +54,7 @@ const AnimatedWalletCardItem = memo(function AnimatedWalletCardItem({
   const animatedCardStyle = useAnimatedStyle(() => {
     const progress = stackProgress.value;
     const collapsedTranslateY = index * CARD_STACK_COLLAPSED_OFFSET;
-    const expandedTranslateY = index * (CARD_HEIGHT + CARD_STACK_EXPANDED_GAP);
+    const expandedTranslateY = index * (CARD_STACK_HEIGHT + CARD_STACK_EXPANDED_GAP);
 
     return {
       transform: [
@@ -97,15 +100,16 @@ export default function CardsScreen() {
   const { contentBottomSpacing } = useFloatingTabBarMetrics();
   const { height, width } = useWindowDimensions();
   const { cards, isLoading, refreshCards } = useWalletCards();
-  const cardWidth = Math.min(width - 40, 360);
+  const cardWidth = getCardPreviewWidth(width);
   const [isStackExpanded, setIsStackExpanded] = useState(false);
   const stackProgress = useSharedValue(0);
   const displayedCards = cards;
-  const collapsedStackHeight = CARD_HEIGHT + Math.max(displayedCards.length - 1, 0) * CARD_STACK_COLLAPSED_OFFSET;
-  const expandedStackHeight =
-    displayedCards.length * CARD_HEIGHT + Math.max(displayedCards.length - 1, 0) * CARD_STACK_EXPANDED_GAP;
-  const stackHeight = isStackExpanded ? expandedStackHeight : collapsedStackHeight;
-  const animatedCardsBottomSpacing = Math.max(height - stackHeight - 120, contentBottomSpacing);
+  const { animatedCardsBottomSpacing, collapsedStackHeight, expandedStackHeight } = getCardStackLayout({
+    cardsCount: displayedCards.length,
+    contentBottomSpacing,
+    isExpanded: isStackExpanded,
+    screenHeight: height,
+  });
   const animatedStackStyle = useAnimatedStyle(() => {
     return {
       height: interpolate(stackProgress.value, [0, 1], [collapsedStackHeight, expandedStackHeight]),

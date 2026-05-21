@@ -1,28 +1,15 @@
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { memo, useCallback, useMemo, useRef, useState } from "react";
-import { Platform, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Briefcase, Clock3, MapPin } from "lucide-react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { mockIngresos, type IncomePerson } from "@/features/ingresos/mocks";
 import { selectionHaptic } from "@/shared/lib/haptics";
+import { getNativeMapComponents, nativeMapStyleUrl } from "@/shared/lib/native-map";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { AppText } from "@/shared/components/ui/app-text";
-
-const STADIA_MAPS_API_KEY = process.env.EXPO_PUBLIC_STADIA_MAPS_API_KEY?.trim() ?? "";
-const MAP_STYLE_URL = STADIA_MAPS_API_KEY
-  ? `https://tiles.stadiamaps.com/styles/alidade_smooth.json?api_key=${STADIA_MAPS_API_KEY}`
-  : "";
-
-const mapLibre =
-  Platform.OS === "web"
-    ? null
-    : (require("@maplibre/maplibre-react-native") as typeof import("@maplibre/maplibre-react-native"));
-
-const Map = mapLibre?.Map;
-const Camera = mapLibre?.Camera;
-const Marker = mapLibre?.Marker;
 
 function getSelectedPerson(personId?: string) {
   const selectedPersonId = personId ? Number(personId) : undefined;
@@ -133,6 +120,7 @@ export default function PersonMapScreen() {
   const initialPerson = useMemo(() => getSelectedPerson(personId), [personId]);
   const [selectedPerson, setSelectedPerson] = useState<IncomePerson>(initialPerson);
   const cameraRef = useRef<import("@maplibre/maplibre-react-native").CameraRef | null>(null);
+  const nativeMap = getNativeMapComponents();
 
   const focusPerson = useCallback((person: IncomePerson) => {
     selectionHaptic();
@@ -148,7 +136,7 @@ export default function PersonMapScreen() {
     return <Redirect href="/sign-in" />;
   }
 
-  if (Platform.OS === "web" || !Map || !Camera || !Marker) {
+  if (!nativeMap) {
     return (
       <SafeAreaView className="flex-1" edges={["top", "bottom"]} style={{ backgroundColor: theme.background }}>
         <View className="flex-1 px-5 pt-6">
@@ -171,43 +159,20 @@ export default function PersonMapScreen() {
     );
   }
 
-  if (!MAP_STYLE_URL) {
-    return (
-      <SafeAreaView className="flex-1" edges={["top", "bottom"]} style={{ backgroundColor: theme.background }}>
-        <View className="flex-1 px-5 pt-6">
-          <View
-            className="mt-8 rounded-[28px] border px-5 py-6"
-            style={{
-              backgroundColor: theme.card,
-              borderColor: theme.border,
-            }}
-          >
-            <AppText className="text-[18px] font-bold" style={{ color: theme.text }}>
-              Stadia Maps configuration is missing
-            </AppText>
-            <AppText className="mt-3 text-[15px] leading-6" style={{ color: theme.mutedText }}>
-              Add `EXPO_PUBLIC_STADIA_MAPS_API_KEY` to `.env` and restart Expo so the map can load the street style.
-            </AppText>
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <View className="flex-1" style={{ backgroundColor: theme.background }}>
-      <Map
+      <nativeMap.Map
         attribution={false}
         compass
         compassPosition={{ top: 120, right: 16 }}
         logo={false}
-        mapStyle={MAP_STYLE_URL}
+        mapStyle={nativeMapStyleUrl}
         scaleBar={false}
         style={{ flex: 1 }}
         touchPitch={false}
         touchRotate={false}
       >
-        <Camera
+        <nativeMap.Camera
           initialViewState={{
             center: [selectedPerson.location.longitude, selectedPerson.location.latitude],
             pitch: 0,
@@ -219,7 +184,7 @@ export default function PersonMapScreen() {
         />
 
         {mockIngresos.detalles.map((person) => (
-          <Marker
+          <nativeMap.Marker
             anchor="bottom"
             id={`worker-${person.id}`}
             key={person.id}
@@ -231,9 +196,9 @@ export default function PersonMapScreen() {
               onPress={() => focusPerson(person)}
               person={person}
             />
-          </Marker>
+          </nativeMap.Marker>
         ))}
-      </Map>
+      </nativeMap.Map>
 
       <SafeAreaView
         className="absolute inset-x-0 bottom-0"

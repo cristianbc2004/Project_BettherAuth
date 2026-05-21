@@ -4,15 +4,15 @@ import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, View } from "react-native";
-import { z } from "zod";
 
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
 import { PasswordRequirements } from "@/features/auth/components/password-requirements";
-import { authClient } from "@/features/auth/services/auth-client";
+import { changePassword } from "@/features/auth/services/auth-actions";
+import { buildChangePasswordSchema, type ChangePasswordFormValues } from "@/features/auth/services/auth-validation";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
-import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useLanguage } from "@/shared/lib/locale";
 import { AppText } from "@/shared/components/ui/app-text";
 
 export default function ChangePasswordScreen() {
@@ -22,22 +22,8 @@ export default function ChangePasswordScreen() {
   const [isPasswordRequirementsFocused, setIsPasswordRequirementsFocused] = useState(false);
   const [passwordRequirementsScrollRequest, setPasswordRequirementsScrollRequest] = useState(0);
   const { locale } = useLanguage();
-  const changePasswordSchema = z
-    .object({
-      currentPassword: z.string().min(8, t("changePassword.currentPasswordMin")),
-      newPassword: z
-        .string()
-        .min(8, t("changePassword.newPasswordMin"))
-        .regex(/[A-Z]/, t("authForm.passwordNeedsUppercase"))
-        .regex(/[a-z]/, t("authForm.passwordNeedsLowercase"))
-        .regex(/\d/, t("authForm.passwordNeedsNumber")),
-      confirmPassword: z.string().min(8, t("changePassword.confirmNewPassword")),
-    })
-    .refine((data) => data.newPassword === data.confirmPassword, {
-      message: t("changePassword.passwordsDoNotMatch"),
-      path: ["confirmPassword"],
-    });
-  const form = useForm<z.infer<typeof changePasswordSchema>>({
+  const changePasswordSchema = buildChangePasswordSchema(t);
+  const form = useForm<ChangePasswordFormValues>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
       currentPassword: "",
@@ -59,12 +45,7 @@ export default function ChangePasswordScreen() {
       setServerError(null);
       setIsPending(true);
 
-      const response = await authClient.changePassword({
-        currentPassword: values.currentPassword,
-        newPassword: values.newPassword,
-        revokeOtherSessions: true,
-        ...buildAuthFetchOptions(locale),
-      });
+      const response = await changePassword(values, locale);
 
       if (response.error) {
         const message = response.error.message ?? t("changePassword.updateError");

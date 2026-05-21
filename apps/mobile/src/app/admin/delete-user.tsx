@@ -6,12 +6,13 @@ import { View } from "react-native";
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { authClient } from "@/features/auth/services/auth-client";
+import { listAdminUsers, removeAdminUser } from "@/features/auth/services/admin-users";
 import { AdminMinimalPanel, AdminMinimalSection } from "@/shared/components/ui/admin/admin-minimal-panel";
 import { AdminUserNotificationRow } from "@/shared/components/ui/admin/admin-user-notification-row";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { StatusMessage } from "@/shared/components/ui/status-message";
-import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import type { AdminUser } from "@repo/types/admin";
@@ -56,12 +57,7 @@ export default function DeleteUserScreen() {
     setIsLoadingUsers(true);
     setErrorMessage(null);
 
-    const result = await authClient.admin.listUsers({
-      query: {
-        limit: 100,
-      },
-      ...buildAuthFetchOptions(locale),
-    });
+    const result = await listAdminUsers(locale);
 
     setIsLoadingUsers(false);
 
@@ -70,8 +66,7 @@ export default function DeleteUserScreen() {
       return;
     }
 
-    const payload = result.data as { users?: AdminUser[] } | AdminUser[] | undefined;
-    setUsers(Array.isArray(payload) ? payload : payload?.users ?? []);
+    setUsers(result.data);
   };
 
   useEffect(() => {
@@ -97,10 +92,7 @@ export default function DeleteUserScreen() {
     setMessage(null);
     setErrorMessage(null);
 
-    const result = await authClient.admin.removeUser({
-      userId,
-      ...buildAuthFetchOptions(locale),
-    });
+    const result = await removeAdminUser(userId, locale);
 
     setDeletingUserId(null);
 

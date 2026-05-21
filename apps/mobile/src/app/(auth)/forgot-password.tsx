@@ -23,7 +23,7 @@ export default function ForgotPasswordScreen() {
   const forgotPasswordSchema = z.object({
     email: z.email(t("authForm.invalidEmail")),
   });
-  const form = useForm<z.infer<typeof forgotPasswordSchema>>({
+  const form = useForm<z.infer<typeof forgotPasswordSchema>>({ // esto debe de ir a un lib
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",

@@ -4,18 +4,19 @@ import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, View } from "react-native";
-import { z } from "zod";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
 import { PasswordRequirements } from "@/features/auth/components/password-requirements";
 import { authClient } from "@/features/auth/services/auth-client";
+import { createAdminUser } from "@/features/auth/services/admin-users";
+import { buildSignUpSchema, type SignUpFormValues } from "@/features/auth/services/auth-validation";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { AdminMinimalPanel, AdminMinimalSection } from "@/shared/components/ui/admin/admin-minimal-panel";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { StatusMessage } from "@/shared/components/ui/status-message";
-import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
@@ -32,17 +33,8 @@ export default function CreateUserScreen() {
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   const [isPasswordRequirementsFocused, setIsPasswordRequirementsFocused] = useState(false);
   const [passwordRequirementsScrollRequest, setPasswordRequirementsScrollRequest] = useState(0);
-  const createUserSchema = z.object({
-    email: z.email(t("authForm.invalidEmail")),
-    name: z.string().min(2, t("authForm.minName")),
-    password: z
-      .string()
-      .min(8, t("authForm.minPassword"))
-      .regex(/[A-Z]/, t("authForm.passwordNeedsUppercase"))
-      .regex(/[a-z]/, t("authForm.passwordNeedsLowercase"))
-      .regex(/\d/, t("authForm.passwordNeedsNumber")),
-  });
-  const form = useForm<z.infer<typeof createUserSchema>>({
+  const createUserSchema = buildSignUpSchema(t);
+  const form = useForm<SignUpFormValues>({
     resolver: zodResolver(createUserSchema),
     defaultValues: {
       email: "",
@@ -82,13 +74,7 @@ export default function CreateUserScreen() {
     setErrorMessage(null);
 
     try {
-      const result = await authClient.admin.createUser({
-        email: values.email,
-        password: values.password,
-        name: values.name,
-        role,
-        ...buildAuthFetchOptions(locale),
-      });
+      const result = await createAdminUser({ ...values, role }, locale);
 
       if (result.error) {
         setErrorMessage(result.error.message ?? t("admin.createError"));

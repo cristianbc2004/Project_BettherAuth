@@ -3,9 +3,14 @@ import { ActivityIndicator, Pressable, View } from "react-native";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { CheckCircle2, X } from "lucide-react-native";
 import Animated, { FadeIn, FadeInDown, FadeOut } from "react-native-reanimated";
-import { z } from "zod";
 
 import { authClient } from "@/features/auth/services/auth-client";
+import { buildIdempotencyKey } from "@/features/finance/lib/bizum-api";
+import {
+  notificationRequestDetailResponseSchema,
+  type NotificationRequestDetailResponse,
+} from "@/features/notifications/lib/notifications-api";
+import { getAuthCookie } from "@/shared/lib/auth-api";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { appConfig } from "@repo/config";
 import { selectionHaptic, successHaptic } from "@/shared/lib/haptics";
@@ -13,29 +18,6 @@ import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
 import { parseApiError } from "@/shared/lib/api-schemas";
-
-const requestDetailResponseSchema = z.object({
-  amountCents: z.number(),
-  concept: z.string().nullable().optional(),
-  id: z.string(),
-  isPayable: z.boolean(),
-  requester: z.object({
-    id: z.string(),
-    initials: z.string(),
-    name: z.string(),
-  }),
-});
-
-type RequestDetailResponse = z.infer<typeof requestDetailResponseSchema>;
-
-function getAuthCookie() {
-  return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
-}
-
-function buildIdempotencyKey(scope: "bizum-request-payment", requestId: string) {
-  const random = Math.random().toString(36).slice(2, 12);
-  return `${scope}-${requestId}-${Date.now()}-${random}`;
-}
 
 function formatMoneyLabel(cents: number) {
   return `${(cents / 100).toFixed(2).replace(".", ",")} EUR`;
@@ -50,7 +32,7 @@ export default function NotificationPayRequestScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPaying, setIsPaying] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [requestData, setRequestData] = useState<RequestDetailResponse | null>(null);
+  const [requestData, setRequestData] = useState<NotificationRequestDetailResponse | null>(null);
   const paymentIdempotencyKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -80,7 +62,7 @@ export default function NotificationPayRequestScreen() {
           return;
         }
 
-        const payload = requestDetailResponseSchema.parse(await response.json());
+        const payload = notificationRequestDetailResponseSchema.parse(await response.json());
         setRequestData(payload);
       } catch {
         setErrorMessage("Could not load the request.");

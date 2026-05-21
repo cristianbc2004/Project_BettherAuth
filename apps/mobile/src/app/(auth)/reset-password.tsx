@@ -37,7 +37,7 @@ export default function ResetPasswordScreen() {
       message: t("resetPassword.passwordsDoNotMatch"),
       path: ["confirmPassword"],
     });
-  const form = useForm<z.infer<typeof resetPasswordSchema>>({
+  const form = useForm<z.infer<typeof resetPasswordSchema>>({ 
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       newPassword: "",

@@ -1,15 +1,24 @@
 import { Redirect, router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, Modal, Pressable, TextInput, View, type ListRenderItem } from "react-native";
+import { FlatList, View, type ListRenderItem } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Filter, Search } from "lucide-react-native";
 
+import { MovementsFilterModal } from "@/features/finance/components/movements-filter-modal";
+import { MovementsToolbar } from "@/features/finance/components/movements-toolbar";
 import { TransactionRow } from "@/features/finance/components/transaction-row";
 import {
   allTransactions,
   financeConfig,
   type Transaction,
 } from "@/features/finance/mocks";
+import {
+  filterTransactions,
+  getHasMoreTransactions,
+  getNextVisibleCount,
+  getVisibleTransactions,
+  normalizeMovementSearchQuery,
+  type MovementToneFilter,
+} from "@/features/finance/lib/movements-list";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { AppText } from "@/shared/components/ui/app-text";
@@ -25,34 +34,31 @@ export default function MovementsScreen() {
   const { contentBottomSpacing } = useFloatingTabBarMetrics();
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
-  const [selectedTone, setSelectedTone] = useState<"all" | Transaction["tone"]>("all");
-  const [draftTone, setDraftTone] = useState<"all" | Transaction["tone"]>("all");
+  const [selectedTone, setSelectedTone] = useState<MovementToneFilter>("all");
+  const [draftTone, setDraftTone] = useState<MovementToneFilter>("all");
   const [visibleCount, setVisibleCount] = useState<number>(financeConfig.transactionBatchSize);
-  const trimmedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery]);
-  const filteredTransactions = useMemo(() => {
-    return allTransactions.filter((transaction) => {
-      const matchesSearch =
-        !trimmedQuery ||
-        `${transaction.merchant} ${transaction.category} ${transaction.amount} ${transaction.time}`
-          .toLowerCase()
-          .includes(trimmedQuery);
-      const matchesTone = selectedTone === "all" || transaction.tone === selectedTone;
-
-      return matchesSearch && matchesTone;
-    });
-  }, [selectedTone, trimmedQuery]);
-  const visibleTransactions = useMemo(() => {
-    if (trimmedQuery) {
-      return filteredTransactions;
-    }
-
-    return filteredTransactions.slice(0, visibleCount);
-  }, [filteredTransactions, trimmedQuery, visibleCount]);
+  const trimmedQuery = useMemo(() => normalizeMovementSearchQuery(searchQuery), [searchQuery]);
+  const filteredTransactions = useMemo(
+    () => filterTransactions(allTransactions, searchQuery, selectedTone),
+    [searchQuery, selectedTone],
+  );
+  const visibleTransactions = useMemo(
+    () => getVisibleTransactions(filteredTransactions, searchQuery, visibleCount),
+    [filteredTransactions, searchQuery, visibleCount],
+  );
   const hasActiveFilters = selectedTone !== "all";
-  const hasMoreTransactions = !trimmedQuery && visibleCount < financeConfig.totalTransactionCount;
+  const hasMoreTransactions = getHasMoreTransactions(
+    searchQuery,
+    visibleCount,
+    financeConfig.totalTransactionCount,
+  );
   const handleLoadMore = useCallback(() => {
     setVisibleCount((currentCount) =>
-      Math.min(currentCount + financeConfig.transactionBatchSize, financeConfig.totalTransactionCount),
+      getNextVisibleCount(
+        currentCount,
+        financeConfig.transactionBatchSize,
+        financeConfig.totalTransactionCount,
+      ),
     );
   }, []);
   const renderTransaction: ListRenderItem<Transaction> = useCallback(
@@ -75,12 +81,13 @@ export default function MovementsScreen() {
   }, [selectedTone]);
   const closeFilters = useCallback(() => setIsFilterModalVisible(false), []);
   const acceptFilters = useCallback(() => {
-    setIsFilterModalVisible(false);
-  }, []);
-  const cancelFilters = useCallback(() => {
     setSelectedTone(draftTone);
     setIsFilterModalVisible(false);
   }, [draftTone]);
+  const cancelFilters = useCallback(() => {
+    setDraftTone(selectedTone);
+    setIsFilterModalVisible(false);
+  }, [selectedTone]);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -111,27 +118,12 @@ export default function MovementsScreen() {
               <AppScreenHeader title="Movements" />
             </View>
 
-            <View className="flex-row gap-3">
-              <View className="flex-1 flex-row items-center rounded-[22px] px-4 py-4" style={{ backgroundColor: theme.card }}>
-                <Search color={theme.mutedText} size={20} strokeWidth={2.3} />
-                <TextInput
-                  className="ml-3 flex-1 text-[14px] font-semibold"
-                  onChangeText={setSearchQuery}
-                  placeholder="Search movement"
-                  placeholderTextColor={theme.mutedText}
-                  selectionColor={theme.primary}
-                  style={{ color: theme.text }}
-                  value={searchQuery}
-                />
-              </View>
-              <Pressable
-                className="h-[54px] w-[54px] items-center justify-center rounded-[22px]"
-                onPress={openFilters}
-                style={{ backgroundColor: hasActiveFilters ? theme.primary : theme.card }}
-              >
-                <Filter color={theme.text} size={21} strokeWidth={2.4} />
-              </Pressable>
-            </View>
+            <MovementsToolbar
+              hasActiveFilters={hasActiveFilters}
+              onOpenFilters={openFilters}
+              onSearchQueryChange={setSearchQuery}
+              searchQuery={searchQuery}
+            />
           </View>
         }
         ItemSeparatorComponent={renderSeparator}
@@ -151,92 +143,13 @@ export default function MovementsScreen() {
         updateCellsBatchingPeriod={24}
         windowSize={9}
       />
-      <Modal
-        animationType="fade"
-        onRequestClose={closeFilters}
-        transparent
+      <MovementsFilterModal
+        draftTone={draftTone}
+        onApply={acceptFilters}
+        onClose={cancelFilters}
+        onDraftToneChange={setDraftTone}
         visible={isFilterModalVisible}
-      >
-        <View className="flex-1 justify-end px-5 pb-7">
-          <Pressable
-            accessibilityLabel="Close filters"
-            className="absolute inset-0"
-            onPress={cancelFilters}
-            style={{ backgroundColor: "rgba(7, 10, 18, 0.45)" }}
-          />
-          <View
-            className="rounded-[24px] border px-5 pb-5 pt-5"
-            style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}
-          >
-            <View className="flex-row items-center justify-between">
-              <AppText variant="sectionTitle">
-                Filters
-              </AppText>
-              <Pressable onPress={cancelFilters}>
-                <AppText className="text-[13px] font-semibold" tone="muted">
-                  Close
-                </AppText>
-              </Pressable>
-            </View>
-
-            <View className="mt-5">
-              <AppText className="tracking-[1px]" tone="primary" variant="eyebrow">
-                Type
-              </AppText>
-              <View className="mt-4 gap-2">
-                <Pressable
-                  className="rounded-[16px] px-4 py-3.5"
-                  onPress={() => setSelectedTone("all")}
-                  style={{ backgroundColor: selectedTone === "all" ? theme.primary : theme.background }}
-                >
-                  <AppText className="text-[14px] font-bold">
-                    All
-                  </AppText>
-                </Pressable>
-                <Pressable
-                  className="rounded-[16px] px-4 py-3.5"
-                  onPress={() => setSelectedTone("income")}
-                  style={{ backgroundColor: selectedTone === "income" ? theme.primary : theme.background }}
-                >
-                  <AppText className="text-[14px] font-bold">
-                    Income
-                  </AppText>
-                </Pressable>
-                <Pressable
-                  className="rounded-[16px] px-4 py-3.5"
-                  onPress={() => setSelectedTone("expense")}
-                  style={{ backgroundColor: selectedTone === "expense" ? theme.primary : theme.background }}
-                >
-                  <AppText className="text-[14px] font-bold">
-                    Expenses
-                  </AppText>
-                </Pressable>
-              </View>
-            </View>
-
-            <View className="mt-6 flex-row gap-3 border-t pt-4" style={{ borderColor: theme.border }}>
-              <Pressable
-                className="flex-1 items-center rounded-[16px] px-4 py-4"
-                onPress={cancelFilters}
-                style={{ backgroundColor: theme.background }}
-              >
-                <AppText className="text-[14px] font-bold">
-                  Cancel
-                </AppText>
-              </Pressable>
-              <Pressable
-                className="flex-1 items-center rounded-[16px] px-4 py-4"
-                onPress={acceptFilters}
-                style={{ backgroundColor: theme.primary }}
-              >
-                <AppText className="text-[14px] font-bold">
-                  Apply
-                </AppText>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      />
     </SafeAreaView>
   );
 }
