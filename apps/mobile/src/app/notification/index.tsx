@@ -4,9 +4,14 @@ import { Redirect, router, useFocusEffect } from "expo-router";
 import { ArrowDownLeft, ArrowRightLeft, Bell, CircleAlert, Send, Wallet } from "lucide-react-native";
 import Animated, { Easing, FadeInDown, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { z } from "zod";
 
 import { authClient } from "@/features/auth/services/auth-client";
+import {
+  notificationsGetResponseSchema,
+  type NotificationActionPayload,
+  type NotificationResponseItem,
+  type NotificationType,
+} from "@/features/notifications/lib/notifications-api";
 import { getAuthCookie } from "@/shared/lib/auth-api";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
@@ -16,33 +21,6 @@ import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
 import { parseApiError } from "@/shared/lib/api-schemas";
-
-const notificationTypeSchema = z.enum(["TRANSFER", "BIZUM_REQUEST", "BIZUM_SENT", "BIZUM_RECEIVED", "ALERT"]);
-
-const notificationActionPayloadSchema = z.object({
-  bizumRequestId: z.string().optional(),
-});
-
-const notificationsGetResponseSchema = z.object({ // esto a un lib
-  notifications: z.array(
-    z.object({
-      actionPayload: notificationActionPayloadSchema.nullable().optional(),
-      bizumRequestId: z.string().nullable().optional(),
-      body: z.string().nullable().optional(),
-      createdAt: z.string(),
-      emisorName: z.string().nullable().optional(),
-      id: z.string(),
-      isUnread: z.boolean(),
-      timestamp: z.string(),
-      title: z.string(),
-      type: notificationTypeSchema,
-    }),
-  ),
-});
-
-type NotificationActionPayload = z.infer<typeof notificationActionPayloadSchema>; // esto a un lib
-type NotificationType = z.infer<typeof notificationTypeSchema>; // esto a un lib
-type NotificationResponseItem = z.infer<typeof notificationsGetResponseSchema>["notifications"][number]; // esto a un lib
 
 type NotificationItem = {
   accent: string;
