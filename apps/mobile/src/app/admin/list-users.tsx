@@ -54,7 +54,7 @@ export default function ListUsersScreen() {
     setIsLoadingUsers(true);
     setErrorMessage(null);
 
-    const result = await authClient.admin.listUsers({
+    const result = await authClient.admin.listUsers({ 
       query: {
         limit: 100,
       },

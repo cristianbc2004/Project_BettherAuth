@@ -4,16 +4,20 @@ import { Controller, useForm } from "react-hook-form";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, View } from "react-native";
-import { z } from "zod";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
 import { PasswordRequirements } from "@/features/auth/components/password-requirements";
-import { authClient } from "@/features/auth/services/auth-client";
+import {
+  canSendVerificationEmail,
+  getResendTestRecipient,
+  signInWithEmail,
+  signUpWithEmail,
+} from "@/features/auth/services/auth-actions";
+import { buildSignInSchema, buildSignUpSchema, type SignInFormValues, type SignUpFormValues } from "@/features/auth/services/auth-validation";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
-import { appConfig } from "@repo/config";
 import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
-import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { AppText } from "@/shared/components/ui/app-text";
 
@@ -64,11 +68,8 @@ function SignInForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
   const { locale } = useLanguage();
-  const signInSchema = z.object({
-    email: z.email(t("authForm.invalidEmail")),
-    password: z.string().min(8, t("authForm.minPassword")),
-  });
-  const form = useForm<z.infer<typeof signInSchema>>({
+  const signInSchema = buildSignInSchema(t);
+  const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",
@@ -80,11 +81,8 @@ function SignInForm() {
     try {
       setServerError(null);
       setIsPending(true);
-
-      const response = await authClient.signIn.email({
-        ...values,
-        ...buildAuthFetchOptions(locale),
-      });
+ 
+      const response = await signInWithEmail(values, locale);
 
       if (response.error) {
         const message = response.error.message ?? t("authForm.genericError");
@@ -180,18 +178,8 @@ function SignUpForm({
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
   const { locale } = useLanguage();
-  const signUpSchema = z
-    .object({
-      name: z.string().min(2, t("authForm.minName")),
-      email: z.email(t("authForm.invalidEmail")),
-      password: z
-        .string()
-        .min(8, t("authForm.minPassword"))
-        .regex(/[A-Z]/, t("authForm.passwordNeedsUppercase"))
-        .regex(/[a-z]/, t("authForm.passwordNeedsLowercase"))
-        .regex(/\d/, t("authForm.passwordNeedsNumber")),
-    });
-  const form = useForm<z.infer<typeof signUpSchema>>({
+  const signUpSchema = buildSignUpSchema(t);
+  const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       name: "",
@@ -208,22 +196,15 @@ function SignUpForm({
       setServerError(null);
       setIsPending(true);
 
-      if (
-        appConfig.resendTestRecipient &&
-        values.email.trim().toLowerCase() !== appConfig.resendTestRecipient
-      ) {
-        const message = `Resend test mode only sends emails to ${appConfig.resendTestRecipient}. Verify your own domain in Resend to send verification emails to other users.`;
+      if (!canSendVerificationEmail(values.email)) {
+        const message = `Resend test mode only sends emails to ${getResendTestRecipient()}. Verify your own domain in Resend to send verification emails to other users.`;
         setServerError(message);
         warningHaptic();
         Alert.alert(t("authForm.signUpFailed"), message);
         return;
       }
 
-      const response = await authClient.signUp.email({
-        ...values,
-        callbackURL: appConfig.emailVerificationSuccessUrl,
-        ...buildAuthFetchOptions(locale),
-      });
+      const response = await signUpWithEmail(values, locale);
 
       if (response.error) {
         const message = response.error.message ?? t("authForm.genericError");

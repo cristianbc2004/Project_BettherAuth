@@ -3,9 +3,15 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { Check, CircleCheck, Search, SendHorizontal } from "lucide-react-native";
-import { z } from "zod";
 
 import type { BizumActionMode, BizumContact } from "@/features/finance/lib/bizum-api";
+import {
+  buildBizumSchema,
+  formatBizumAmount,
+  formatBizumCents,
+  normalizeBizumAmount,
+  type BizumFormValues,
+} from "@/features/finance/lib/bizum-form";
 import { AppText } from "@/shared/components/ui/app-text";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
@@ -32,66 +38,6 @@ type BizumActionFormProps = {
   onSubmit: (payload: BizumActionPayload) => void;
   onViewMovements: () => void;
 };
-
-function formatCents(value: number) {
-  return `${(value / 100).toFixed(2).replace(".", ",")} EUR`;
-}
-
-function formatAmount(value: number) {
-  return `${value.toFixed(2).replace(".", ",")} EUR`;
-}
-
-function normalizeAmount(value: string) {
-  return Number(value.replace(",", "."));
-}
-
-function buildBizumSchema(mode: BizumActionMode, availableBalanceCents: number) {
-  return z
-    .object({
-      amount: z.string().trim().min(1, "Enter an amount."),
-      concept: z.string().trim().max(42, "The concept cannot exceed 42 characters."),
-      contactId: z.string().trim().min(1, "Choose a contact."),
-    })
-    .superRefine((values, context) => {
-      const parsedAmount = normalizeAmount(values.amount);
-      const amountCents = Math.round(parsedAmount * 100);
-
-      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-        context.addIssue({
-          code: "custom",
-          message: "Enter a valid amount.",
-          path: ["amount"],
-        });
-        return;
-      }
-
-      if (amountCents < 50) {
-        context.addIssue({
-          code: "custom",
-          message: "The minimum amount is 0.50 EUR.",
-          path: ["amount"],
-        });
-      }
-
-      if (amountCents > 100000) {
-        context.addIssue({
-          code: "custom",
-          message: "The maximum amount per Bizum is 1,000.00 EUR.",
-          path: ["amount"],
-        });
-      }
-
-      if (mode === "send" && amountCents > availableBalanceCents) {
-        context.addIssue({
-          code: "custom",
-          message: "You do not have enough balance to send that Bizum.",
-          path: ["amount"],
-        });
-      }
-    });
-}
-
-type BizumFormValues = z.infer<ReturnType<typeof buildBizumSchema>>;
 
 export function BizumActionForm({
   availableBalanceCents,
@@ -144,9 +90,9 @@ export function BizumActionForm({
     return contacts.filter((contact) => `${contact.name} ${contact.detail}`.toLowerCase().includes(normalizedQuery));
   }, [contacts, query]);
 
-  const parsedAmount = normalizeAmount(amount);
+  const parsedAmount = normalizeBizumAmount(amount);
   const amountCents = Number.isFinite(parsedAmount) ? Math.round(parsedAmount * 100) : 0;
-  const amountPreview = amountCents > 0 ? formatAmount(parsedAmount) : "0,00 EUR";
+  const amountPreview = amountCents > 0 ? formatBizumAmount(parsedAmount) : "0,00 EUR";
   const contactError = errors.contactId?.message;
   const amountError = errors.amount?.message;
   const conceptError = errors.concept?.message;
@@ -196,7 +142,7 @@ export function BizumActionForm({
 
     selectionHaptic();
     onSubmit({
-      amount: normalizeAmount(values.amount),
+      amount: normalizeBizumAmount(values.amount),
       concept: values.concept.trim(),
       contact: selectedContact,
     });
@@ -285,7 +231,7 @@ export function BizumActionForm({
                       Preview: {amountPreview}
                     </AppText>
                     <AppText className="text-[12px]" style={{ color: theme.mutedText }}>
-                      {formatCents(availableBalanceCents)}
+                      {formatBizumCents(availableBalanceCents)}
                     </AppText>
                   </View>
                 </View>
@@ -362,7 +308,7 @@ export function BizumActionForm({
             <SummaryLine label="Concept" showTopBorder value={getValues("concept").trim() || "No concept"} />
             <SummaryLine
               label={mode === "send" ? "Balance after" : "Current balance"}
-              value={formatCents(mode === "send" ? Math.max(availableBalanceCents - amountCents, 0) : availableBalanceCents)}
+              value={formatBizumCents(mode === "send" ? Math.max(availableBalanceCents - amountCents, 0) : availableBalanceCents)}
             />
           </View>
 
@@ -388,7 +334,7 @@ export function BizumActionForm({
           {completedPayload ? (
             <View className="w-full">
               <SummaryLine label={copy.contactLabel} showTopBorder value={completedPayload.contact.name} />
-              <SummaryLine label="Amount" value={formatAmount(completedPayload.amount)} />
+              <SummaryLine label="Amount" value={formatBizumAmount(completedPayload.amount)} />
               <SummaryLine label="Concept" value={completedPayload.concept || "No concept"} />
             </View>
           ) : null}

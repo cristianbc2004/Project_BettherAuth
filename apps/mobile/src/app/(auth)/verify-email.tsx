@@ -23,7 +23,7 @@ export default function VerifyEmailScreen() {
       return;
     }
 
-    void authClient.verifyEmail(
+    void authClient.verifyEmail( // revisar esta funcion, recomendable de que vaya fuera.
       {
         query: {
           token,

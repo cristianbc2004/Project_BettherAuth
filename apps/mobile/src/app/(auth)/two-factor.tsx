@@ -136,7 +136,7 @@ export default function TwoFactorScreen() {
     successHaptic();
   };
 
-  const handleVerify = async () => {
+  const handleVerify = async () => { // esta funcion a un lib
     setIsVerifying(true);
     setErrorMessage(null);
     setMessage(null);

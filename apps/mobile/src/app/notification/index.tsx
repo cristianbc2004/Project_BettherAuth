@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
 import { authClient } from "@/features/auth/services/auth-client";
+import { getAuthCookie } from "@/shared/lib/auth-api";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { appConfig } from "@repo/config";
@@ -56,10 +57,6 @@ type NotificationItem = {
   type: NotificationType;
   unread: boolean;
 };
-
-function getAuthCookie() {
-  return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
-}
 
 async function fetchNotifications() {
   // Queries the real notifications endpoint instead of a local mock.

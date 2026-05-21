@@ -11,7 +11,26 @@ export const walletCardFormSchema = z.object({
   type: z.enum(walletCardTypes),
 });
 
+export const addTargetSchema = z.object({
+  cvc: z
+    .string()
+    .trim()
+    .regex(/^\d{3,4}$/, "The CVC must have 3 or 4 digits."),
+  initialBalance: z
+    .string()
+    .trim()
+    .min(1, "Enter the initial balance.")
+    .refine((value) => parseAmountInputToCents(value) !== null, "Enter a valid amount."),
+  name: z.string().trim().min(2, "Enter the card name."),
+  numberTarget: z
+    .string()
+    .trim()
+    .regex(/^\d{12,19}$/, "The card number must have between 12 and 19 digits."),
+  type: z.enum(walletCardTypes),
+});
+
 export type WalletCardFormValues = z.infer<typeof walletCardFormSchema>;
+export type AddTargetFormValues = z.infer<typeof addTargetSchema>;
 
 const networkStyles: Record<WalletCardNetwork, Pick<WalletCard, "gradient" | "textColor">> = {
   CHASBACK: {
@@ -55,6 +74,22 @@ export function parseAmountInputToCents(value: string) {
   }
 
   return Math.round(amount * 100);
+}
+
+export function buildWalletCardPayload(values: AddTargetFormValues) {
+  const initialBalanceCents = parseAmountInputToCents(values.initialBalance);
+
+  if (initialBalanceCents === null) {
+    return null;
+  }
+
+  return walletCardFormSchema.parse({
+    cvc: values.cvc,
+    initialBalanceCents,
+    name: values.name,
+    numberTarget: values.numberTarget,
+    type: values.type,
+  });
 }
 
 export function formatEurosFromCents(cents: number) {

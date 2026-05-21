@@ -20,7 +20,7 @@ export default function TwoFactorVerifyScreen() {
   const [serverError, setServerError] = useState<string | null>(null);
   const { locale } = useLanguage();
 
-  const handleVerifyTotp = async () => {
+  const handleVerifyTotp = async () => { // esta funcion a lib
     try {
       setIsPending(true);
       setServerError(null);
