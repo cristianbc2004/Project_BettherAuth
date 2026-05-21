@@ -33,8 +33,8 @@ export default function ChangePasswordScreen() {
     mode: "onChange",
     reValidateMode: "onChange",
   });
-  const newPasswordValue = form.watch("newPassword");
-  const confirmPasswordValue = form.watch("confirmPassword");
+  const newPasswordValue = form.watch("newPassword"); // esto debe de ir a un lib
+  const confirmPasswordValue = form.watch("confirmPassword"); // esto debe de ir a un lib
   const requestPasswordRequirementsScroll = () => {
     setIsPasswordRequirementsFocused(true);
     setPasswordRequirementsScrollRequest((currentValue) => currentValue + 1);

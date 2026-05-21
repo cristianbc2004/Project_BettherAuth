@@ -4,11 +4,11 @@ import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, View } from "react-native";
-import { z } from "zod";
 
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
 import { PasswordRequirements } from "@/features/auth/components/password-requirements";
 import { AuthShell } from "@/features/auth/components/auth-shell";
+import { buildResetPasswordSchema, type ResetPasswordFormValues } from "@/features/auth/services/auth-validation";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { appConfig } from "@repo/config";
 import { buildLanguageHeaders, useLanguage } from "@/shared/lib/locale";
@@ -23,21 +23,8 @@ export default function ResetPasswordScreen() {
   const [isPending, setIsPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const { locale } = useLanguage();
-  const resetPasswordSchema = z
-    .object({
-      newPassword: z
-        .string()
-        .min(8, t("resetPassword.passwordMin"))
-        .regex(/[A-Z]/, t("authForm.passwordNeedsUppercase"))
-        .regex(/[a-z]/, t("authForm.passwordNeedsLowercase"))
-        .regex(/\d/, t("authForm.passwordNeedsNumber")),
-      confirmPassword: z.string().min(8, t("resetPassword.confirmNewPassword")),
-    })
-    .refine((data) => data.newPassword === data.confirmPassword, {
-      message: t("resetPassword.passwordsDoNotMatch"),
-      path: ["confirmPassword"],
-    });
-  const form = useForm<z.infer<typeof resetPasswordSchema>>({ 
+  const resetPasswordSchema = buildResetPasswordSchema(t);
+  const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       newPassword: "",
