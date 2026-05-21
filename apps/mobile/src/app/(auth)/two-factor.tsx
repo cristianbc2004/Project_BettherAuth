@@ -1,45 +1,18 @@
 import { Redirect } from "expo-router";
-import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthPasswordInput } from "@/features/auth/components/auth-password-input";
 import { AuthShell } from "@/features/auth/components/auth-shell";
+import { useTwoFactorSettings } from "@/features/auth/lib/use-two-factor-settings";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
-import { successHaptic, warningHaptic } from "@/shared/lib/haptics";
-import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
+import { useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
-
-type TwoFactorSetup = {
-  backupCodes: string[];
-  totpURI: string;
-};
-
-function extractSetupDetails(totpURI: string) {
-  try {
-    const parsed = new URL(totpURI);
-    const account = decodeURIComponent(parsed.pathname.replace(/^\//, ""));
-    const secret = parsed.searchParams.get("secret") ?? "";
-    const issuer = parsed.searchParams.get("issuer") ?? "Better Auth";
-
-    return {
-      account,
-      issuer,
-      secret,
-    };
-  } catch {
-    return {
-      account: "",
-      issuer: "Better Auth",
-      secret: "",
-    };
-  }
-}
 
 function MinimalSection({
   children,
@@ -76,22 +49,26 @@ export default function TwoFactorScreen() {
   const { locale } = useLanguage();
   const { t } = useTranslation();
   const { theme } = useAppTheme();
-  const [password, setPassword] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [setup, setSetup] = useState<TwoFactorSetup | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isEnabling, setIsEnabling] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isDisabling, setIsDisabling] = useState(false);
+  const {
+    disableTwoFactor,
+    enableTwoFactor,
+    errorMessage,
+    isDisabling,
+    isEnabling,
+    isVerifying,
+    message,
+    password,
+    setPassword,
+    setVerificationCode,
+    setup,
+    setupDetails,
+    verificationCode,
+    verifyTwoFactorSetup,
+  } = useTwoFactorSettings(t, locale);
 
   const twoFactorEnabled = Boolean(
     (session?.user as { twoFactorEnabled?: boolean } | undefined)?.twoFactorEnabled,
   );
-
-  const setupDetails = useMemo(() => {
-    return setup ? extractSetupDetails(setup.totpURI) : null;
-  }, [setup]);
 
   if (showSessionLoading) {
     return <LoadingScreen />;
@@ -100,91 +77,6 @@ export default function TwoFactorScreen() {
   if (!session?.user) {
     return <Redirect href="/sign-in" />;
   }
-
-  const handleEnable = async () => {
-    setIsEnabling(true);
-    setErrorMessage(null);
-    setMessage(null);
-
-    const result = await authClient.twoFactor.enable({
-      password,
-      issuer: "Better Auth Dashboard",
-      ...buildAuthFetchOptions(locale),
-    });
-
-    setIsEnabling(false);
-
-    if (result.error) {
-      setSetup(null);
-      setErrorMessage(result.error.message ?? t("twoFactor.enableError"));
-      warningHaptic();
-      return;
-    }
-
-    if (!result.data) {
-      setSetup(null);
-      setErrorMessage(t("twoFactor.missingSetupPayload"));
-      warningHaptic();
-      return;
-    }
-
-    setSetup({
-      backupCodes: result.data.backupCodes ?? [],
-      totpURI: result.data.totpURI,
-    });
-    setMessage(t("twoFactor.setupStarted"));
-    successHaptic();
-  };
-
-  const handleVerify = async () => { // esta funcion a un lib
-    setIsVerifying(true);
-    setErrorMessage(null);
-    setMessage(null);
-
-    const result = await authClient.twoFactor.verifyTotp({
-      code: verificationCode,
-      trustDevice: true,
-      ...buildAuthFetchOptions(locale),
-    });
-
-    setIsVerifying(false);
-
-    if (result.error) {
-      setErrorMessage(result.error.message ?? t("twoFactor.verifyError"));
-      warningHaptic();
-      return;
-    }
-
-    setSetup(null);
-    setPassword("");
-    setVerificationCode("");
-    setMessage(t("twoFactor.enableSuccess"));
-    successHaptic();
-  };
-
-  const handleDisable = async () => {
-    setIsDisabling(true);
-    setErrorMessage(null);
-    setMessage(null);
-
-    const result = await authClient.twoFactor.disable({
-      password,
-      ...buildAuthFetchOptions(locale),
-    });
-
-    setIsDisabling(false);
-
-    if (result.error) {
-      setErrorMessage(result.error.message ?? t("twoFactor.disableError"));
-      warningHaptic();
-      return;
-    }
-
-    setSetup(null);
-    setVerificationCode("");
-    setMessage(t("twoFactor.disableSuccess"));
-    successHaptic();
-  };
 
   return (
     <AuthShell
@@ -219,11 +111,11 @@ export default function TwoFactorScreen() {
             label={twoFactorEnabled ? t("twoFactor.disable2fa") : t("twoFactor.startSetup")}
             onPress={() => {
               if (twoFactorEnabled) {
-                void handleDisable();
+                void disableTwoFactor();
                 return;
               }
 
-              void handleEnable();
+              void enableTwoFactor();
             }}
           />
         </MinimalSection>
@@ -252,7 +144,7 @@ export default function TwoFactorScreen() {
               isPending={isVerifying}
               label={t("twoFactor.verifyEnable")}
               onPress={() => {
-                void handleVerify();
+                void verifyTwoFactorSetup();
               }}
             />
           </MinimalSection>
