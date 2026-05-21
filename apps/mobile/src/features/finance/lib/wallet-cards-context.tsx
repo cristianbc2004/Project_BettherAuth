@@ -8,12 +8,12 @@ import {
   useState,
 } from "react";
 
-import { authClient } from "@/features/auth/services/auth-client";
 import { type WalletCard } from "@/features/finance/mocks";
 import { mapTargetToWalletCard, type WalletCardFormValues } from "@/features/finance/lib/wallet-card-utils";
 import { targetMutationResponseSchema, targetsGetResponseSchema } from "@/features/finance/lib/wallet-cards-validation";
 import { appConfig } from "@repo/config";
 import { parseApiError } from "@/shared/lib/api-schemas";
+import { getAuthCookie } from "@/shared/lib/auth-api";
 
 type WalletCardsContextValue = {
   addCard: (values: WalletCardFormValues) => Promise<WalletCard>;
@@ -24,10 +24,6 @@ type WalletCardsContextValue = {
 };
 
 const WalletCardsContext = createContext<WalletCardsContextValue | null>(null);
-
-function getAuthCookie() {
-  return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
-}
 
 async function fetchTargetsRequest(path = "/api/targets", init?: RequestInit) {
   return fetch(`${appConfig.authApiUrl}${path}`, {

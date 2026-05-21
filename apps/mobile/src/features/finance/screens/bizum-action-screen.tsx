@@ -10,12 +10,11 @@ import { BizumActionForm, type BizumActionPayload } from "@/features/finance/com
 import { BizumActionSkeleton } from "@/features/finance/components/bizum-skeletons";
 import {
   buildIdempotencyKey,
-  bizumGetResponseSchema,
   bizumPostResponseSchema,
   fetchBizumRequest,
   type BizumActionMode,
-  type BizumContact,
 } from "@/features/finance/lib/bizum-api";
+import { loadBizumActionData } from "@/features/finance/lib/bizum-data";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { successHaptic } from "@/shared/lib/haptics";
@@ -38,7 +37,7 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [availableBalanceCents, setAvailableBalanceCents] = useState(0);
-  const [contacts, setContacts] = useState<BizumContact[]>([]);
+  const [contacts, setContacts] = useState<Awaited<ReturnType<typeof loadBizumActionData>>["contacts"]>([]);
   const [flowStep, setFlowStep] = useState<BizumFlowStep>("contact");
   const [completedPayload, setCompletedPayload] = useState<BizumActionPayload | null>(null);
 
@@ -97,16 +96,9 @@ export function BizumActionScreen({ mode }: BizumActionScreenProps) {
     try {
       setIsDataLoading(true);
       setErrorMessage(null);
-
-      const response = await fetchBizumRequest();
-      if (!response.ok) {
-        setErrorMessage("Could not load Bizum. Please try again.");
-        return;
-      }
-
-      const payload = bizumGetResponseSchema.parse(await response.json());
-      setAvailableBalanceCents(payload.availableBalanceCents ?? 0);
-      setContacts(payload.contacts ?? []);
+      const data = await loadBizumActionData();
+      setAvailableBalanceCents(data.availableBalanceCents);
+      setContacts(data.contacts);
     } catch {
       setErrorMessage("Could not load Bizum. Please try again.");
     } finally {

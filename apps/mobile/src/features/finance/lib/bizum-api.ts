@@ -1,6 +1,7 @@
-import { authClient } from "@/features/auth/services/auth-client";
 import { appConfig } from "@repo/config";
 import { z } from "zod";
+
+import { getAuthCookie } from "@/shared/lib/auth-api";
 
 export const bizumContactSchema = z.object({
   detail: z.string(),
@@ -37,10 +38,6 @@ export type BizumContact = z.infer<typeof bizumContactSchema>;
 export type BizumGetResponse = z.infer<typeof bizumGetResponseSchema>;
 export type BizumMovementResponse = z.infer<typeof bizumMovementResponseSchema>;
 export type BizumPostResponse = z.infer<typeof bizumPostResponseSchema>;
-
-function getAuthCookie() {
-  return (authClient as typeof authClient & { getCookie?: () => string }).getCookie?.() ?? "";
-}
 
 export function buildIdempotencyKey(scope: "bizum-send" | "bizum-request-payment", id?: string) {
   const random = Math.random().toString(36).slice(2, 12);
