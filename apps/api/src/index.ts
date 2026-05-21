@@ -5,6 +5,7 @@ import { errorHandler } from "./middleware/error-handler";
 import { requestContext } from "./middleware/request-context";
 import { authRoutes } from "./routes/auth.routes";
 import { bizumRoutes } from "./routes/bizum.routes";
+import { mapsRoutes } from "./routes/maps.routes";
 import { notificationRoutes } from "./routes/notifications.routes";
 import { passwordRoutes } from "./routes/password.routes";
 import { targetsRoutes } from "./routes/targets.routes";
@@ -24,6 +25,7 @@ app.get("/health", (c) => {
 
 app.route("/api/auth", authRoutes);
 app.route("/api/bizum", bizumRoutes);
+app.route("/api/maps", mapsRoutes);
 app.route("/api/notifications", notificationRoutes);
 app.route("/api/password", passwordRoutes);
 app.route("/api/targets", targetsRoutes);

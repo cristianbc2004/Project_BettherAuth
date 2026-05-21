@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { Platform, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MapPin, Navigation } from "lucide-react-native";
 
@@ -7,21 +7,8 @@ import { authClient } from "@/features/auth/services/auth-client";
 import { allTransactions } from "@/features/finance/mocks";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
 import { AppText } from "@/shared/components/ui/app-text";
+import { getNativeMapComponents, nativeMapStyleUrl } from "@/shared/lib/native-map";
 import { useAppTheme } from "@/shared/lib/theme-context";
-
-const STADIA_MAPS_API_KEY = process.env.EXPO_PUBLIC_STADIA_MAPS_API_KEY?.trim() ?? "";
-const MAP_STYLE_URL = STADIA_MAPS_API_KEY
-  ? `https://tiles.stadiamaps.com/styles/alidade_smooth.json?api_key=${STADIA_MAPS_API_KEY}`
-  : "";
-
-const mapLibre =
-  Platform.OS === "web"
-    ? null
-    : (require("@maplibre/maplibre-react-native") as typeof import("@maplibre/maplibre-react-native"));
-
-const Map = mapLibre?.Map;
-const Camera = mapLibre?.Camera;
-const Marker = mapLibre?.Marker;
 
 export default function ExpenseDetailScreen() {
   const { data: session, isPending } = authClient.useSession();
@@ -52,7 +39,7 @@ export default function ExpenseDetailScreen() {
     );
   }
 
-  const canRenderMap = Platform.OS !== "web" && Map && Camera && Marker && MAP_STYLE_URL;
+  const nativeMap = getNativeMapComponents();
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
@@ -66,18 +53,18 @@ export default function ExpenseDetailScreen() {
 
         <View className="overflow-hidden rounded-[30px] border" style={{ backgroundColor: theme.backgroundElevated, borderColor: theme.border }}>
           <View className="h-[310px]" style={{ backgroundColor: theme.backgroundMuted }}>
-            {canRenderMap ? (
-              <Map
+            {nativeMap ? (
+              <nativeMap.Map
                 attribution={false}
                 compass={false}
                 logo={false}
-                mapStyle={MAP_STYLE_URL}
+                mapStyle={nativeMapStyleUrl}
                 scaleBar={false}
                 style={{ flex: 1 }}
                 touchPitch={false}
                 touchRotate={false}
               >
-                <Camera
+                <nativeMap.Camera
                   initialViewState={{
                     center: [transaction.location.longitude, transaction.location.latitude],
                     pitch: 0,
@@ -86,7 +73,7 @@ export default function ExpenseDetailScreen() {
                   maxZoom={17}
                   minZoom={10}
                 />
-                <Marker
+                <nativeMap.Marker
                   anchor="bottom"
                   id={`expense-detail-${transaction.id}`}
                   lngLat={[transaction.location.longitude, transaction.location.latitude]}
@@ -107,8 +94,8 @@ export default function ExpenseDetailScreen() {
                       }}
                     />
                   </View>
-                </Marker>
-              </Map>
+                </nativeMap.Marker>
+              </nativeMap.Map>
             ) : (
               <View className="flex-1 items-center justify-center px-5">
                 <MapPin color={theme.primary} size={34} strokeWidth={2.3} />
@@ -116,7 +103,7 @@ export default function ExpenseDetailScreen() {
                   Map unavailable
                 </AppText>
                 <AppText className="mt-2 text-center text-[14px] leading-5" style={{ color: theme.mutedText }}>
-                  Configure Stadia Maps or open this view on iOS/Android to see the location.
+                  Open this view on iOS/Android to see the location.
                 </AppText>
               </View>
             )}
