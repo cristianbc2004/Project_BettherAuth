@@ -10,6 +10,7 @@ import {
   recentTransactions,
   weeklyBalance,
 } from "@/features/finance/mocks";
+import { getHomeCardCarouselLayout } from "@/features/finance/lib/card-layout";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
@@ -114,12 +115,7 @@ export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const cardNavigationLockRef = useRef(false);
   const chartNavigationLockRef = useRef(false);
-  const cardGap = 16;
-  const cardsViewportWidth = Math.max(width - 40, 270);
-  const nextCardPeek = Math.round(Math.min(Math.max(cardsViewportWidth * 0.12, 36), 52));
-  const cardWidth = Math.max(Math.round(cardsViewportWidth - cardGap - nextCardPeek), 220);
-  const cardHeight = Math.round(Math.min(Math.max(cardWidth * 0.64, 196), 214));
-  const cardSnapInterval = cardWidth + cardGap;
+  const { cardHeight, cardSnapInterval, cardWidth } = getHomeCardCarouselLayout(width);
   const chartWidth = Math.max(width - 40, 300);
   const graphColor = resolvedThemeName === "dark" ? "#78a9ff" : "#3467d6";
   const screenBackgroundColor =

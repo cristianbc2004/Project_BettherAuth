@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
+import { getCardPreviewWidth } from "@/features/finance/lib/card-layout";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { type WalletCard } from "@/features/finance/mocks";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
@@ -81,7 +82,7 @@ export default function DetailsTargetScreen() {
     () => cards.find((card) => card.id === resolvedCardId) ?? cards[0],
     [cards, resolvedCardId],
   );
-  const cardWidth = Math.min(width - 40, 360);
+  const cardWidth = getCardPreviewWidth(width);
   const displayedPin = selectedCard ? (isPinVisible ? selectedCard.cvc : "****") : "****";
   const isBlocked = selectedCard?.isBlocked ?? false;
   const sectionEnter = (delay: number) =>

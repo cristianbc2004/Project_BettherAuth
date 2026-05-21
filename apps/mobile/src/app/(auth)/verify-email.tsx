@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 
-import { authClient } from "@/features/auth/services/auth-client";
+import { verifyEmailToken } from "@/features/auth/services/auth-actions";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 
 export default function VerifyEmailScreen() {
@@ -23,23 +23,16 @@ export default function VerifyEmailScreen() {
       return;
     }
 
-    void authClient.verifyEmail( // revisar esta funcion, recomendable de que vaya fuera.
-      {
-        query: {
-          token,
-        },
-      },
-      {
-        onSuccess: () => {
-          router.replace("/");
-        },
-        onError: (ctx) => {
-          const message = ctx.error.message ?? "Could not verify your email.";
-          Alert.alert("Verification failed", message);
-          router.replace("/sign-in");
-        },
-      },
-    );
+    void verifyEmailToken(token).then((response) => {
+      if (response.error) {
+        const message = response.error.message ?? "Could not verify your email.";
+        Alert.alert("Verification failed", message);
+        router.replace("/sign-in");
+        return;
+      }
+
+      router.replace("/");
+    });
   }, [hasStarted, token]);
 
   return <LoadingScreen />;

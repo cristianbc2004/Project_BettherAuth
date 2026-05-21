@@ -9,6 +9,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { authClient } from "@/features/auth/services/auth-client";
 import { WalletCardPreview } from "@/features/finance/components/finance-card";
+import { getCardPreviewWidth } from "@/features/finance/lib/card-layout";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import {
   addTargetSchema,
@@ -121,7 +122,7 @@ export default function AddTargetScreen() {
     },
     [previewValues],
   );
-  const cardWidth = Math.min(width - 40, 360);
+  const cardWidth = getCardPreviewWidth(width);
   const scrollToFormPosition = useCallback((y: number) => {
     requestAnimationFrame(() => {
       scrollViewRef.current?.scrollTo({ animated: true, y });

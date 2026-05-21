@@ -16,7 +16,7 @@ import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
 import { AppText } from "@/shared/components/ui/app-text";
 import { parseApiError } from "@/shared/lib/api-schemas";
 
-const requestDetailResponseSchema = z.object({
+const requestDetailResponseSchema = z.object({  // esto a un lib
   amountCents: z.number(),
   concept: z.string().nullable().optional(),
   id: z.string(),

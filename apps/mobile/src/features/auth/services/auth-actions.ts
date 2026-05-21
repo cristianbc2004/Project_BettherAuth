@@ -38,3 +38,27 @@ export function changePassword(values: ChangePasswordFormValues, locale: AppLoca
     ...buildAuthFetchOptions(locale),
   });
 }
+
+export function verifyEmailToken(token: string) {
+  return authClient.verifyEmail({
+    query: {
+      token,
+    },
+  });
+}
+
+export function verifyTotpCode(code: string, locale: AppLocale) {
+  return authClient.twoFactor.verifyTotp({
+    code,
+    trustDevice: true,
+    ...buildAuthFetchOptions(locale),
+  });
+}
+
+export function verifyTwoFactorBackupCode(code: string, locale: AppLocale) {
+  return authClient.twoFactor.verifyBackupCode({
+    code,
+    trustDevice: true,
+    ...buildAuthFetchOptions(locale),
+  });
+}

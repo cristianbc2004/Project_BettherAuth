@@ -23,7 +23,7 @@ const notificationActionPayloadSchema = z.object({
   bizumRequestId: z.string().optional(),
 });
 
-const notificationsGetResponseSchema = z.object({
+const notificationsGetResponseSchema = z.object({ // esto a un lib
   notifications: z.array(
     z.object({
       actionPayload: notificationActionPayloadSchema.nullable().optional(),
@@ -40,9 +40,9 @@ const notificationsGetResponseSchema = z.object({
   ),
 });
 
-type NotificationActionPayload = z.infer<typeof notificationActionPayloadSchema>;
-type NotificationType = z.infer<typeof notificationTypeSchema>;
-type NotificationResponseItem = z.infer<typeof notificationsGetResponseSchema>["notifications"][number];
+type NotificationActionPayload = z.infer<typeof notificationActionPayloadSchema>; // esto a un lib
+type NotificationType = z.infer<typeof notificationTypeSchema>; // esto a un lib
+type NotificationResponseItem = z.infer<typeof notificationsGetResponseSchema>["notifications"][number]; // esto a un lib
 
 type NotificationItem = {
   accent: string;
