@@ -6,61 +6,17 @@ import { Briefcase, Clock3, MapPin } from "lucide-react-native";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { mockIngresos, type IncomePerson } from "@/features/ingresos/mocks";
+import {
+  formatPersonLastUpdated,
+  getPersonStatusColors,
+  getPersonStatusLabel,
+  getSelectedPerson,
+  parsePersonId,
+} from "@/features/ingresos/lib/person-screen";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { getNativeMapComponents, nativeMapStyleUrl } from "@/shared/lib/native-map";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { AppText } from "@/shared/components/ui/app-text";
-
-function getSelectedPerson(personId?: string) {
-  const selectedPersonId = personId ? Number(personId) : undefined;
-
-  return (
-    mockIngresos.detalles.find((person) => person.id === selectedPersonId) ??
-    mockIngresos.detalles[0]
-  );
-}
-
-function formatLastUpdated(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "short",
-  }).format(new Date(value));
-}
-
-function getStatusLabel(status: IncomePerson["location"]["status"]) {
-  switch (status) {
-    case "moving":
-      return "On route";
-    case "offline":
-      return "Offline";
-    case "online":
-    default:
-      return "Available";
-  }
-}
-
-function getStatusColors(status: IncomePerson["location"]["status"], theme: ReturnType<typeof useAppTheme>["theme"]) {
-  switch (status) {
-    case "moving":
-      return {
-        accent: theme.primary,
-        soft: theme.primarySoft,
-      };
-    case "offline":
-      return {
-        accent: theme.danger,
-        soft: "rgba(220, 38, 38, 0.14)",
-      };
-    case "online":
-    default:
-      return {
-        accent: theme.success,
-        soft: "rgba(5, 150, 105, 0.14)",
-      };
-  }
-}
 
 type WorkerMarkerProps = {
   isSelected: boolean;
@@ -74,7 +30,7 @@ const WorkerMarker = memo(function WorkerMarker({
   person,
 }: WorkerMarkerProps) {
   const { theme } = useAppTheme();
-  const statusColors = getStatusColors(person.location.status, theme);
+  const statusColors = getPersonStatusColors(person.location.status, theme);
 
   return (
     <Pressable
@@ -117,10 +73,11 @@ export default function PersonMapScreen() {
   const { data: session } = authClient.useSession();
   const { theme } = useAppTheme();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
-  const initialPerson = useMemo(() => getSelectedPerson(personId), [personId]);
+  const initialPerson = useMemo(() => getSelectedPerson(parsePersonId(personId)), [personId]);
   const [selectedPerson, setSelectedPerson] = useState<IncomePerson>(initialPerson);
   const cameraRef = useRef<import("@maplibre/maplibre-react-native").CameraRef | null>(null);
   const nativeMap = getNativeMapComponents();
+  const selectedStatusColors = getPersonStatusColors(selectedPerson.location.status, theme);
 
   const focusPerson = useCallback((person: IncomePerson) => {
     selectionHaptic();
@@ -225,14 +182,14 @@ export default function PersonMapScreen() {
 
               <View
                 className="rounded-full px-3 py-2"
-                style={{ backgroundColor: getStatusColors(selectedPerson.location.status, theme).soft }}
+                style={{ backgroundColor: selectedStatusColors.soft }}
               >
                 <AppText
                   className="text-[12px] font-semibold leading-4"
                   numberOfLines={1}
-                  style={{ color: getStatusColors(selectedPerson.location.status, theme).accent }}
+                  style={{ color: selectedStatusColors.accent }}
                 >
-                  {getStatusLabel(selectedPerson.location.status)}
+                  {getPersonStatusLabel(selectedPerson.location.status)}
                 </AppText>
               </View>
             </View>
@@ -270,7 +227,7 @@ export default function PersonMapScreen() {
                   </AppText>
                 </View>
                 <AppText className="mt-2 text-[14px] font-semibold leading-5" numberOfLines={2} style={{ color: theme.text, fontVariant: ["tabular-nums"] }}>
-                  {formatLastUpdated(selectedPerson.location.lastUpdatedAt)}
+                  {formatPersonLastUpdated(selectedPerson.location.lastUpdatedAt)}
                 </AppText>
               </View>
             </View>

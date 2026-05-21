@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { authClient } from "@/features/auth/services/auth-client";
 import { Graphic } from "@/features/ingresos/components/person/graphic";
 import { PersonScreenHeader } from "@/features/ingresos/components/person-screen-header";
+import { getPersonGeneralHref, parsePersonId } from "@/features/ingresos/lib/person-screen";
 import { usePersonSelection } from "@/features/ingresos/lib/person-selection-context";
 import { useAppTheme } from "@/shared/lib/theme-context";
 
@@ -15,9 +16,8 @@ export default function PersonGraphicScreen() {
   const { setSelectedPersonId } = usePersonSelection();
   const { personId } = useLocalSearchParams<{ personId?: string }>();
   const [isChartInteracting, setIsChartInteracting] = useState(false);
-  const selectedPersonId = personId ? Number(personId) : undefined;
-  const initialSelectedPersonId = Number.isFinite(selectedPersonId) ? selectedPersonId : undefined;
-  const generalHref = personId ? (`/person?personId=${personId}` as const) : "/person";
+  const initialSelectedPersonId = parsePersonId(personId);
+  const generalHref = getPersonGeneralHref(initialSelectedPersonId);
   const handleGraphInteractionChange = useCallback((isInteracting: boolean) => {
     setIsChartInteracting(isInteracting);
   }, []);
