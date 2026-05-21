@@ -7,39 +7,15 @@ import Animated, { Easing, FadeInDown, FadeOutUp, LinearTransition } from "react
 import { FinanceScreenShell } from "@/features/finance/components/finance-screen-shell";
 import { BizumOverviewSkeleton } from "@/features/finance/components/bizum-skeletons";
 import {
-  bizumGetResponseSchema,
-  fetchBizumRequest,
-} from "@/features/finance/lib/bizum-api";
+  loadBizumOverviewData,
+  type BizumMovement,
+} from "@/features/finance/lib/bizum-data";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AppText } from "@/shared/components/ui/app-text";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
-
-type BizumMovement = {
-  amount: string;
-  date: string;
-  id: string;
-  initials: string;
-  name: string;
-  tone: "income" | "outcome";
-};
-
-function formatMovementDate(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Now";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "2-digit",
-  }).format(date);
-}
 
 function SectionHeader({ onPress, title }: { onPress: () => void; title: string }) {
   const { theme } = useAppTheme();
@@ -79,25 +55,9 @@ export default function AssetsScreen() {
 
     try {
       setIsBizumDataLoading(true);
-      const response = await fetchBizumRequest();
-
-      if (!response.ok) {
-        setBizumError("Could not load Bizum. Please try again.");
-        return;
-      }
-
-      const payload = bizumGetResponseSchema.parse(await response.json());
-      setAvailableBalanceCents(payload.availableBalanceCents ?? 0);
-      setMovements(
-        (payload.movements ?? []).map((movement) => ({
-          amount: movement.amount,
-          date: formatMovementDate(movement.createdAt),
-          id: movement.id,
-          initials: movement.initials,
-          name: movement.name,
-          tone: movement.tone,
-        })),
-      );
+      const data = await loadBizumOverviewData();
+      setAvailableBalanceCents(data.availableBalanceCents);
+      setMovements(data.movements);
     } catch {
       setBizumError("Could not load Bizum. Please try again.");
     } finally {
