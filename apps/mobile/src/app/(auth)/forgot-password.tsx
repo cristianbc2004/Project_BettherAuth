@@ -4,10 +4,10 @@ import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, View } from "react-native";
-import { z } from "zod";
 
 import { AuthInput } from "@/features/auth/components/auth-input";
 import { AuthShell } from "@/features/auth/components/auth-shell";
+import { buildForgotPasswordSchema, type ForgotPasswordFormValues } from "@/features/auth/services/auth-validation";
 import { AuthSubmitButton } from "@/shared/components/ui/auth-submit-button";
 import { appConfig } from "@repo/config";
 import { buildLanguageHeaders, useLanguage } from "@/shared/lib/locale";
@@ -20,10 +20,8 @@ export default function ForgotPasswordScreen() {
   const [isPending, setIsPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const { locale } = useLanguage();
-  const forgotPasswordSchema = z.object({
-    email: z.email(t("authForm.invalidEmail")),
-  });
-  const form = useForm<z.infer<typeof forgotPasswordSchema>>({ // esto debe de ir a un lib
+  const forgotPasswordSchema = buildForgotPasswordSchema(t);
+  const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",

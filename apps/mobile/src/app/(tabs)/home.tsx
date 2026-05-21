@@ -8,16 +8,24 @@ import { WalletCardPreview } from "@/features/finance/components/finance-card";
 import { TransactionRow } from "@/features/finance/components/transaction-row";
 import {
   recentTransactions,
-  weeklyBalance,
 } from "@/features/finance/mocks";
 import { getHomeCardCarouselLayout } from "@/features/finance/lib/card-layout";
+import {
+  buildHomeBalancePoints,
+  getCurrentBalancePoint,
+  getHomeChartWidth,
+  getHomeFirstName,
+  getHomeGraphColor,
+  getHomeScreenBackgroundColor,
+  type HomeBalancePoint,
+} from "@/features/finance/lib/home-screen";
 import { useWalletCards } from "@/features/finance/lib/wallet-cards-context";
 import { authClient } from "@/features/auth/services/auth-client";
 import { AnimatedNumber } from "@/shared/components/ui/animated-number";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { useFloatingTabBarMetrics } from "@/shared/lib/floating-tab-bar";
-import { NativeLineChart, type NativeLineChartPoint } from "@/shared/components/ui/native-line-chart";
+import { NativeLineChart } from "@/shared/components/ui/native-line-chart";
 import { selectionHaptic } from "@/shared/lib/haptics";
 import { useAppTheme } from "@/shared/lib/theme-context";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
@@ -27,10 +35,6 @@ type SectionHeaderProps = {
   action?: string;
   onActionPress?: () => void;
   title: string;
-};
-
-type HomeBalancePoint = NativeLineChartPoint & {
-  label: string;
 };
 
 type TopActionButtonProps = {
@@ -116,21 +120,19 @@ export default function HomeScreen() {
   const cardNavigationLockRef = useRef(false);
   const chartNavigationLockRef = useRef(false);
   const { cardHeight, cardSnapInterval, cardWidth } = getHomeCardCarouselLayout(width);
-  const chartWidth = Math.max(width - 40, 300);
-  const graphColor = resolvedThemeName === "dark" ? "#78a9ff" : "#3467d6";
-  const screenBackgroundColor =
-    resolvedThemeName === "light" ? theme.backgroundElevated : theme.background;
-  const firstName = session?.user.name.split(" ")[0] || session?.user.name || "Cristian";
+  const chartWidth = getHomeChartWidth(width);
+  const graphColor = getHomeGraphColor(resolvedThemeName);
+  const screenBackgroundColor = getHomeScreenBackgroundColor(
+    resolvedThemeName,
+    theme.backgroundElevated,
+    theme.background,
+  );
+  const firstName = getHomeFirstName(session?.user.name);
   const balancePoints = useMemo<HomeBalancePoint[]>(
-    () =>
-      weeklyBalance.map((point, index) => ({
-        date: new Date(`2026-04-${(22 + index).toString().padStart(2, "0")}T00:00:00`),
-        label: point.label,
-        value: point.value,
-      })),
+    () => buildHomeBalancePoints(),
     [],
   );
-  const currentBalancePoint = selectedPoint ?? balancePoints[balancePoints.length - 1];
+  const currentBalancePoint = getCurrentBalancePoint(selectedPoint, balancePoints);
   const openBalanceGraph = useCallback(() => {
     if (chartNavigationLockRef.current) {
       return;

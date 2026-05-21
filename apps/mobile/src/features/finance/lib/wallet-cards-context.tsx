@@ -7,31 +7,13 @@ import {
   useMemo,
   useState,
 } from "react";
-import { z } from "zod";
 
 import { authClient } from "@/features/auth/services/auth-client";
 import { type WalletCard } from "@/features/finance/mocks";
-import { mapTargetToWalletCard, walletCardTypes, type WalletCardFormValues } from "@/features/finance/lib/wallet-card-utils";
+import { mapTargetToWalletCard, type WalletCardFormValues } from "@/features/finance/lib/wallet-card-utils";
+import { targetMutationResponseSchema, targetsGetResponseSchema } from "@/features/finance/lib/wallet-cards-validation";
 import { appConfig } from "@repo/config";
 import { parseApiError } from "@/shared/lib/api-schemas";
-
-const targetResponseSchema = z.object({
-  balanceCents: z.number(),
-  block: z.boolean(),
-  cvc: z.string(),
-  id: z.string(),
-  name: z.string(),
-  numberTarget: z.string(),
-  type: z.enum(walletCardTypes),
-});
-
-const targetsGetResponseSchema = z.object({
-  targets: z.array(targetResponseSchema).optional(),
-});
-
-const targetMutationResponseSchema = z.object({
-  target: targetResponseSchema,
-});
 
 type WalletCardsContextValue = {
   addCard: (values: WalletCardFormValues) => Promise<WalletCard>;
