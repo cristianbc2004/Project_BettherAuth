@@ -37,25 +37,3 @@ app.notFound((c) => {
 app.onError(errorHandler);
 
 export default app;
-
-if (import.meta.main) {
-  const port = Number(process.env.PORT ?? "3001");
-  const hostname = process.env.HOST ?? "0.0.0.0";
-  const bunRuntime = (globalThis as typeof globalThis & {
-    Bun?: {
-      serve: (options: { fetch: typeof app.fetch; hostname?: string; port: number }) => unknown;
-    };
-  }).Bun;
-
-  if (!bunRuntime) {
-    throw new Error("Bun runtime is required to start the API server.");
-  }
-
-  bunRuntime.serve({
-    fetch: app.fetch,
-    hostname,
-    port,
-  });
-
-  console.log(`[api] escuchando en http://${hostname}:${port}`);
-}
