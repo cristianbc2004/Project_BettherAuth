@@ -8,7 +8,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { WalletCardsProvider } from "@/features/finance/lib/wallet-cards-context";
 import { LanguageProvider } from "@/shared/lib/locale";
-import { useAppTheme } from "@/shared/lib/theme-context";
+import { AppThemeProvider, useAppTheme } from "@/shared/lib/theme-context";
 
 function AppNavigation() {
   const { resolvedThemeName, theme } = useAppTheme();
@@ -57,9 +57,11 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
-        <WalletCardsProvider>
-          <AppNavigation />
-        </WalletCardsProvider>
+        <AppThemeProvider>
+          <WalletCardsProvider>
+            <AppNavigation />
+          </WalletCardsProvider>
+        </AppThemeProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>
   );
