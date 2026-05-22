@@ -1,5 +1,4 @@
 import { Redirect, router } from "expo-router";
-import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ChevronRight,
@@ -20,18 +19,13 @@ import { authClient } from "@/features/auth/services/auth-client";
 import { AppScreenHeader } from "@/shared/components/ui/app-screen-header";
 import { AppText } from "@/shared/components/ui/app-text";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
+import { LanguageSelector, ThemeModeSelector } from "@/shared/components/ui/preference-selectors";
 import { useFloatingTabBarMetrics } from "@/shared/lib/floating-tab-bar";
 import { selectionHaptic, warningHaptic } from "@/shared/lib/haptics";
-import { buildAuthFetchOptions, type AppLocale, useLanguage } from "@/shared/lib/locale";
+import { buildAuthFetchOptions, useLanguage } from "@/shared/lib/locale";
 import { useAppTheme } from "@/shared/lib/theme-context";
-import type { AppTheme, ThemeMode } from "@/shared/lib/theme-tokens";
+import type { AppTheme } from "@/shared/lib/theme-tokens";
 import { useSessionLoadingDelay } from "@/shared/lib/use-session-loading-delay";
-
-function scheduleSelectionHaptic() {
-  requestAnimationFrame(() => {
-    selectionHaptic();
-  });
-}
 
 type MenuRowProps = {
   detail?: string;
@@ -89,134 +83,6 @@ function SectionLabel({ label, theme }: { label: string; theme: AppTheme }) {
   );
 }
 
-type ThemeModeSelectorProps = {
-  icons: Record<"dark" | "light" | "system", LucideIcon>;
-  onSelect: (mode: ThemeMode) => void;
-  selectedMode: ThemeMode;
-  theme: AppTheme;
-  title: string;
-};
-
-type OptionSelectorFrameProps = {
-  children: ReactNode;
-  theme: AppTheme;
-  title: string;
-};
-
-function OptionSelectorFrame({ children, theme, title }: OptionSelectorFrameProps) {
-  return (
-    <View className="mt-7 px-1">
-      <AppText className="mb-4 text-[22px] font-bold leading-[28px]">
-        {title}
-      </AppText>
-      {children}
-    </View>
-  );
-}
-
-function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: ThemeModeSelectorProps) {
-  const { t } = useTranslation();
-  const options: Array<{ label: string; mode: ThemeMode }> = [
-    { label: t("dashboard.themeLight"), mode: "light" },
-    { label: t("dashboard.themeDark"), mode: "dark" },
-    { label: t("dashboard.themeSystem"), mode: "system" },
-  ];
-
-  return (
-    <OptionSelectorFrame theme={theme} title={title}>
-      <View className="flex-row gap-2">
-        {options.map((option) => {
-          const isSelected = selectedMode === option.mode;
-          const OptionIcon = icons[option.mode];
-
-          return (
-            <Pressable
-              accessibilityLabel={`Set ${option.label} theme`}
-              accessibilityRole="button"
-              className="h-14 flex-1 flex-row items-center justify-center rounded-[16px] border px-2"
-              key={option.mode}
-              onPress={() => {
-                onSelect(option.mode);
-                scheduleSelectionHaptic();
-              }}
-              style={{
-                backgroundColor: isSelected ? theme.primarySoft : theme.background,
-                borderColor: isSelected ? theme.primary : theme.border,
-              }}
-            >
-              <OptionIcon color={isSelected ? theme.primary : theme.text} size={22} strokeWidth={2.2} />
-              <AppText
-                className="ml-1.5 min-w-0 shrink text-[13px] font-semibold leading-5"
-                numberOfLines={1}
-                tone={isSelected ? "primary" : "default"}
-              >
-                {option.label}
-              </AppText>
-            </Pressable>
-          );
-        })}
-      </View>
-    </OptionSelectorFrame>
-  );
-}
-
-type LanguageSelectorProps = {
-  onSelect: (locale: AppLocale) => void;
-  selectedLocale: AppLocale;
-  theme: AppTheme;
-  title: string;
-};
-
-function LanguageSelector({ onSelect, selectedLocale, theme, title }: LanguageSelectorProps) {
-  const { t } = useTranslation();
-  const options: Array<{ code: string; label: string; locale: AppLocale }> = [
-    { code: "ES", label: t("dashboard.languageSpanish"), locale: "es" },
-    { code: "EN", label: t("dashboard.languageEnglish"), locale: "en" },
-  ];
-
-  return (
-    <OptionSelectorFrame theme={theme} title={title}>
-      <View className="flex-row gap-3">
-        {options.map((option) => {
-          const isSelected = selectedLocale === option.locale;
-
-          return (
-            <Pressable
-              accessibilityLabel={`Set ${option.label} language`}
-              accessibilityRole="button"
-              className="h-14 flex-1 flex-row items-center justify-center rounded-[16px] border px-3"
-              key={option.locale}
-              onPress={() => {
-                selectionHaptic();
-                onSelect(option.locale);
-              }}
-              style={{
-                backgroundColor: isSelected ? theme.primarySoft : theme.background,
-                borderColor: isSelected ? theme.primary : theme.border,
-              }}
-            >
-              <View
-                className="mr-2 h-8 w-9 items-center justify-center rounded-[10px]"
-                style={{ backgroundColor: isSelected ? theme.primarySoft : theme.backgroundMuted }}
-              >
-                <AppText className="text-[12px] font-bold" tone={isSelected ? "primary" : "default"}>
-                  {option.code}
-                </AppText>
-              </View>
-              <AppText
-                className="min-w-0 shrink text-sm font-semibold leading-5"
-                numberOfLines={1}
-                tone={isSelected ? "primary" : "default"}
-              >
-                {option.label}
-              </AppText>
-            </Pressable>
-          );
-        })}
-      </View>
-    </OptionSelectorFrame>
-  );
-}
 
 export default function DashboardScreen() {
   const { data: session, isPending } = authClient.useSession();

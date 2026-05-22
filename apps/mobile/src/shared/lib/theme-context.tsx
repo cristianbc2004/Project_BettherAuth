@@ -1,4 +1,7 @@
 import {
+  createContext,
+  type ReactNode,
+  useContext,
   useCallback,
   useMemo,
   useSyncExternalStore,
@@ -10,16 +13,44 @@ import { type AppTheme, type ThemeMode, type ThemeName, themes } from "@/shared/
 const themeModes: ThemeMode[] = ["system", "light", "dark"];
 const subscribers = new Set<() => void>();
 let themeModeSnapshot: ThemeMode = "system";
+let scheduledThemeMode: ThemeMode | null = null;
+let themeModeFrame: ReturnType<typeof requestAnimationFrame> | null = null;
 
 type SystemColorScheme = "dark" | "light" | "unspecified" | null | undefined;
+type AppThemeContextValue = {
+  resolvedThemeName: ThemeName;
+  setThemeMode: (mode: ThemeMode) => void;
+  theme: AppTheme;
+  themeMode: ThemeMode;
+  toggleThemeMode: () => void;
+};
+
+const AppThemeContext = createContext<AppThemeContextValue | null>(null);
 
 function resolveSystemTheme(colorScheme: SystemColorScheme): ThemeName {
   return colorScheme === "dark" ? "dark" : "light";
 }
 
 function applyThemeMode(mode: ThemeMode) {
-  // NativeWind v5 listens to Appearance changes directly.
   Appearance.setColorScheme(mode === "system" ? "unspecified" : mode);
+}
+
+function scheduleApplyThemeMode(mode: ThemeMode) {
+  scheduledThemeMode = mode;
+
+  if (themeModeFrame !== null) {
+    return;
+  }
+
+  themeModeFrame = requestAnimationFrame(() => {
+    const nextMode = scheduledThemeMode;
+    scheduledThemeMode = null;
+    themeModeFrame = null;
+
+    if (nextMode) {
+      applyThemeMode(nextMode);
+    }
+  });
 }
 
 function emitThemeModeChange() {
@@ -39,26 +70,28 @@ function getThemeModeSnapshot() {
   return themeModeSnapshot;
 }
 
-export function useAppTheme() {
+function updateThemeMode(mode: ThemeMode) {
+  if (themeModeSnapshot === mode) {
+    return;
+  }
+
+  themeModeSnapshot = mode;
+  emitThemeModeChange();
+  scheduleApplyThemeMode(mode);
+}
+
+function useAppThemeValue(): AppThemeContextValue {
   const colorScheme = useColorScheme();
   const themeMode = useSyncExternalStore(subscribeThemeMode, getThemeModeSnapshot, getThemeModeSnapshot);
 
   const setThemeMode = useCallback((mode: ThemeMode) => {
-    if (themeModeSnapshot === mode) {
-      return;
-    }
-
-    themeModeSnapshot = mode;
-    applyThemeMode(mode);
-    emitThemeModeChange();
+    updateThemeMode(mode);
   }, []);
 
   const toggleThemeMode = useCallback(() => {
     const currentIndex = themeModes.indexOf(themeModeSnapshot);
     const nextMode = themeModes[(currentIndex + 1) % themeModes.length];
-    themeModeSnapshot = nextMode;
-    applyThemeMode(nextMode);
-    emitThemeModeChange();
+    updateThemeMode(nextMode);
   }, []);
 
   const resolvedThemeName: ThemeName = themeMode === "system" ? resolveSystemTheme(colorScheme) : themeMode;
@@ -74,4 +107,24 @@ export function useAppTheme() {
     }),
     [resolvedThemeName, setThemeMode, theme, themeMode, toggleThemeMode],
   );
+}
+
+export function AppThemeProvider({ children }: { children: ReactNode }) {
+  const value = useAppThemeValue();
+
+  return (
+    <AppThemeContext.Provider value={value}>
+      {children}
+    </AppThemeContext.Provider>
+  );
+}
+
+export function useAppTheme() {
+  const context = useContext(AppThemeContext);
+
+  if (!context) {
+    throw new Error("useAppTheme must be used within AppThemeProvider");
+  }
+
+  return context;
 }
