@@ -1,5 +1,5 @@
 import { Redirect, router } from "expo-router";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ChevronRight,
@@ -116,17 +116,49 @@ function OptionSelectorFrame({ children, theme, title }: OptionSelectorFrameProp
 
 function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: ThemeModeSelectorProps) {
   const { t } = useTranslation();
+  const [optimisticMode, setOptimisticMode] = useState(selectedMode);
+  const pendingModeRef = useRef<ThemeMode | null>(null);
+  const pendingFrameRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
   const options: Array<{ label: string; mode: ThemeMode }> = [
     { label: t("dashboard.themeLight"), mode: "light" },
     { label: t("dashboard.themeDark"), mode: "dark" },
     { label: t("dashboard.themeSystem"), mode: "system" },
   ];
 
+  useEffect(() => {
+    if (pendingModeRef.current === selectedMode) {
+      pendingModeRef.current = null;
+    }
+
+    if (pendingModeRef.current === null) {
+      setOptimisticMode(selectedMode);
+    }
+  }, [selectedMode]);
+
+  useEffect(() => {
+    return () => {
+      if (pendingFrameRef.current !== null) {
+        cancelAnimationFrame(pendingFrameRef.current);
+      }
+    };
+  }, []);
+
+  function scheduleThemeModeSelection(mode: ThemeMode) {
+    if (pendingFrameRef.current !== null) {
+      cancelAnimationFrame(pendingFrameRef.current);
+    }
+
+    pendingFrameRef.current = requestAnimationFrame(() => {
+      pendingFrameRef.current = null;
+      onSelect(mode);
+    });
+  }
+
   return (
     <OptionSelectorFrame theme={theme} title={title}>
       <View className="flex-row gap-2">
         {options.map((option) => {
-          const isSelected = selectedMode === option.mode;
+          const isSelected = optimisticMode === option.mode;
           const OptionIcon = icons[option.mode];
 
           return (
@@ -136,7 +168,9 @@ function ThemeModeSelector({ icons, onSelect, selectedMode, theme, title }: Them
               className="h-14 flex-1 flex-row items-center justify-center rounded-[16px] border px-2"
               key={option.mode}
               onPress={() => {
-                onSelect(option.mode);
+                pendingModeRef.current = option.mode;
+                setOptimisticMode(option.mode);
+                scheduleThemeModeSelection(option.mode);
                 scheduleSelectionHaptic();
               }}
               style={{
