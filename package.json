@@ -8,8 +8,8 @@
   ],
   "scripts": {
     "dev": "concurrently --kill-others --kill-signal SIGINT --kill-timeout 3000 -n api,mobile -c blue,green \"bun run api:start\" \"bun run mobile:dev-client -- --clear\"",
-    "api:dev": "bun --watch apps/api/src/index.ts",
-    "api:start": "bun apps/api/src/index.ts",
+    "api:dev": "PORT=3001 bun --watch apps/api/src/index.ts",
+    "api:start": "PORT=3001 bun apps/api/src/index.ts",
     "start": "bun --cwd apps/mobile run start",
     "android": "bun --cwd apps/mobile run android",
     "ios": "bun --cwd apps/mobile run ios",

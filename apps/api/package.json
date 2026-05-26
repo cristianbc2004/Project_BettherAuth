@@ -6,8 +6,8 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "start": "bun src/index.ts",
+    "dev": "PORT=3001 bun --watch src/index.ts",
+    "start": "PORT=3001 bun src/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
