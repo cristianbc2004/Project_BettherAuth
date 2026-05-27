@@ -1,27 +1,11 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 import { appConfig } from "@repo/config";
 
-const smtpHost = process.env.SMTP_HOST;
-const smtpPort = Number(process.env.SMTP_PORT ?? "587");
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
-const smtpFrom = process.env.SMTP_FROM;
+const resendApiKey = process.env.RESEND_API_KEY;
+const resendFrom = process.env.RESEND_FROM;
 
-const isEmailConfigured = Boolean(smtpHost && smtpUser && smtpPass && smtpFrom);
-
-const transporter =
-  isEmailConfigured && smtpHost
-    ? nodemailer.createTransport({
-        auth: {
-          pass: smtpPass,
-          user: smtpUser,
-        },
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
-      })
-    : null;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 type SendVerificationEmailParams = {
   email: string;
@@ -36,17 +20,20 @@ export async function sendVerificationEmail({
   token,
   url,
 }: SendVerificationEmailParams) {
-  if (!transporter || !smtpFrom) {
+  if (!resend || !resendFrom) {
     console.log(`[EMAIL-VERIFICATION] ${email} -> ${url}`);
     throw new Error(
-      "Email verification is not configured. Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM to .env.",
+      "Email verification is not configured. Add RESEND_API_KEY and RESEND_FROM to .env.",
     );
   }
 
   const verificationUrl = `${appConfig.emailVerificationAppUrl}?token=${encodeURIComponent(token)}`;
 
-  await transporter.sendMail({
-    from: smtpFrom,
+  const { data, error } = await resend.emails.send({
+    from: resendFrom,
+    to: email,
+    subject: "Verify your email address",
+    text: `Hello ${name ?? ""}, use this link to verify your email: ${url}\n\nIf your device supports the app deep link, you can also open: ${verificationUrl}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.5;">
         <h2>Verify your email address</h2>
@@ -62,8 +49,18 @@ export async function sendVerificationEmail({
         <p style="font-size:12px;color:#666;">App deep link: ${verificationUrl}</p>
       </div>
     `,
-    subject: "Verify your email address",
-    text: `Hello ${name ?? ""}, use this link to verify your email: ${url}\n\nIf your device supports the app deep link, you can also open: ${verificationUrl}`,
-    to: email,
+  });
+
+  if (error) {
+    console.error("[EMAIL-VERIFICATION] Resend error", {
+      email,
+      error,
+    });
+    throw new Error(error.message);
+  }
+
+  console.log("[EMAIL-VERIFICATION] Email queued", {
+    email,
+    id: data?.id,
   });
 }
