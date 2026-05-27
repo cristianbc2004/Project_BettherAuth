@@ -29,7 +29,7 @@ export async function sendVerificationEmail({
 
   const verificationUrl = `${appConfig.emailVerificationAppUrl}?token=${encodeURIComponent(token)}`;
 
-  await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: resendFrom,
     to: email,
     subject: "Verify your email address",
@@ -49,5 +49,18 @@ export async function sendVerificationEmail({
         <p style="font-size:12px;color:#666;">App deep link: ${verificationUrl}</p>
       </div>
     `,
+  });
+
+  if (error) {
+    console.error("[EMAIL-VERIFICATION] Resend error", {
+      email,
+      error,
+    });
+    throw new Error(error.message);
+  }
+
+  console.log("[EMAIL-VERIFICATION] Email queued", {
+    email,
+    id: data?.id,
   });
 }
